@@ -684,12 +684,17 @@ function veTon(r) {
     var chuaGV = gv.filter(function (x) { return !x.s.von; }).length;
     if (gv.length) h += '<div class="the"><details open><summary><b>Giá vốn trung bình hàng tinh, hàng thô</b>' + (chuaGV ? ' · <span class="am">' + chuaGV + ' mã chưa có giá vốn</span>' : '') + '</summary>' +
       '<p class="muted">Giá vốn đang dùng = giá vốn TB trong app (tự cộng dồn mỗi lần nhập hàng có giá). Mã nào app chưa có giá thì lấy từ tab “GIÁ VỐN TB” của kế toán (ghép theo tên hàng). Cùng cách tính với app Kho.</p>' +
-      '<div class="cuon"><table><tr><th>Mặt hàng</th><th class="s">Tồn</th><th class="s">GV TB trên tab</th><th class="s">Số lần · thấp–cao</th><th class="s">GV TB trong app</th><th class="s">Đang dùng</th></tr>' +
-      gv.map(function (x) { var s = x.s, b = s.vonTab;
-        return '<tr data-tim="' + e((s.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + ' <small class="muted">' + e(x.nhom) + '</small></td><td class="s">' + (s.ton == null ? '—' : soSL(s.ton)) + ' ' + e(s.dv) + '</td>' +
-          '<td class="s">' + (b ? tien(b.tb) + 'đ' : '<span class="muted">không có tên này</span>') + '</td><td class="s"><small class="muted">' + (b ? soSL(b.soLan) + ' lần · ' + tien(b.min) + '–' + tien(b.max) : '') + '</small></td>' +
-          '<td class="s">' + (s.vonApp ? tien(s.vonApp) + 'đ' : '—') + '</td><td class="s"><b>' + (s.von ? tien(s.von) + 'đ' : '<span class="am">chưa có</span>') + '</b></td></tr>';
-      }).join('') + '</table></div></details></div>';
+      '<div class="cuon"><table>' + (function () {
+        var nhomGV = []; gv.forEach(function (x) { var g = nhomGV[nhomGV.length - 1]; if (!g || g.nhom !== x.nhom) nhomGV.push(g = { nhom: x.nhom, ds: [] }); g.ds.push(x.s); });
+        return nhomGV.map(function (g) {
+          var dv = {}; g.ds.forEach(function (s) { dv[s.dv || ''] = 1; }); var mot = Object.keys(dv).length === 1 ? Object.keys(dv)[0] : '';
+          return '<tr><th>' + e(g.nhom) + '</th><th class="s">Tồn' + (mot ? ' (' + e(mot) + ')' : '') + '</th><th class="s">GV TB trong app</th><th class="s">Đang dùng</th></tr>' +
+            g.ds.map(function (s) {
+              return '<tr data-tim="' + e((s.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + '</td><td class="s">' + (s.ton == null ? '—' : soSL(s.ton)) + (mot ? '' : ' ' + e(s.dv)) + '</td>' +
+                '<td class="s">' + (s.vonApp ? tien(s.vonApp) + 'đ' : '—') + '</td><td class="s"><b>' + (s.von ? tien(s.von) + 'đ' : '<span class="am">chưa có</span>') + '</b></td></tr>';
+            }).join('');
+        }).join('');
+      })() + '</table></div></details></div>';
   }
   h += '<div class="the"><label for="tQ" style="margin-top:0">Tìm sản phẩm</label><input id="tQ" placeholder="Đông trùng, tinh, C14…"><p class="muted" style="margin-bottom:0">Số tồn mới nhất, cập nhật lúc ' + e(r.luc) + '. Số này thay đổi theo phiếu kiểm kho, nhập, xuất của phòng Kho vận (ghi chung với app Kho). Lên đơn bán hàng không trừ kho.</p></div>';
   h += r.nhom.map(function (g) {
@@ -1118,7 +1123,7 @@ function moCaiDat(x) {
 function napKpi(thang) { KPI_THANG = thang || KPI_THANG || thangNay(); goi('kpiCaiDat', [TK, KPI_THANG], veKpi); }
 function veKpi(r) {
   var h = '<div class="the"><label style="margin-top:0">Tháng</label><input type="month" id="kThang" value="' + e(r.thang) + '"><p class="muted">' +
-    (r.datTongDuoc ? 'Chị giao <b>Target tổng</b> cho từng trưởng phòng. Trưởng phòng tự chia Target cho thành viên trong team.' : 'Công ty đã giao Target tổng cho team. Bạn chia Target cho từng thành viên (kể cả bạn), chia hết thì phần "Còn chưa chia" về 0.') +
+    (r.datTongDuoc ? 'Chị giao <b>Target tổng</b> cho từng trưởng phòng. Trưởng phòng tự chia Target cho thành viên trong team.' : 'Bạn tự đặt Target tổng cho team mình rồi chia cho từng nhân viên, chia hết thì phần "Còn chưa chia" về 0. Trưởng phòng không nhận Target cá nhân.') +
     ' Target ngày tự tính: ngày nào chưa đạt, phần thiếu chia đều cho các ngày làm việc còn lại.</p></div>';
   if (r.datTongDuoc) {
     var daGiao = r.teams.reduce(function (a, w) { return a + w.kpi; }, 0);
@@ -1127,10 +1132,10 @@ function veKpi(r) {
   }
   h += r.teams.map(function (w, i) {
     return '<div class="the" data-team="' + i + '"><h3>Team ' + e(w.team) + '</h3><div class="muted">Trưởng phòng: <b>' + (w.truongPhong ? e(w.truongPhong) : 'chưa có') + '</b></div>' +
-      '<label>Target tổng team tháng (đ)</label><input data-k="tong" inputmode="numeric" value="' + (w.kpi ? tien(w.kpi) : '') + '"' + (r.datTongDuoc ? '' : ' disabled') + '>' +
+      '<label>Target tổng team tháng (đ)</label><input data-k="tong" inputmode="numeric" value="' + (w.kpi ? tien(w.kpi) : '') + '"' + (w.datTong ? '' : ' disabled') + '>' +
       (w.tv.length ? '<h4>Trưởng phòng chia cho thành viên</h4><div class="cuon"><table><tr><th>Thành viên</th><th class="s">Target (đ)</th><th class="s">%</th></tr>' + w.tv.map(function (n) {
         return '<tr><td>' + e(n.ten) + '<div class="muted">' + e(n.vai) + '</div></td><td class="s"><input data-k="tv" data-tv="' + e(n.id) + '" inputmode="numeric" style="width:130px;text-align:right" value="' + (n.kpi ? tien(n.kpi) : '') + '"' + (w.chiaDuoc ? '' : ' disabled') + '></td><td class="s" data-ptv="' + e(n.id) + '"></td></tr>';
-      }).join('') + '<tr class="cong"><td>Đã chia</td><td class="s" data-dachia="1"></td><td></td></tr><tr class="cong"><td>Còn chưa chia</td><td class="s" data-conlai="1"></td><td></td></tr></table></div>' : '<p class="muted">Team chưa có thành viên. Chị Lê / anh Thanh xếp người vào team ở mục Phân quyền.</p>') +
+      }).join('') + '<tr class="cong"><td>Đã chia</td><td class="s" data-dachia="1"></td><td></td></tr><tr class="cong"><td>Còn chưa chia</td><td class="s" data-conlai="1"></td><td></td></tr></table></div>' : '<p class="muted">Team chưa có nhân viên. Chị Lê / anh Thanh xếp người vào team ở mục Phân quyền.</p>') +
       (w.chiaDuoc ? '<button class="nut rong" data-luukpi="' + i + '" style="margin-top:10px">Lưu Target team ' + e(w.team) + '</button>' : '') + '</div>';
   }).join('');
   $('cdNoi').innerHTML = h;
@@ -1150,7 +1155,7 @@ function veKpi(r) {
       b.querySelectorAll('[data-tv]').forEach(function (i) { ds.push({ id: i.dataset.tv, kpi: docTien(i.value) }); });
       var s = ds.reduce(function (a, x) { return a + x.kpi; }, 0);
       if (ds.length && s && s !== tong && !confirm('Đã chia ' + tien(s) + 'đ, Target tổng team là ' + tien(tong) + 'đ (lệch ' + tien(s - tong) + 'đ). Vẫn lưu?')) return;
-      goi('luuKpi', [TK, r.thang, w.team, r.datTongDuoc ? b.querySelector('[data-k=tong]').value : null, ds], function (x) { veKpi(x.kpi); bao('Đã lưu Target team ' + w.team + '.'); });
+      goi('luuKpi', [TK, r.thang, w.team, w.datTong ? b.querySelector('[data-k=tong]').value : null, ds], function (x) { veKpi(x.kpi); bao('Đã lưu Target team ' + w.team + '.'); });
     };
   });
 }
@@ -1357,13 +1362,45 @@ function veNsVB(r) {
     }).join('') || '<p class="muted">Chưa có văn bản chung.</p>') + '</div>';
 }
 function napNsCong(t) { NS_THANG = t || NS_THANG || thangNay(); goi('nsBangCong', [TK, NS_THANG], veNsCong); }
+var MAU_CONG = { 'V': 'background:#F6DCDC;color:#A33', 'ĐX': 'background:#F6DCDC;color:#A33', 'OFF': 'background:#EEF0EC;color:#7A857F', 'P': 'background:#FFF3D6;color:#8A6410', 'T': 'color:#B8862B', '½': 'color:#B8862B', 'ĐC': 'background:#E3EEFA;color:#1F5FA8;font-weight:700', '?': 'color:#7A857F' };
 function veNsCong(r) {
   NS = r;
+  var thu = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  var dau = r.ngayList.map(function (n) { var d = new Date(n + 'T00:00:00').getDay(); return '<th class="s" style="padding:6px 4px;min-width:34px' + (d === 0 ? ';background:#EEF0EC' : '') + '">' + n.slice(8) + '<br><small>' + thu[d] + '</small></th>'; }).join('');
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Bảng công</h2><div class="the"><label style="margin-top:0">Tháng</label><input type="month" id="nsThang" value="' + e(r.thang) + '"></div>' +
-    '<div class="the"><div class="cuon"><table><tr><th>Nhân viên</th><th class="s">Công</th><th class="s">Trễ</th><th class="s">Phép</th><th class="s">ĐX / V</th></tr>' + r.ds.map(function (n) {
+    '<div class="the"><h3>Tổng hợp</h3><div class="cuon"><table><tr><th>Nhân viên</th><th class="s">Công</th><th class="s">Trễ</th><th class="s">Phép</th><th class="s">ĐX / V</th></tr>' + r.ds.map(function (n) {
       return '<tr><td><button class="lienket" data-nspc="' + e(n.id) + '">' + e(n.ten) + '</button><div class="muted">' + e(n.boPhan) + '</div></td><td class="s"><b>' + soSL(n.cong) + '</b>/' + n.congChuan + '</td><td class="s">' + n.tre + '</td><td class="s">' + soSL(n.phep) + '</td><td class="s">' + soSL(n.dotXuat) + '</td></tr>';
-    }).join('') + '</table></div><p class="muted">Bấm tên để xem phiếu công từng ngày. ' + CHU_CONG + '</p></div>';
+    }).join('') + '</table></div><p class="muted">Bấm tên để xem phiếu công từng ngày.</p></div>' +
+    '<div class="the"><h3>Công từng ngày</h3><p class="muted">' + CHU_CONG + (r.sua ? ' <b>Bấm vào ô để điều chỉnh công</b> (quên chấm công, app lỗi…): ô đã sửa hiện ĐC, ghi lại lý do và người sửa.' : '') + '</p>' +
+    '<div class="cuon"><table style="font-size:13px"><tr><th style="position:sticky;left:0;z-index:1">Nhân viên</th>' + dau + '</tr>' + r.ds.map(function (n, i) {
+      var theo = {}; n.ngay.forEach(function (d) { theo[d.ngay] = d; });
+      return '<tr><td style="position:sticky;left:0;background:var(--nen-the, #fff);white-space:nowrap"><b>' + e(n.ten) + '</b></td>' + r.ngayList.map(function (ng) {
+        var d = theo[ng], ma = d ? d.ma : '', chu = ma === 'ĐC' ? 'ĐC' + (d.cong !== 1 ? '<br><small>' + soSL(d.cong) + '</small>' : '') : e(ma);
+        var bam = r.sua && ng <= r.homNay ? ' data-nsdc="' + i + '|' + ng + '" role="button" tabindex="0"' : '';
+        return '<td class="s" style="padding:6px 4px;' + (bam ? 'cursor:pointer;' : '') + (MAU_CONG[ma] || '') + '"' + bam + (d && d.dc ? ' title="' + e(d.dc) + '"' : '') + '>' + chu + '</td>';
+      }).join('') + '</tr>';
+    }).join('') + '</table></div></div>';
   $('nsThang').onchange = function () { napNsCong(this.value); };
+  document.querySelectorAll('[data-nsdc]').forEach(function (o) {
+    o.onclick = function () { var p = o.dataset.nsdc.split('|'); moDieuChinhCong(NS.ds[Number(p[0])], p[1]); };
+    o.onkeydown = function (ev) { if (ev.key === 'Enter') o.onclick(); };
+  });
+}
+function moDieuChinhCong(n, ngay) {
+  var d = n.ngay.filter(function (x) { return x.ngay === ngay; })[0] || {};
+  var hienTai = d.ma ? (d.ma === 'ĐC' ? 'ĐC ' + soSL(d.cong) + ' công' : d.ma) : 'chưa có';
+  moHop('<h3 style="margin:0;color:var(--xanh)">Điều chỉnh công · ' + e(n.ten) + ' · ' + ngVN(ngay) + '</h3>' +
+    '<p class="muted">Hiện tại: <b>' + e(hienTai) + '</b> · vào ' + e(d.vao || '–') + ' · ra ' + e(d.ra || '–') + (d.dc ? '<br>Lý do đã ghi: ' + e(d.dc) : '') + '</p>' +
+    '<div class="luoi2"><div><label>Công</label><select id="dcCong"><option value="1">1 công</option><option value="0.5">½ công</option><option value="0">0 công</option></select></div>' +
+    '<div><label>Lý do</label><input id="dcLy" placeholder="VD: quên chấm ra, app lỗi" value=""></div></div>' +
+    '<div class="hang" style="margin-top:10px"><button class="nut" id="dcLuu">Lưu điều chỉnh</button>' + (d.ma === 'ĐC' ? '<button class="nut do" id="dcBo">Bỏ điều chỉnh</button>' : '') + '<button class="nut phu" id="dcHuy">Huỷ</button></div>');
+  if (d.ma === 'ĐC') $('dcCong').value = String(d.cong);
+  $('dcHuy').onclick = dongHop;
+  function gui(cong, ly) {
+    goi('nsDieuChinhCong', [TK, NS.thang, ngay, n.id, cong, ly], function (r) { dongHop(); veNsCong(r.cg); bao(cong === '' ? 'Đã bỏ điều chỉnh công.' : 'Đã điều chỉnh công ' + n.ten + ' ngày ' + ngVN(ngay) + '.'); });
+  }
+  $('dcLuu').onclick = function () { var ly = $('dcLy').value.trim(); if (!ly) return bao('Ghi lý do điều chỉnh.', true); gui($('dcCong').value, ly); };
+  if ($('dcBo')) $('dcBo').onclick = function () { gui('', ''); };
 }
 function napNsLuong(t) { NS_THANG = t || NS_THANG || thangNay(); goi('nsBangLuong', [TK, NS_THANG], veNsLuong); }
 function veNsLuong(r) {
