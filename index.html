@@ -1608,12 +1608,14 @@ function veKb(r) {
   h += '<div class="o"><div><small>Hũ nhập</small><b>' + n(r.huTong.nhap) + '</b></div><div><small>Hũ xuất</small><b>' + n(r.huTong.xuat) + '</b></div>' +
     '<div><small>Tinh thô nhập</small><b>' + n(r.ttTong.nhap) + '</b></div><div><small>Tinh thô xuất</small><b>' + n(r.ttTong.xuat) + '</b></div>' +
     (t ? '<div><small>Doanh thu tinh thô</small><b>' + tienNgan(r.ttTong.tien) + '</b></div><div><small>Lợi nhuận tinh thô</small><b>' + tienNgan(r.ttTong.lai) + '</b></div>' : '') + '</div>';
-  h += '<div class="the"><h3>Hàng hũ</h3>' + (r.hu.length ? '<div class="cuon"><table><tr><th>Mã</th><th class="s">Kiểm trước</th><th class="s">Nhập</th><th class="s">Xuất</th><th class="s">Tồn cuối</th></tr>' + r.hu.map(function (x) {
-    return '<tr><td>' + e(x.ten) + '<div class="muted">' + e(x.group) + '</div></td><td class="s">' + n(x.truoc) + '</td><td class="s">' + n(x.nhap) + '</td><td class="s' + (x.xuat < 0 ? ' am' : '') + '">' + (x.daDem ? n(x.xuat) : '<span class="muted">chưa kiểm</span>') +
-      '</td><td class="s"><b>' + n(x.cuoi) + '</b></td></tr>';
-  }).join('') + '</table></div>' : '<p class="muted">Ngày này không có hũ nào được kiểm hoặc nhập.</p>') +
-    (r.hu.some(function (x) { return x.xuat < 0; }) ? '<p class="muted">Số xuất âm: đếm nhiều hơn lần trước + nhập, có thể còn phiếu nhập chưa ghi.</p>' : '') +
-    '<p class="muted" style="margin-bottom:0">Xuất = kiểm lần trước + nhập − kiểm hôm nay. Tồn cuối = số kiểm hôm nay.</p></div>';
+  h += '<div class="the"><h3>Hàng hũ · xuất trong ngày theo vị</h3>' + (r.huNhom && r.huNhom.length ? r.huNhom.map(function (g) {
+    return '<h4 style="margin:12px 0 6px">' + e(g.nhom) + ' <small class="muted">· nhập ' + n(g.nhap) + ' · xuất ' + n(g.xuat) + '</small></h4><div class="cuon"><table><tr><th>Vị</th><th class="s">Kiểm trước</th><th class="s">Nhập</th><th class="s">Xuất</th><th class="s">Tồn cuối</th></tr>' + g.ds.map(function (x) {
+      return '<tr><td>' + e(x.ten) + (x.phan.length > 1 ? '<div class="muted">' + e(x.phan.join(' + ')) + '</div>' : '') + '</td><td class="s">' + n(x.truoc) + '</td><td class="s">' + n(x.nhap) + '</td><td class="s' + (x.xuat < 0 ? ' am' : '') + '">' +
+        (x.daDem ? '<b>' + n(x.xuat) + '</b>' + (x.thieu ? '<div class="muted">chưa kiểm đủ</div>' : '') : '<span class="muted">chưa kiểm</span>') + '</td><td class="s">' + n(x.cuoi) + '</td></tr>';
+    }).join('') + '</table></div>';
+  }).join('') : '<p class="muted">Ngày này không có hũ nào được kiểm hoặc nhập.</p>') +
+    (r.huNhom.some(function (g) { return g.ds.some(function (x) { return x.xuat < 0; }); }) ? '<p class="muted">Số xuất âm: đếm nhiều hơn lần trước + nhập, có thể còn phiếu nhập chưa ghi.</p>' : '') +
+    '<p class="muted" style="margin-bottom:0">Xuất = kiểm lần trước + nhập − kiểm hôm nay. Có tem và không tem cộng chung từng vị (trong ngày có thể lấy hũ không tem dán tem bán). Hàng nhà và các nhóm khác tính riêng. Vị nào chỉ kiểm một phần thì ghi "chưa kiểm đủ".</p></div>';
   h += '<div class="the"><h3>Hàng tinh, thô</h3>' + (r.tinhTho.length ? '<div class="cuon"><table><tr><th>Mã</th><th class="s">Nhập</th><th class="s">Xuất</th>' + (t ? '<th class="s">Doanh thu</th><th class="s">Lợi nhuận</th>' : '') +
     '<th class="s">Lệch kiểm</th><th class="s">Tồn cuối</th></tr>' + r.tinhTho.map(function (x) {
       return '<tr><td>' + e(x.ten) + '<div class="muted">' + e(x.group) + '</div></td><td class="s">' + n(x.nhap) + '</td><td class="s">' + n(x.xuat) + '</td>' +
