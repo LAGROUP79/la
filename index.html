@@ -764,7 +764,14 @@ function capNhatDong(b) {
 function tinhTong() {
   var tong = 0, th = 0;
   document.querySelectorAll('#fSP .sp').forEach(function (b) { var x = capNhatDong(b); tong += x.tien; th += x.thuong; });
-  if ($('fTong')) { $('fTong').textContent = tien(tong) + 'đ'; $('fThuong').textContent = th ? 'Thưởng dự kiến của đơn: ' + tien(th) + 'đ' : ''; }
+  if (!$('fTong')) return;
+  var g = String($('fGiam').value || '').replace(/\s/g, ''), giam = 0, loiG = '';
+  if (g) { if (/%$/.test(g)) { var pt = docSo(g.slice(0, -1)); if (pt > 0 && pt <= 100) giam = Math.round(tong * pt / 100); else loiG = 'Phần trăm không hợp lệ'; } else giam = docTien(g); }
+  if (giam > tong) loiG = 'Giảm giá lớn hơn giá trị đơn';
+  $('fTam').textContent = tien(tong) + 'đ';
+  $('fGiamTien').innerHTML = loiG ? '<span class="am">' + loiG + '</span>' : giam ? '−' + tien(giam) + 'đ' : '0đ';
+  $('fTong').textContent = tien(Math.max(0, tong - giam)) + 'đ';
+  $('fThuong').textContent = th ? 'Thưởng dự kiến của đơn: ' + tien(th) + 'đ' : '';
 }
 function veLenDon() {
   var d = SUA || {};
@@ -783,7 +790,9 @@ function veLenDon() {
     '<label for="fTinh">Tỉnh / thành phố (dùng cho báo cáo khách theo khu vực)</label><select id="fTinh">' + tinh + '</select></div>' +
     '<div class="the"><h3>Sản phẩm · số lượng · giá bán</h3><div id="fSP">' + dong + '</div>' +
     '<button class="nut phu nho" id="fThem">＋ Thêm sản phẩm</button>' +
-    '<div class="tong"><span>Giá trị đơn hàng</span><span id="fTong">0đ</span></div><div class="muted" id="fThuong" style="text-align:right"></div></div>' +
+    '<div class="hang" style="justify-content:space-between;margin-top:10px"><span>Tạm tính</span><b id="fTam">0đ</b></div>' +
+    '<label for="fGiam">Chiết khấu / giảm giá cho khách</label><div class="hang" style="flex-wrap:nowrap"><input id="fGiam" inputmode="decimal" value="' + e(d.giamGhi || '') + '" placeholder="VD: 50.000 hoặc 5%"><b id="fGiamTien" style="flex:0 0 auto;white-space:nowrap">0đ</b></div>' +
+    '<div class="tong"><span>Khách thanh toán</span><span id="fTong">0đ</span></div><div class="muted" id="fThuong" style="text-align:right"></div></div>' +
     '<div class="the"><label for="fGC" style="margin-top:0">Ghi chú</label><textarea id="fGC" rows="2" placeholder="Giờ giao, cách thu tiền (COD/chuyển khoản), quà tặng kèm…">' + e(d.ghiChu) + '</textarea>' +
     '<label><input type="checkbox" id="fCoHD" style="width:auto;min-height:0;margin-right:6px"' + (d.hd ? ' checked' : '') + '>Khách lấy hoá đơn (xuất HĐ)</label>' +
     '<textarea id="fHD" rows="3" class="' + (d.hd ? '' : 'an') + '" placeholder="Tên công ty, mã số thuế, địa chỉ, email nhận hoá đơn">' + e(d.hd) + '</textarea>' +
@@ -799,7 +808,7 @@ function docForm() {
       sl: docSo(b.querySelector('[data-f=sl]').value), gia: docTien(b.querySelector('[data-f=gia]').value) });
   });
   return { ma: SUA ? SUA.ma : '', sdt: $('fSdt').value, ten: $('fTen').value, diaChi: $('fDC').value, tinh: $('fTinh').value, ghiChu: $('fGC').value,
-    hd: $('fCoHD').checked ? $('fHD').value : '', items: items };
+    hd: $('fCoHD').checked ? $('fHD').value : '', giam: $('fGiam').value.trim(), items: items };
 }
 function guiDon() {
   var d = docForm();
@@ -871,6 +880,7 @@ function veDon(r) {
       '<div class="kh">' + e(o.khach) + ' · ' + e(o.sdt) + '</div>' +
       '<div class="muted">' + ngVN(o.ngay) + ' ' + e(o.gio) + ' · ' + e(o.tenNV) + (o.team ? ' (' + e(o.team) + ')' : '') + ' · ' + e(o.tinh) + '</div>' +
       '<div class="muted">' + o.items.map(function (it) { return e(it.ten) + ' ×' + soSL(it.sl) + ' · ' + tien(it.tien) + 'đ'; }).join('<br>') + '</div>' +
+      (o.giam ? '<div class="muted">Tạm tính ' + tien(o.tong + o.giam) + 'đ · chiết khấu −' + tien(o.giam) + 'đ' + (/%$/.test(o.giamGhi) ? ' (' + e(o.giamGhi) + ')' : '') + '</div>' : '') +
       '<div style="font-weight:700;color:var(--xanh);margin-top:4px">' + tien(o.tong) + 'đ' + (o.thuong ? '<span class="muted" style="font-weight:400"> · thưởng ' + tien(o.thuong) + 'đ</span>' : '') + '</div>' +
       (o.lyDoHuy ? '<div class="muted" style="color:var(--do)">Huỷ: ' + e(o.lyDoHuy) + ' (' + e(o.nguoiXL) + ')</div>' : (o.nguoiXL ? '<div class="muted">' + e(o.trangThai) + ': ' + e(o.nguoiXL) + ' · ' + e(o.lucXL) + '</div>' : '')) +
       '<div class="hang"><button class="nut vang nho" data-copy="' + i + '">COPY</button><button class="nut phu nho" data-xem="' + i + '">Xem phiếu</button>' +
@@ -1684,7 +1694,7 @@ document.addEventListener('change', function (ev) {
 });
 document.addEventListener('input', function (ev) {
   var t = ev.target;
-  if (t.dataset.f === 'sl' || t.dataset.f === 'gia') tinhTong();
+  if (t.dataset.f === 'sl' || t.dataset.f === 'gia' || t.id === 'fGiam') tinhTong();
   if (t.id === 'fSdt') timKhach();
   if (t.dataset.khsl) { KF.draft[t.dataset.khsl] = t.value; lechKho(t.dataset.khsl); demKho(); }
   if (t.dataset.khgv) KF.cost[t.dataset.khgv] = t.value;
