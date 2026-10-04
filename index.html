@@ -677,7 +677,7 @@ function veTon(r) {
     }).join('') +
     (tien1 ? '<tr class="cong"><td>Tổng các kho</td><td class="s">' + tongNhom.reduce(function (a, x) { return a + x.t.ma; }, 0) + '</td><td></td><td></td><td></td><td></td><td class="s">' +
       tien(tongNhom.reduce(function (a, x) { return a + x.t.von; }, 0)) + 'đ</td><td class="s">' + tien(tongNhom.reduce(function (a, x) { return a + x.t.ny; }, 0)) + 'đ</td></tr>' : '') + '</table></div>' +
-    (tien1 ? '<p class="muted" style="margin-bottom:0">Giá trị ước tính = tồn × giá vốn trung bình (cùng cách tính với app Kho). Mã chưa có giá vốn không cộng vào. Cột giá bán niêm yết lấy theo mục Giá & thưởng ở Phòng Vận hành. Chỉ Admin thấy số tiền.</p>' : '') + '</div>';
+    (tien1 ? '<p class="muted" style="margin-bottom:0">Giá trị ước tính = tồn × giá vốn trung bình (cùng cách tính với app Kho). Mã chưa có giá vốn không cộng vào. Cột giá bán niêm yết lấy theo mục Giá & thưởng ở Phòng Vận hành. Chỉ Admin và kế toán thấy số tiền.</p>' : '') + '</div>';
   if (tien1) {
     var gv = []; tongNhom.forEach(function (x) { x.ds.forEach(function (s) { if (s.vonApp != null) gv.push({ s: s, nhom: x.nhom }); }); });
     var chuaGV = gv.filter(function (x) { return !x.s.von; }).length;
@@ -1615,7 +1615,7 @@ function veKb(r) {
     (r.huNhom.some(function (g) { return g.ds.some(function (x) { return x.xuat < 0; }); }) ? '<p class="muted">Số xuất âm: đếm nhiều hơn lần trước + nhập, có thể còn phiếu nhập chưa ghi.</p>' : '') +
     '<p class="muted" style="margin-bottom:0">Xuất = kiểm lần trước + nhập − kiểm hôm nay. Có tem và không tem cộng chung từng vị (trong ngày có thể lấy hũ không tem dán tem bán). Hàng nhà và các nhóm khác tính riêng. Vị nào chỉ kiểm một phần thì ghi "chưa kiểm đủ".</p></div>';
   var dcc = r.doiChieu || { app: {} }, ke = dcc.ke || {}, sua = r.ktSua;
-  var dongDC = [['tinh', 'Hàng tinh', dcc.dvTinh], ['tho', 'Hàng thô', dcc.dvTho], ['huCoTem', 'Hũ có tem', 'hũ'], ['huKhongTem', 'Hũ không tem', 'hũ'], ['huNha', 'Hũ hàng nhà', 'hũ']];
+  var dongDC = [['tinh', 'Hàng tinh', dcc.dvTinh], ['tho', 'Hàng thô', dcc.dvTho], ['huCoTem', 'Hũ có tem', 'hũ'], ['huKhongTem', 'Hũ không tem', 'hũ'], ['huNha', 'Hũ hàng nhà', 'hũ'], ['huLoi', 'Hũ hàng lỗi', 'hũ']];
   function oLech(a, b) { if (a == null) return '<span class="muted">chưa nhập</span>'; var l = Math.round((a - (b || 0)) * 100) / 100; return l === 0 ? '<span style="color:var(--xanhla)">khớp</span>' : '<b class="am">' + (l > 0 ? '+' : '') + soSL(l) + '</b>'; }
   var keTem = ke.huCoTem == null && ke.huKhongTem == null ? null : (ke.huCoTem || 0) + (ke.huKhongTem || 0), appTem = (dcc.app.huCoTem || 0) + (dcc.app.huKhongTem || 0);
   h += '<div class="the" id="kbDC"><h3>Đối chiếu số xuất · kế toán nhập</h3><p class="muted">Kế toán nhập rời số lượng xuất kho trong ngày. App so với số tính từ kiểm kho cuối ngày (hũ) và phiếu xuất (tinh, thô). Lệch = kế toán − kiểm kho.</p>' +
