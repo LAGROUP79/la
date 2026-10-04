@@ -235,7 +235,7 @@ td.am{color:var(--do);font-weight:700}
       <p class="ln-sub">Hệ thống quản lý Yến Sào Lanest</p>
       <div class="ln-form">
         <div class="ln-err an" id="dnLoi"></div>
-        <label>Mã nhân viên<span class="ln-field"><i data-ic="user"></i><input id="dnTen" type="text" autocapitalize="characters" autocomplete="username" spellcheck="false" placeholder="NV + 3 số cuối SĐT, VD: NV123" required></span></label>
+        <label>Tên nhân viên<span class="ln-field"><i data-ic="user"></i><select id="dnTen" required><option value="">Đang tải…</option></select></span></label>
         <label>Mã truy cập<span class="ln-field"><i data-ic="lock"></i><input id="dnMa" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập mật mã" required></span></label>
         <button class="ln-btn pri" type="submit" id="dnNut"><span>Đăng nhập</span><i data-ic="arrow"></i></button>      </div>
     </form>
@@ -320,12 +320,15 @@ function veDangNhap() {
 }
 function loiDN(m) { var b = $('dnLoi'); b.textContent = m || ''; b.classList.toggle('an', !m); }
 function napTen() {
-  var c = lay('kd_ma_dn'); $('dnTen').value = c || '';
+  goi('danhSachTen', [], function (ds) {
+    var c = lay('kd_ma_dn') || '';
+    $('dnTen').innerHTML = '<option value="">— Chọn tên của bạn —</option>' + (ds || []).map(function (n) { return '<option value="' + e(n.id) + '"' + (n.id === c ? ' selected' : '') + '>' + e(n.ten) + '</option>'; }).join('');
+  }, true, function () { $('dnTen').innerHTML = '<option value="">Không tải được danh sách — tải lại trang</option>'; });
 }
 function dangNhap(ev) {
   if (ev) ev.preventDefault();
   var id = $('dnTen').value.replace(/\s/g, '').toUpperCase(), ma = $('dnMa').value, nut = $('dnNut');
-  if (!id) return loiDN('Nhập mã nhân viên (NV + 3 số cuối SĐT).');
+  if (!id) return loiDN('Chọn tên của bạn.');
   if (!ma) return loiDN('Nhập mã truy cập.');
   loiDN(''); nut.disabled = true;
   goi('dangNhap', [id, ma], function (r) { nut.disabled = false; TK = r.token; luu('kd_tk', TK); luu('kd_ten', null); luu('kd_ma_dn', id); $('dnMa').value = ''; vaoApp(r.home); }, false,
