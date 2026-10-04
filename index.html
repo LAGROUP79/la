@@ -464,8 +464,10 @@ function veCongThang(r) {
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Công của tôi</h2>' +
     '<div class="the"><h3>Hôm nay · ' + ngVN(H.homNay) + (PHONG_HT ? ' · chấm tại ' + e(tenPhong(PHONG_HT)) : '') + '</h3>' + nutChamCong() + '</div>' +
     '<div class="the"><label style="margin-top:0">Tháng</label><input type="month" id="ccThang" value="' + e(r.thang) + '">' + tomTatCong(r) + lichCong(r) +
-    '<p class="muted">' + CHU_CONG + ' Số tạm tính, phòng Hành chính - Nhân sự chốt khi tính lương.</p></div>';
+    '<p class="muted">' + CHU_CONG + ' Số tạm tính, phòng Hành chính - Nhân sự chốt khi tính lương.</p></div>' +
+    (r.luoi ? '<div class="the"><h3>Công nhân viên · ' + e(r.luoi.pham) + '</h3>' + tongCong(r.luoi) + '</div>' + luoiCong(r.luoi) : '');
   $('ccThang').onchange = function () { napCongThang($('ccThang').value); };
+  if (r.luoi) ganLuoiCong(r.luoi, function () { napCongThang(r.thang); });
 }
 function moChamCong(loai) {
   var c = H.cc;
@@ -1080,8 +1082,7 @@ function vePhong(ma) {
     ['cd:team', 'TEAM', 'Danh sách team kinh doanh', 'kh'], ['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy'], ['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc toàn công ty', 'cv'],
     ['bc', 'TỔNG QUAN DOANH THU', 'Doanh thu toàn công ty', 'bc'], ['kb', 'BÁO CÁO KHO NGÀY', 'Hũ, tinh, thô: nhập, xuất, lợi nhuận, chênh lệch', 'ton'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']];
   if (ma === 'HCNS') {
-    if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds'],
-      ['ns_cong', 'BẢNG CÔNG', 'Công tháng toàn công ty, phiếu công từng người', 'cc']);
+    if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds']);
     if (H.me.xemLuong) o.push(['ns_luong', 'BẢNG LƯƠNG', 'Phiếu lương, tổng lương, chốt & gửi', 'th']);
     if (H.me.nsQL) o.push(['ns_np', 'NGHỈ PHÉP · NGHỈ VIỆC', 'Đơn nghỉ trong tháng, đơn nghỉ việc', 'np']);
     if (H.me.duyetCC) o.push(['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy']);
@@ -1109,11 +1110,10 @@ function vePhong(ma) {
   }
   var m = MAU_P[ma];
   $('noiDung').innerHTML = '<button class="quaylai" data-tab="home">‹ Trang chủ</button><div class="chao" style="background:linear-gradient(135deg,' + m[2] + ',' + m[1] + ')"><div class="luoi2" style="grid-template-columns:auto 1fr;align-items:center;gap:12px"><span class="ico" style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:#fff">' + IC_P[ma] + '</span><div><b>' + e(tenPhong(ma)) + '</b><br><small>' + e(MO_TA_P[ma]) + (ghi ? '' : ' · chỉ xem') + '</small></div></div></div>' +
-    '<div class="phongLuoi"><div class="the"><h3>Chấm công tại ' + e(tenPhong(ma)) + '</h3>' + nutChamCong() + '<button class="lienket" data-tab="cc" style="margin-top:10px">Xem công của tôi ›</button></div>' +
     '<div class="oclon">' + o.map(function (x) {
       var mm = (window.MAU_O || {})[x[3]] || m;
       return '<button data-tab="' + x[0] + '" style="--nen:' + mm[0] + ';--dam:' + mm[1] + ';--dam2:' + mm[2] + '"><span class="ico">' + (IC_O[x[3]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span></button>';
-    }).join('') + '</div></div>' + (ghiChu ? '<div class="the"><p class="muted" style="margin:0">' + ghiChu + '</p></div>' : '');
+    }).join('') + '</div>' + (ghiChu ? '<div class="the"><p class="muted" style="margin:0">' + ghiChu + '</p></div>' : '');
 }
 function moCaiDat(x) {
   if (x === 'kpi') napKpi();
@@ -1363,15 +1363,15 @@ function veNsVB(r) {
 }
 function napNsCong(t) { NS_THANG = t || NS_THANG || thangNay(); goi('nsBangCong', [TK, NS_THANG], veNsCong); }
 var MAU_CONG = { 'V': 'background:#F6DCDC;color:#A33', 'ĐX': 'background:#F6DCDC;color:#A33', 'OFF': 'background:#EEF0EC;color:#7A857F', 'P': 'background:#FFF3D6;color:#8A6410', 'T': 'color:#B8862B', '½': 'color:#B8862B', 'ĐC': 'background:#E3EEFA;color:#1F5FA8;font-weight:700', '?': 'color:#7A857F' };
-function veNsCong(r) {
-  NS = r;
+function tongCong(r) {
+  return '<div class="cuon"><table><tr><th>Nhân viên</th><th class="s">Công</th><th class="s">Trễ</th><th class="s">Phép</th><th class="s">ĐX / V</th></tr>' + r.ds.map(function (n) {
+    return '<tr><td><button class="lienket" data-nspc="' + e(n.id) + '">' + e(n.ten) + '</button><div class="muted">' + e(n.boPhan) + '</div></td><td class="s"><b>' + soSL(n.cong) + '</b>/' + n.congChuan + '</td><td class="s">' + n.tre + '</td><td class="s">' + soSL(n.phep) + '</td><td class="s">' + soSL(n.dotXuat) + '</td></tr>';
+  }).join('') + '</table></div><p class="muted">Bấm tên để xem phiếu công từng ngày.</p>';
+}
+function luoiCong(r) {
   var thu = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   var dau = r.ngayList.map(function (n) { var d = new Date(n + 'T00:00:00').getDay(); return '<th class="s" style="padding:6px 4px;min-width:34px' + (d === 0 ? ';background:#EEF0EC' : '') + '">' + n.slice(8) + '<br><small>' + thu[d] + '</small></th>'; }).join('');
-  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Bảng công</h2><div class="the"><label style="margin-top:0">Tháng</label><input type="month" id="nsThang" value="' + e(r.thang) + '"></div>' +
-    '<div class="the"><h3>Tổng hợp</h3><div class="cuon"><table><tr><th>Nhân viên</th><th class="s">Công</th><th class="s">Trễ</th><th class="s">Phép</th><th class="s">ĐX / V</th></tr>' + r.ds.map(function (n) {
-      return '<tr><td><button class="lienket" data-nspc="' + e(n.id) + '">' + e(n.ten) + '</button><div class="muted">' + e(n.boPhan) + '</div></td><td class="s"><b>' + soSL(n.cong) + '</b>/' + n.congChuan + '</td><td class="s">' + n.tre + '</td><td class="s">' + soSL(n.phep) + '</td><td class="s">' + soSL(n.dotXuat) + '</td></tr>';
-    }).join('') + '</table></div><p class="muted">Bấm tên để xem phiếu công từng ngày.</p></div>' +
-    '<div class="the"><h3>Công từng ngày</h3><p class="muted">' + CHU_CONG + (r.sua ? ' <b>Bấm vào ô để điều chỉnh công</b> (quên chấm công, app lỗi…): ô đã sửa hiện ĐC, ghi lại lý do và người sửa.' : '') + '</p>' +
+  return '<div class="the"><h3>Công từng ngày</h3><p class="muted">' + CHU_CONG + (r.sua ? ' <b>Bấm vào ô để điều chỉnh công</b> (quên chấm công, app lỗi…): ô đã sửa hiện ĐC, ghi lại lý do và người sửa.' : ' Chỉ Admin và trưởng phòng Hành chính - Nhân sự được điều chỉnh công.') + '</p>' +
     '<div class="cuon"><table style="font-size:13px"><tr><th style="position:sticky;left:0;z-index:1">Nhân viên</th>' + dau + '</tr>' + r.ds.map(function (n, i) {
       var theo = {}; n.ngay.forEach(function (d) { theo[d.ngay] = d; });
       return '<tr><td style="position:sticky;left:0;background:var(--nen-the, #fff);white-space:nowrap"><b>' + e(n.ten) + '</b></td>' + r.ngayList.map(function (ng) {
@@ -1380,13 +1380,21 @@ function veNsCong(r) {
         return '<td class="s" style="padding:6px 4px;' + (bam ? 'cursor:pointer;' : '') + (MAU_CONG[ma] || '') + '"' + bam + (d && d.dc ? ' title="' + e(d.dc) + '"' : '') + '>' + chu + '</td>';
       }).join('') + '</tr>';
     }).join('') + '</table></div></div>';
-  $('nsThang').onchange = function () { napNsCong(this.value); };
+}
+function ganLuoiCong(r, sau) {
   document.querySelectorAll('[data-nsdc]').forEach(function (o) {
-    o.onclick = function () { var p = o.dataset.nsdc.split('|'); moDieuChinhCong(NS.ds[Number(p[0])], p[1]); };
+    o.onclick = function () { var p = o.dataset.nsdc.split('|'); moDieuChinhCong(r.ds[Number(p[0])], p[1], r.thang, sau); };
     o.onkeydown = function (ev) { if (ev.key === 'Enter') o.onclick(); };
   });
 }
-function moDieuChinhCong(n, ngay) {
+function veNsCong(r) {
+  NS = r;
+  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Bảng công</h2><div class="the"><label style="margin-top:0">Tháng</label><input type="month" id="nsThang" value="' + e(r.thang) + '"></div>' +
+    '<div class="the"><h3>Tổng hợp</h3>' + tongCong(r) + '</div>' + luoiCong(r);
+  $('nsThang').onchange = function () { napNsCong(this.value); };
+  ganLuoiCong(r, function (x) { veNsCong(x.cg); });
+}
+function moDieuChinhCong(n, ngay, thang, sau) {
   var d = n.ngay.filter(function (x) { return x.ngay === ngay; })[0] || {};
   var hienTai = d.ma ? (d.ma === 'ĐC' ? 'ĐC ' + soSL(d.cong) + ' công' : d.ma) : 'chưa có';
   moHop('<h3 style="margin:0;color:var(--xanh)">Điều chỉnh công · ' + e(n.ten) + ' · ' + ngVN(ngay) + '</h3>' +
@@ -1397,7 +1405,7 @@ function moDieuChinhCong(n, ngay) {
   if (d.ma === 'ĐC') $('dcCong').value = String(d.cong);
   $('dcHuy').onclick = dongHop;
   function gui(cong, ly) {
-    goi('nsDieuChinhCong', [TK, NS.thang, ngay, n.id, cong, ly], function (r) { dongHop(); veNsCong(r.cg); bao(cong === '' ? 'Đã bỏ điều chỉnh công.' : 'Đã điều chỉnh công ' + n.ten + ' ngày ' + ngVN(ngay) + '.'); });
+    goi('nsDieuChinhCong', [TK, thang, ngay, n.id, cong, ly], function (r) { dongHop(); sau(r); bao(cong === '' ? 'Đã bỏ điều chỉnh công.' : 'Đã điều chỉnh công ' + n.ten + ' ngày ' + ngVN(ngay) + '.'); });
   }
   $('dcLuu').onclick = function () { var ly = $('dcLy').value.trim(); if (!ly) return bao('Ghi lý do điều chỉnh.', true); gui($('dcCong').value, ly); };
   if ($('dcBo')) $('dcBo').onclick = function () { gui('', ''); };
