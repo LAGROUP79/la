@@ -357,7 +357,7 @@ var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
   p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'],
-  kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH'] };
+  kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'] };
 function tenPhong(ma) { return ((H.phongBan || []).filter(function (p) { return p.ma === ma; })[0] || {}).ten || ma; }
 function baoKhongQuyen(mas) {
   moHop('<div style="text-align:center"><div style="font-size:42px">🔒</div><h3 style="margin:6px 0;color:var(--xanh)">Chưa có quyền truy cập</h3>' +
@@ -1086,7 +1086,8 @@ function vePhong(ma) {
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
   }
   if (ma === 'TCKT') {
-    o = [['bc', 'DOANH THU', 'Toàn công ty, team, nhân viên, ngành hàng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên', 'th'], ['ds', 'ĐƠN HÀNG', 'Đơn theo ngày/tháng/năm, xuất hoá đơn', 'ds'], ['kh', 'KHÁCH HÀNG', 'Khách theo tỉnh, theo người chăm sóc', 'kh']];
+    o = [['bc', 'DOANH THU', 'Toàn công ty, team, nhân viên, ngành hàng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên', 'th'], ['ds', 'ĐƠN HÀNG', 'Đơn theo ngày/tháng/năm, xuất hoá đơn', 'ds'], ['kh', 'KHÁCH HÀNG', 'Khách theo tỉnh, theo người chăm sóc', 'kh'],
+      ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton']];
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
     ghiChu = 'Giá vốn, lãi gộp, báo cáo tuần/tháng của kho sẽ chuyển vào phòng này ở <b>Đợt 4</b>.';
   }
@@ -1613,6 +1614,18 @@ function veKb(r) {
   }).join('') : '<p class="muted">Ngày này không có hũ nào được kiểm hoặc nhập.</p>') +
     (r.huNhom.some(function (g) { return g.ds.some(function (x) { return x.xuat < 0; }); }) ? '<p class="muted">Số xuất âm: đếm nhiều hơn lần trước + nhập, có thể còn phiếu nhập chưa ghi.</p>' : '') +
     '<p class="muted" style="margin-bottom:0">Xuất = kiểm lần trước + nhập − kiểm hôm nay. Có tem và không tem cộng chung từng vị (trong ngày có thể lấy hũ không tem dán tem bán). Hàng nhà và các nhóm khác tính riêng. Vị nào chỉ kiểm một phần thì ghi "chưa kiểm đủ".</p></div>';
+  var dcc = r.doiChieu || { app: {} }, ke = dcc.ke || {}, sua = r.ktSua;
+  var dongDC = [['tinh', 'Hàng tinh', dcc.dvTinh], ['tho', 'Hàng thô', dcc.dvTho], ['huCoTem', 'Hũ có tem', 'hũ'], ['huKhongTem', 'Hũ không tem', 'hũ'], ['huNha', 'Hũ hàng nhà', 'hũ']];
+  function oLech(a, b) { if (a == null) return '<span class="muted">chưa nhập</span>'; var l = Math.round((a - (b || 0)) * 100) / 100; return l === 0 ? '<span style="color:var(--xanhla)">khớp</span>' : '<b class="am">' + (l > 0 ? '+' : '') + soSL(l) + '</b>'; }
+  var keTem = ke.huCoTem == null && ke.huKhongTem == null ? null : (ke.huCoTem || 0) + (ke.huKhongTem || 0), appTem = (dcc.app.huCoTem || 0) + (dcc.app.huKhongTem || 0);
+  h += '<div class="the" id="kbDC"><h3>Đối chiếu số xuất · kế toán nhập</h3><p class="muted">Kế toán nhập rời số lượng xuất kho trong ngày. App so với số tính từ kiểm kho cuối ngày (hũ) và phiếu xuất (tinh, thô). Lệch = kế toán − kiểm kho.</p>' +
+    '<div class="cuon"><table><tr><th>Loại</th><th class="s">Kế toán nhập</th><th class="s">Theo kiểm kho</th><th class="s">Lệch</th></tr>' + dongDC.map(function (x) {
+      var v = ke[x[0]];
+      return '<tr><td>' + x[1] + (x[2] ? ' <small class="muted">(' + e(x[2]) + ')</small>' : '') + '</td><td class="s">' + (sua ? '<input data-xk="' + x[0] + '" inputmode="decimal" style="width:110px;text-align:right" value="' + (v == null ? '' : soSL(v)) + '">' : n(v)) + '</td>' +
+        '<td class="s">' + n(dcc.app[x[0]]) + '</td><td class="s">' + oLech(v, dcc.app[x[0]]) + '</td></tr>';
+    }).join('') + '<tr class="cong"><td>Hũ có tem + không tem</td><td class="s">' + n(keTem) + '</td><td class="s">' + n(appTem) + '</td><td class="s">' + oLech(keTem, appTem) + '</td></tr></table></div>' +
+    (sua ? '<label>Ghi chú</label><input id="xkGhi" value="' + e(ke.ghiChu || '') + '" placeholder="VD: 2 hũ không tem dán tem bán"><button class="nut rong" id="xkLuu" style="margin-top:10px">Lưu số kế toán ngày ' + ngVN(r.ngay) + '</button>' : (ke.ghiChu ? '<p class="muted">Ghi chú: ' + e(ke.ghiChu) + '</p>' : '')) +
+    (ke.nguoi ? '<p class="muted" style="margin-bottom:0">Nhập bởi ' + e(ke.nguoi) + ' lúc ' + e(ke.luc) + '. Hũ có tem và không tem lệch riêng nhưng tổng khớp thường do dán tem trong ngày.</p>' : '') + '</div>';
   h += '<div class="the"><h3>Hàng tinh, thô</h3>' + (r.tinhTho.length ? '<div class="cuon"><table><tr><th>Mã</th><th class="s">Nhập</th><th class="s">Xuất</th>' + (t ? '<th class="s">Doanh thu</th><th class="s">Lợi nhuận</th>' : '') +
     '<th class="s">Lệch kiểm</th><th class="s">Tồn cuối</th></tr>' + r.tinhTho.map(function (x) {
       return '<tr><td>' + e(x.ten) + '<div class="muted">' + e(x.group) + '</div></td><td class="s">' + n(x.nhap) + '</td><td class="s">' + n(x.xuat) + '</td>' +
@@ -1625,6 +1638,11 @@ function veKb(r) {
   }).join('') : '<p class="muted" style="margin:0">Kiểm khớp sổ, không có chênh lệch.</p>') + '</div>';
   $('noiDung').innerHTML = h;
   $('kbNgay').onchange = function () { napKb(this.value); };
+  if ($('xkLuu')) $('xkLuu').onclick = function () {
+    var d = { ghiChu: $('xkGhi').value };
+    document.querySelectorAll('[data-xk]').forEach(function (i) { d[i.dataset.xk] = i.value.trim(); });
+    goi('luuXuatKT', [TK, r.ngay, d], function (x) { veKb(x.kb); bao('Đã lưu số xuất kế toán ngày ' + ngVN(r.ngay) + '.'); });
+  };
 }
 function bamKho(b) {
   var d = b.dataset;
