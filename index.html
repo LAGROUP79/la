@@ -354,10 +354,11 @@ function veNav() {
     '<div class="navPhong"><small>PHÒNG BAN</small>' + (H.phongBan || []).map(function (p) {
       var vao = H.me.phongVao.indexOf(p.ma) >= 0, m = MAU_P[p.ma] || ['#eee', '#888', '#555'];
       return '<button data-tab="p_' + p.ma + '" class="' + (PHONG_HT === p.ma ? 'on' : '') + (vao ? '' : ' khoa') + '" style="--dam:' + m[1] + '"><i></i>' + e(tenPhong(p.ma).replace(/^PHÒNG /, '')) + (vao ? '' : ' 🔒') + '</button>';
-    }).join('') + '</div>';
+    }).join('') + '</div>' +
+    (H.me.crm ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách hàng</button></div>' : '');
 }
 var PHONG_HT = '';
-var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], crm: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
+var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
   p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'],
   kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'] };
@@ -374,6 +375,8 @@ function chuyenTab(t) {
   var can = TAB_PHONG[t];
   if (t === 'cd' && !H.me.chiaKpi && !H.me.admin) can = ['VH'];
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
+  if (t === 'crm' && !H.me.crm) { bao('Bạn chưa có quyền xem CRM. Vui lòng liên hệ Admin (anh Thanh / chị Lê).', true); return; }
+  if (t === 'crm') PHONG_HT = '';
   if (t.indexOf('p_') === 0) PHONG_HT = t.slice(2); else if (t === 'home') PHONG_HT = '';
   if (t !== 'len') SUA = null; TAB = t; veNav(); veTab(); window.scrollTo(0, 0);
 }
@@ -417,6 +420,7 @@ function veHome() {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
     }).join('') + '</div>' +
+    (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH HÀNG</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button></div>' : '') +
     '<h3 class="nhom">PHÒNG BAN</h3><div class="oclon nam">' + H.phongBan.map(function (p) { return oPhong(p.ma); }).join('') + '</div>';
 }
 var IC_O = (function () {
@@ -1165,13 +1169,13 @@ function vePhong(ma) {
   }
   if (ma === 'TCKT') {
     o = [['bc', 'DOANH THU', 'Toàn công ty, team, nhân viên, ngành hàng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên', 'th'], ['ds', 'ĐƠN HÀNG', 'Đơn theo ngày/tháng/năm, xuất hoá đơn', 'ds'], ['kh', 'KHÁCH HÀNG', 'Khách theo tỉnh, theo người chăm sóc', 'kh'],
-      ['crm', 'CRM KHÁCH HÀNG', 'Khách lẻ, đại lý: tình trạng mua, công nợ', 'crm'], ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton']];
+      ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton']];
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
     ghiChu = 'Giá vốn, lãi gộp, báo cáo tuần/tháng của kho sẽ chuyển vào phòng này ở <b>Đợt 4</b>.';
   }
   if (ma === 'KD') {
     o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH THU', 'Tổng phòng, ngành hàng, % target', 'bc'],
-      ['th', 'THƯỞNG', 'Thưởng từng sản phẩm, từng NV', 'th'], ['kh', 'KHÁCH HÀNG', 'Khách chăm sóc, theo tỉnh', 'kh'], ['crm', 'CRM KHÁCH HÀNG', 'Khách lẻ, đại lý: tình trạng mua, công nợ', 'crm'], ['ton', 'TỒN KHO', 'Tồn tham khảo từ app Kho', 'ton']];
+      ['th', 'THƯỞNG', 'Thưởng từng sản phẩm, từng NV', 'th'], ['kh', 'KHÁCH HÀNG', 'Khách chăm sóc, theo tỉnh', 'kh'], ['ton', 'TỒN KHO', 'Tồn tham khảo từ app Kho', 'ton']];
     if (H.me.mk) o = o.filter(function (x) { return x[0] === 'ton'; });
     if (H.me.chiaKpi) o.push(['cd:kpi', 'CHIA TARGET', 'Target team và từng thành viên', 'cd']);
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao việc cho team', 'cv']);
