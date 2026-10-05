@@ -336,11 +336,11 @@ function dangNhap(ev) {
 }
 function thoat(imLang) {
   if (TK && !imLang) google.script.run.dangXuat(TK);
-  TK = ''; H = null; luu('kd_tk', null);
+  TK = ''; H = null; luu('kd_tk', null); luu('kd_h', null);
   $('app').classList.add('an'); $('dangNhap').classList.remove('an'); dongHop(); napTen();
 }
 function vaoApp(home) {
-  H = home; $('dangNhap').classList.add('an'); $('app').classList.remove('an');
+  H = home; luuH(); $('dangNhap').classList.add('an'); $('app').classList.remove('an');
   $('hdTen').textContent = H.me.ten + (H.me.admin ? ' · Admin' : H.me.vaiPhong.length ? ' · ' + H.me.vaiPhong.map(function (v) { return v.vai; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ') : '');
   PHONG_HT = ''; chuyenTab('home');
 }
@@ -1783,10 +1783,21 @@ document.addEventListener('focusout', function (ev) {
 $('dnForm').addEventListener('submit', dangNhap);
 veDangNhap();
 
+function luuH() { try { luu('kd_h', JSON.stringify(H)); } catch (x) {} }
 (function batDau() {
-  var tk = lay('kd_tk');
-  if (tk) google.script.run.withSuccessHandler(function (h) { TK = tk; vaoApp(h); }).withFailureHandler(function () { luu('kd_tk', null); napTen(); }).trangChu(tk);
-  else napTen();
+  var tk = lay('kd_tk'), cu = null;
+  try { cu = JSON.parse(lay('kd_h') || 'null'); } catch (x) {}
+  if (!tk) { napTen(); return; }
+  if (cu && cu.me) { TK = tk; vaoApp(cu); }
+  google.script.run.withSuccessHandler(function (h) {
+    TK = tk;
+    if (!cu || !cu.me) { vaoApp(h); return; }
+    H = h; luuH(); veNav(); if (TAB === 'home' && !PHONG_HT) veTab();
+  }).withFailureHandler(function (err) {
+    var m = (err && err.message) || String(err);
+    if (cu && cu.me && m.indexOf('HET_PHIEN') < 0) { bao('Chưa lấy được số mới nhất — kiểm tra mạng rồi tải lại trang.', true); return; }
+    luu('kd_tk', null); luu('kd_h', null); if (cu && cu.me) thoat(true); else napTen();
+  }).trangChu(tk);
 })();
 </script>
 </body>
