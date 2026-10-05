@@ -357,7 +357,7 @@ function veNav() {
     }).join('') + '</div>';
 }
 var PHONG_HT = '';
-var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
+var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], crm: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
   p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'],
   kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'] };
@@ -380,7 +380,7 @@ function chuyenTab(t) {
 function veTab() {
   if (TAB.indexOf('p_') === 0) return vePhong(TAB.slice(2));
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
-    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, np: napNghiPhep, kh: function () { napKhach(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
+    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); },
     kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, kp: function () { napKp(); }, kb: function () { napKb(); } };
   (m[TAB] || veHome)();
@@ -407,7 +407,7 @@ function veHome() {
   var hn = k.homNay;
   var mau = MAU_O = { cc: ['#E2F3EE', '#18946F', '#0F5A43'], cv: ['#E7EBFC', '#4C63D9', '#2C3C93'], np: ['#F1E8FB', '#8A4FD1', '#57308A'], bc: ['#E5F4E3', '#3F9B3A', '#276224'],
     th: ['#FFF3D9', '#D89A12', '#8A5F00'], len: ['#FFE9E1', '#E5643A', '#9C3A1A'], ds: ['#FCEFC4', '#B8862B', '#6E4E0E'], ton: ['#E1F1FA', '#2B8CC4', '#175A80'],
-    kh: ['#FCE6EE', '#D24C7E', '#8C2A50'], cd: ['#ECEFF1', '#5F7480', '#37474F'], hs: ['#FDEBDD', '#C8742B', '#7A4210'], dy: ['#E6F6F4', '#1E9A8A', '#0F5E54'] };
+    kh: ['#FCE6EE', '#D24C7E', '#8C2A50'], cd: ['#ECEFF1', '#5F7480', '#37474F'], hs: ['#FDEBDD', '#C8742B', '#7A4210'], dy: ['#E6F6F4', '#1E9A8A', '#0F5E54'], crm: ['#E4EEF7', '#3D6FA8', '#21456E'] };
   var chao = (H.me.mk || H.me.phongGhi.indexOf('KD') < 0 ? '' : '<div><small>Target hôm nay</small><br><b class="vang">' + (k.kpi ? (hn && hn.laLam ? tien(hn.chiTieu) + 'đ' : 'Nghỉ CN') : 'Chưa chia') + '</b><br><small>đã bán ' + tien(hn ? hn.dt : 0) + 'đ</small></div>');
   $('noiDung').innerHTML = '<div class="chao"><div class="luoi2"><div><small>Xin chào</small><br><b>' + e(H.me.ten) + '</b><br><small>' + e(H.me.vai) + (H.me.team ? ' · ' + e(H.me.team) : '') + '</small></div>' + chao + '</div>' +
     (k.kpi ? '<div class="phong"><small>Tháng ' + H.homNay.slice(5, 7) + ' của bạn: ' + tien(k.dat) + ' / ' + tien(k.kpi) + 'đ · ' + (k.pt || 0) + '%</small>' + thanh(k.pt) + '</div>' : '') +
@@ -434,6 +434,7 @@ var IC_O = (function () {
     cd: s('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>'),
     hs: s('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.5 16c.6-1.6 1.9-2.4 3.5-2.4s2.9.8 3.5 2.4M14.5 10h4M14.5 13.5h3"/>'),
     dy: s('<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'),
+    crm: s('<rect x="4" y="3" width="15" height="18" rx="2"/><path d="M2.5 8h3M2.5 12h3M2.5 16h3"/><circle cx="11.5" cy="10" r="2.5"/><path d="M7.5 17c.6-2 2.2-3 4-3s3.4 1 4 3"/>'),
   };
 })();
 
@@ -964,6 +965,70 @@ function bamKhach(b) {
   }
 }
 
+var CRM = null;
+var CRM_THU_TU = { kl: ['Đang mua', 'Chậm lại', 'Cần gọi lại', 'Lâu rồi không mua'], dl: ['Đang mua đều', 'Chậm lại', 'Cần gọi lại', 'Coi như đã mất'] };
+function crmChipTT(t) { return /^Đang mua/.test(t) ? 'giao' : t === 'Chậm lại' ? 'gui' : t === 'Cần gọi lại' ? 'cho' : t ? 'huy' : ''; }
+function crmChipNo(t) { return /lớn/.test(t) ? 'huy' : t === 'Nợ vừa' ? 'cho' : t === 'Nợ nhỏ' ? 'gui' : 'giao'; }
+function crmNgay(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s) ? ngayDu(s) : e(s); }
+function crmSdt(s) {
+  var d = String(s || '').replace(/\D/g, '');
+  if (d.length !== 10) return s ? e(s) : '<span class="muted">chưa có SĐT</span>';
+  return '<a href="tel:' + d + '"><b>' + d.slice(0, 4) + ' ' + d.slice(4, 7) + ' ' + d.slice(7) + '</b></a> · <a href="https:\/\/zalo.me\/' + d + '" target="_blank" rel="noopener">Zalo</a>';
+}
+function napCrm(moi) {
+  goi('crmDuLieu', [TK, !!moi], function (r) { CRM = { r: r, che: (CRM && CRM.che) || 'kl', q: '', loc: '', hien: 60 }; veCrm(); if (moi) bao('Đã lấy số mới nhất từ sổ bán hàng.'); });
+}
+function crmLoc() {
+  var kl = CRM.che === 'kl', q = CRM.q.toLowerCase().trim(), qGon = q.replace(/[\s.]/g, ''), tt = kl ? 8 : 6;
+  return (kl ? CRM.r.khach : CRM.r.daiLy).filter(function (x) {
+    if (CRM.loc && x[tt] !== CRM.loc) return false;
+    if (!q) return true;
+    var s = (kl ? [x[0], x[1], x[5]] : [x[0], x[9], x[10], x[5]]).join(' ').toLowerCase();
+    return s.indexOf(q) >= 0 || (qGon && s.replace(/[\s.]/g, '').indexOf(qGon) >= 0);
+  });
+}
+function veCrm() {
+  var r = CRM.r, kl = CRM.che === 'kl', ds = kl ? r.khach : r.daiLy, tt = kl ? 8 : 6, dem = {};
+  ds.forEach(function (x) { dem[x[tt]] = (dem[x[tt]] || 0) + 1; });
+  function o4(ten, v) { return '<div><small>' + e(ten) + '</small><b>' + v + '</b></div>'; }
+  var tong = kl ? o4('Tổng khách lẻ', tien(ds.length)) + o4('Đang mua', tien(dem['Đang mua'] || 0)) + o4('Cần gọi lại', tien(dem['Cần gọi lại'] || 0)) + o4('Lâu rồi không mua', tien(dem['Lâu rồi không mua'] || 0)) :
+    o4('Tổng đại lý', tien(ds.length)) + o4('Tổng công nợ', tienNgan(ds.reduce(function (a, x) { return a + x[3]; }, 0))) +
+    o4('Nợ lớn cần chú ý', tien(ds.filter(function (x) { return /lớn/.test(x[8]); }).length)) + o4('Đang mua đều', tien(dem['Đang mua đều'] || 0));
+  var thuTu = CRM_THU_TU[CRM.che].concat(Object.keys(dem).filter(function (k) { return k && CRM_THU_TU[CRM.che].indexOf(k) < 0; }));
+  var h = quayLai() + '<h2 class="tieude">CRM khách hàng</h2>' +
+    '<div class="hang" style="margin-bottom:10px"><button class="nut' + (kl ? '' : ' phu') + '" data-crmche="kl">Khách lẻ (' + r.khach.length + ')</button>' +
+    '<button class="nut' + (kl ? ' phu' : '') + '" data-crmche="dl">Đại lý (' + r.daiLy.length + ')</button></div>' +
+    '<div class="o">' + tong + '</div>' +
+    '<div class="the"><label for="crmQ" style="margin-top:0">Tìm ' + (kl ? 'khách' : 'đại lý') + '</label><input id="crmQ" value="' + e(CRM.q) + '" placeholder="' + (kl ? 'Tên, số điện thoại, đại lý…' : 'Tên đại lý, số điện thoại, khu vực…') + '">' +
+    '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + thuTu.filter(function (k) { return dem[k]; }).map(function (k) {
+      return '<button class="nut nho' + (CRM.loc === k ? '' : ' phu') + '" data-crmloc="' + e(k) + '">' + e(k) + ' · ' + dem[k] + '</button>';
+    }).join('') + '</div></div><div id="crmDs"></div>' +
+    '<p class="muted">Chỉ xem. Số lấy tự động từ sổ TỔNG HỢP BÁN HÀNG 2026 (sheet ' + (kl ? 'DS NGUOI NHAN' : 'DS KHACH HANG') + '), lúc ' + e(r.luc) +
+    '. <button class="nut nho phu" data-crmmoi="1" style="width:auto">Làm mới</button></p>';
+  $('noiDung').innerHTML = h;
+  veCrmDs();
+}
+function veCrmDs() {
+  var kl = CRM.che === 'kl', ds = crmLoc(), xem = ds.slice(0, CRM.hien);
+  $('crmDs').innerHTML = '<p class="muted">' + ds.length + (kl ? ' khách' : ' đại lý') + (kl ? ' · xếp theo tổng giá trị đơn' : ' · xếp theo công nợ') + '</p>' + (xem.map(function (x) {
+    if (kl) return '<div class="don"><div class="dau"><span class="ma">' + e(x[1] || '(chưa có tên)') + '</span>' + (x[8] ? '<span class="chip ' + crmChipTT(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
+      '<div>' + crmSdt(x[0]) + (x[5] ? ' · đại lý <b>' + e(x[5]) + '</b>' : '') + '</div>' +
+      '<div class="muted">' + x[2] + ' lần nhận · ' + tien(x[3]) + 'đ' + (x[4] ? ' · gần nhất ' + crmNgay(x[4]) : '') + ' · im lặng ' + x[6] + ' ngày' + (x[7] ? ' · ' + e(x[7]) : '') + '</div></div>';
+    return '<div class="don"><div class="dau"><span class="ma">' + e(x[0]) + '</span>' + (x[6] ? '<span class="chip ' + crmChipTT(x[6]) + '">' + e(x[6]) + '</span>' : '') + '</div>' +
+      '<div>Còn nợ <b>' + tien(x[3]) + 'đ</b>' + (x[8] ? ' <span class="chip ' + crmChipNo(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
+      '<div class="muted">' + x[2] + ' giao dịch' + (x[1] ? ' · mua gần nhất ' + crmNgay(x[1]) : '') + ' · ' + x[4] + ' ngày chưa mua' + (x[7] ? ' · ' + e(x[7]) : '') + (x[5] ? ' · ' + e(x[5]) : '') + '</div>' +
+      '<div>' + crmSdt(x[9]) + (x[10] ? ' · ' + e(x[10]) : '') + (x[11] ? ' · ' + e(x[11]) : '') + '</div></div>';
+  }).join('') || '<p class="muted">Không có ' + (kl ? 'khách' : 'đại lý') + ' phù hợp.</p>') +
+    (ds.length > xem.length ? '<button class="nut phu rong" data-crmthem="1">Xem thêm (còn ' + (ds.length - xem.length) + ')</button>' : '');
+}
+function bamCrm(b) {
+  var d = b.dataset;
+  if (d.crmche) { CRM.che = d.crmche; CRM.q = ''; CRM.loc = ''; CRM.hien = 60; veCrm(); return; }
+  if (d.crmloc != null) { CRM.loc = CRM.loc === d.crmloc ? '' : d.crmloc; CRM.hien = 60; veCrm(); return; }
+  if (d.crmthem) { CRM.hien += 60; veCrmDs(); return; }
+  if (d.crmmoi) napCrm(true);
+}
+
 function napBaoCao(thang, xem) { BC_THANG = thang || BC_THANG || thangNay(); if (xem) BC_XEM = xem; goi('baoCao', [TK, BC_THANG], veBaoCao); }
 function bangKpi(t, tieuDe) {
   if (!t) return '';
@@ -1100,13 +1165,13 @@ function vePhong(ma) {
   }
   if (ma === 'TCKT') {
     o = [['bc', 'DOANH THU', 'Toàn công ty, team, nhân viên, ngành hàng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên', 'th'], ['ds', 'ĐƠN HÀNG', 'Đơn theo ngày/tháng/năm, xuất hoá đơn', 'ds'], ['kh', 'KHÁCH HÀNG', 'Khách theo tỉnh, theo người chăm sóc', 'kh'],
-      ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton']];
+      ['crm', 'CRM KHÁCH HÀNG', 'Khách lẻ, đại lý: tình trạng mua, công nợ', 'crm'], ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton']];
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
     ghiChu = 'Giá vốn, lãi gộp, báo cáo tuần/tháng của kho sẽ chuyển vào phòng này ở <b>Đợt 4</b>.';
   }
   if (ma === 'KD') {
     o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH THU', 'Tổng phòng, ngành hàng, % target', 'bc'],
-      ['th', 'THƯỞNG', 'Thưởng từng sản phẩm, từng NV', 'th'], ['kh', 'KHÁCH HÀNG', 'Khách chăm sóc, theo tỉnh', 'kh'], ['ton', 'TỒN KHO', 'Tồn tham khảo từ app Kho', 'ton']];
+      ['th', 'THƯỞNG', 'Thưởng từng sản phẩm, từng NV', 'th'], ['kh', 'KHÁCH HÀNG', 'Khách chăm sóc, theo tỉnh', 'kh'], ['crm', 'CRM KHÁCH HÀNG', 'Khách lẻ, đại lý: tình trạng mua, công nợ', 'crm'], ['ton', 'TỒN KHO', 'Tồn tham khảo từ app Kho', 'ton']];
     if (H.me.mk) o = o.filter(function (x) { return x[0] === 'ton'; });
     if (H.me.chiaKpi) o.push(['cd:kpi', 'CHIA TARGET', 'Target team và từng thành viên', 'cd']);
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao việc cho team', 'cv']);
@@ -1680,6 +1745,7 @@ document.addEventListener('click', function (ev) {
   if (TAB === 'np' && NP) bamNghiPhep(b);
   if (TAB === 'ds') bamDon(b);
   if (TAB === 'kh' && DS_KH) bamKhach(b);
+  if (TAB === 'crm' && CRM) bamCrm(b);
   if (/^(hs|ns_)/.test(TAB)) bamNS(b);
   if (/^k[knxpb]$/.test(TAB)) bamKho(b);
 });
@@ -1703,6 +1769,7 @@ document.addEventListener('input', function (ev) {
   if (t.dataset.khgv) KF.cost[t.dataset.khgv] = t.value;
   if (t.dataset.khgb) { KF.price[t.dataset.khgb] = t.value; demKho(); }
   if (t.id === 'khGhiChu') KF.note = t.value;
+  if (t.id === 'crmQ' && CRM) { CRM.q = t.value; CRM.hien = 60; veCrmDs(); }
   if (t.id === 'khTim') { KF.tim = t.value; var q = t.value.toLowerCase(); document.querySelectorAll('.khdong').forEach(function (d) { d.classList.toggle('an', d.dataset.ten.indexOf(q) < 0); }); }
 });
 document.addEventListener('focusout', function (ev) {
