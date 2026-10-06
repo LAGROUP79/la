@@ -700,7 +700,7 @@ function veTon(r) {
     (tien1 ? '<br><b>Giá trị theo giá vốn: ' + tien(t.von) + 'đ</b>' + (t.thieuVon ? ' <small class="muted">(' + t.thieuVon + ' mã chưa có giá vốn)</small>' : '') + ' · theo giá niêm yết ' + tien(t.ny) + 'đ' : '') +
     '</p><p class="muted" style="margin-bottom:0">Kiểm kho gần nhất: ' + (t.kiem ? lucKiem(t.kiem) + (t.kiemBy ? ' · ' + e(t.kiemBy) : '') : 'chưa kiểm') + '. Số tồn thay đổi theo phiếu kiểm kho, nhập, xuất của phòng Kho vận; lên đơn bán hàng không trừ kho.</p></div>';
   h += '<div class="the"><label for="tQ" style="margin-top:0">Tìm trong ' + e(x.nhom) + '</label><input id="tQ" placeholder="Gõ tên hoặc mã hàng…">' +
-    (r.themMa ? '<button class="nut rong" id="tonThem" style="margin-top:10px">+ Thêm mã hàng mới vào ' + e(x.nhom) + '</button><div id="tonForm"></div>' : '') + '</div>';
+    (r.themMa ? '<button class="nut" id="tonNhap" style="margin-top:10px">📥 Nhập hàng vào ' + e(x.nhom) + '</button><button class="nut rong" id="tonThem" style="margin-top:8px">+ Thêm mã hàng mới vào ' + e(x.nhom) + '</button><div id="tonForm"></div>' : '') + '</div>';
   if (tien1) {
     var gv = x.ds.filter(function (s) { return s.vonApp != null; });
     if (gv.length) {
@@ -733,6 +733,7 @@ function veTon(r) {
     document.querySelectorAll('[data-tim]').forEach(function (tr) { tr.classList.toggle('an', !!q && tr.dataset.tim.indexOf(q) < 0); });
     document.querySelectorAll('[data-nhomton] details').forEach(function (d) { d.open = true; d.classList.toggle('an', !!q && !d.querySelector('[data-tim]:not(.an)')); });
   };
+  if ($('tonNhap')) $('tonNhap').onclick = function () { KHO_CAT_MO = KHO_MA[x.nhom] || 'hu'; chuyenTab('kn'); };
   if ($('tonThem')) $('tonThem').onclick = function () {
     var cat = KHO_MA[x.nhom] || 'pk', dvMD = cat === 'hu' ? 'hũ' : cat === 'pk' ? 'cái' : '100g';
     $('tonForm').innerHTML = '<label for="mPhan">Phân nhóm</label><input id="mPhan" list="dsPhan" placeholder="Chọn hoặc gõ phân nhóm mới"><datalist id="dsPhan">' +
@@ -1603,8 +1604,10 @@ function bamNS(b) {
 var KHO = null, KF = null, KP = null, KB = null, KB_NGAY = '';
 var KH_TEN = { hu: 'Hàng hũ', tinh: 'Hàng tinh', tho: 'Hàng thô', pk: 'Phụ kiện' };
 var KH_LOAI = { kiem: 'Kiểm kho', nhap: 'Nhập vào', xuat: 'Xuất ra', huy: 'Huỷ phiếu', dau: 'Tồn đầu' };
+var KHO_CAT_MO = '';
 function napKho(type) {
-  KF = { type: type, cat: type === 'xuat' ? 'tinh' : 'hu', reason: type === 'xuat' ? 'Bán hàng' : '', draft: {}, cost: {}, price: {}, note: '', tim: '' };
+  var catMo = KHO_CAT_MO; KHO_CAT_MO = '';
+  KF = { type: type, cat: catMo || (type === 'xuat' ? 'tinh' : 'hu'), reason: type === 'xuat' ? 'Bán hàng' : '', draft: {}, cost: {}, price: {}, note: '', tim: '' };
   goi('khoDuLieu', [TK], function (r) { KHO = r; veKho(); });
 }
 function khBanMode() { return KF.type === 'xuat' && KF.reason === 'Bán hàng'; }
