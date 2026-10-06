@@ -690,16 +690,18 @@ function veTon(r) {
     var gv = []; tongNhom.forEach(function (x) { x.ds.forEach(function (s) { if (s.vonApp != null) gv.push({ s: s, nhom: x.nhom }); }); });
     var chuaGV = gv.filter(function (x) { return !x.s.von; }).length;
     if (gv.length) h += '<div class="the"><details open><summary><b>Giá vốn trung bình hàng tinh, hàng thô</b>' + (chuaGV ? ' · <span class="am">' + chuaGV + ' mã chưa có giá vốn</span>' : '') + '</summary>' +
-      '<p class="muted">Giá vốn đang dùng = giá vốn TB trong app (tự cộng dồn mỗi lần nhập hàng có giá). Mã nào app chưa có giá thì lấy từ tab “GIÁ VỐN TB” của kế toán (ghép theo tên hàng). Cùng cách tính với app Kho.</p>' +
+      '<p class="muted">Giá vốn đang dùng = giá vốn TB trong app (tự cộng dồn mỗi lần nhập hàng có giá). Mã nào app chưa có giá thì lấy từ tab “GIÁ VỐN TB” của kế toán (ghép theo tên hàng). Giá trị tồn = tồn × giá vốn đang dùng.</p>' +
       '<div class="cuon"><table>' + (function () {
         var nhomGV = []; gv.forEach(function (x) { var g = nhomGV[nhomGV.length - 1]; if (!g || g.nhom !== x.nhom) nhomGV.push(g = { nhom: x.nhom, ds: [] }); g.ds.push(x.s); });
         return nhomGV.map(function (g) {
           var dv = {}; g.ds.forEach(function (s) { dv[s.dv || ''] = 1; }); var mot = Object.keys(dv).length === 1 ? Object.keys(dv)[0] : '';
-          return '<tr><th>' + e(g.nhom) + '</th><th class="s">Tồn' + (mot ? ' (' + e(mot) + ')' : '') + '</th><th class="s">GV TB trong app</th><th class="s">Đang dùng</th></tr>' +
+          var tongGT = 0;
+          return '<tr><th>' + e(g.nhom) + '</th><th class="s">Tồn' + (mot ? ' (' + e(mot) + ')' : '') + '</th><th class="s">GV TB trong app</th><th class="s">Giá trị tồn</th></tr>' +
             g.ds.map(function (s) {
+              var gt = s.von && s.ton != null ? Math.round(s.ton * s.von) : null; if (gt) tongGT += gt;
               return '<tr data-tim="' + e((s.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + '</td><td class="s">' + (s.ton == null ? '—' : soSL(s.ton)) + (mot ? '' : ' ' + e(s.dv)) + '</td>' +
-                '<td class="s">' + (s.vonApp ? tien(s.vonApp) + 'đ' : '—') + '</td><td class="s"><b>' + (s.von ? tien(s.von) + 'đ' : '<span class="am">chưa có</span>') + '</b></td></tr>';
-            }).join('');
+                '<td class="s">' + (s.vonApp ? tien(s.vonApp) + 'đ' : '—') + '</td><td class="s"><b>' + (gt != null ? tien(gt) + 'đ' : s.von ? '—' : '<span class="am">chưa có giá vốn</span>') + '</b></td></tr>';
+            }).join('') + '<tr class="cong"><td>Cộng ' + e(g.nhom) + '</td><td></td><td></td><td class="s">' + tien(tongGT) + 'đ</td></tr>';
         }).join('');
       })() + '</table></div></details></div>';
   }
