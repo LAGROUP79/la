@@ -7,11 +7,11 @@
 <meta name="theme-color" content="#1B4D40">
 <link rel="apple-touch-icon" href="https://lagroup79.github.io/kho-lanest/apple-touch-icon.png">
 <script>
-/* Thay google.script.run bằng gọi qua cổng doPost của app LA (không gửi kèm tài khoản Google). */
+/* Thay google.script.run bằng gọi qua cổng máy chủ của app LA (không gửi kèm tài khoản Google). */
 (function () {
   var API = 'https://script.google.com/macros/s/AKfycbzRAl04YpIxVpML2BmbFYEeQ_rHtOlvgoNbXylc6ec0OP9P6xk65rxlPeYZ-P_bg1D7mw/exec';
   function goi(ten, thamSo, ok, loi) {
-    fetch(API, { method: 'POST', body: JSON.stringify({ f: ten, a: thamSo }), credentials: 'omit', redirect: 'follow' })
+    fetch(ten === 'crmDuLieu' ? 'https://script.google.com/macros/s/AKfycbzRAl04YpIxVpML2BmbFYEeQ_rHtOlvgoNbXylc6ec0OP9P6xk65rxlPeYZ-P_bg1D7mw/exec' : API, { method: 'POST', body: JSON.stringify({ f: ten, a: thamSo }), credentials: 'omit', redirect: 'follow' })
       .then(function (r) { return r.json(); })
       .then(function (x) { if (x && x.loi != null) { if (loi) loi(new Error(x.loi)); } else if (ok) ok(x ? x.kq : null); })
       .catch(function () { if (loi) loi(new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.')); });
@@ -361,7 +361,7 @@ var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
   p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'],
-  kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'] };
+  kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'], xl: ['TCKT'] };
 function tenPhong(ma) { return ((H.phongBan || []).filter(function (p) { return p.ma === ma; })[0] || {}).ten || ma; }
 function baoKhongQuyen(mas) {
   moHop('<div style="text-align:center"><div style="font-size:42px">🔒</div><h3 style="margin:6px 0;color:var(--xanh)">Chưa có quyền truy cập</h3>' +
@@ -385,7 +385,7 @@ function veTab() {
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
     th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); },
-    kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, kp: function () { napKp(); }, kb: function () { napKb(); } };
+    kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl };
   (m[TAB] || veHome)();
 }
 function quayLai() { return PHONG_HT ? '<button class="quaylai" data-tab="p_' + PHONG_HT + '">‹ ' + e(tenPhong(PHONG_HT)) + '</button>' : '<button class="quaylai" data-tab="home">‹ Trang chủ</button>'; }
@@ -1169,7 +1169,7 @@ function vePhong(ma) {
   }
   if (ma === 'TCKT') {
     o = [['bc', 'DOANH THU', 'Toàn công ty, team, nhân viên, ngành hàng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên', 'th'], ['ds', 'ĐƠN HÀNG', 'Đơn theo ngày/tháng/năm, xuất hoá đơn', 'ds'], ['kh', 'KHÁCH HÀNG', 'Khách theo tỉnh, theo người chăm sóc', 'kh'],
-      ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton']];
+      ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton'], ['xl', 'TẢI EXCEL', 'Tất cả sổ: đơn, kho, công, lương', 'ds']];
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
     ghiChu = 'Giá vốn, lãi gộp, báo cáo tuần/tháng của kho sẽ chuyển vào phòng này ở <b>Đợt 4</b>.';
   }
@@ -1725,6 +1725,31 @@ function veKb(r) {
     document.querySelectorAll('[data-xk]').forEach(function (i) { d[i.dataset.xk] = i.value.trim(); });
     goi('luuXuatKT', [TK, r.ngay, d], function (x) { veKb(x.kb); bao('Đã lưu số xuất kế toán ngày ' + ngVN(r.ngay) + '.'); });
   };
+}
+function veXl() {
+  $('noiDung').innerHTML = quayLai() + '<div class="the"><h3>Tải dữ liệu ra Excel</h3><p class="muted">Một file Excel gồm các sổ: đơn hàng, chi tiết đơn, khách hàng, xuất kho kế toán, phiếu kho, tồn kho, danh mục hàng, chấm công, nghỉ phép, điều chỉnh công, lương, nhật ký điều chỉnh. Số liệu mới nhất lúc bấm tải. Không có mật mã, hồ sơ CCCD.</p>' +
+    '<button class="nut rong" id="xlTai">Tải file Excel</button></div>';
+  $('xlTai').onclick = function () {
+    var nut = this; nut.disabled = true; nut.textContent = 'Đang lấy dữ liệu…';
+    var xong = function () { nut.disabled = false; nut.textContent = 'Tải file Excel'; };
+    napThuVienXl(function () {
+      goi('ktTaiDuLieu', [TK], function (ds) {
+        var wb = XLSX.utils.book_new();
+        ds.forEach(function (s) {
+          var rows = s.rows.map(function (r) { return r.map(function (v) { return /^-?\d+(\.\d+)?$/.test(v) && v.length < 15 ? Number(v) : v; }); });
+          XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows.length ? rows : [['Chưa có dữ liệu']]), s.ten.slice(0, 31));
+        });
+        XLSX.writeFile(wb, 'LAGROUP-du-lieu-' + (H ? H.homNay : '') + '.xlsx');
+        xong(); bao('Đã tải file Excel.');
+      }, false, function (m) { xong(); bao(m, true); });
+    }, function () { xong(); bao('Không tải được bộ tạo Excel. Kiểm tra mạng rồi thử lại.', true); });
+  };
+}
+function napThuVienXl(ok, loi) {
+  if (window.XLSX) return ok();
+  var s = document.createElement('script');
+  s.src = 'https:' + '/' + '/cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload = ok; s.onerror = loi; document.head.appendChild(s);
 }
 function bamKho(b) {
   var d = b.dataset;
