@@ -1,4 +1,4 @@
-const BAN = 'la-v1';
+const BAN = 'la-v2';
 const VO = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(BAN).then(c => c.addAll(VO)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

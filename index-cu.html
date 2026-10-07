@@ -147,6 +147,27 @@ tr.cong td{font-weight:700;background:#FBF7EA}
 #dangNhap .ln-badge{display:inline-flex;align-items:center;gap:6px;background:#FFF6DA;border:1px solid #E9D49A;color:#7A5A12;border-radius:20px;padding:4px 12px;font-size:12.5px;font-weight:600;letter-spacing:.4px;margin:0 0 12px}
 #dangNhap .ln-badge svg{width:15px;height:15px}
 #dangNhap .ic svg{width:55%;height:55%}
+.dnGt{display:none}
+@media(min-width:1024px){
+  #dangNhap:not(.an){display:grid;grid-template-columns:minmax(0,1.15fr) minmax(420px,520px);min-height:100vh;padding:0}
+  #dangNhap>.ln{align-self:center;justify-self:center;width:100%;max-width:480px;padding:32px 28px}
+  #dangNhap .ln-hero,#dangNhap .ln-mv,#dangNhap .ln-vals,#dangNhap .ln-foot{display:none}
+  .dnGt{display:flex;flex-direction:column;gap:18px;padding:44px 52px;color:#F6EBCB;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 85% 12%,rgba(201,162,74,.22),transparent 45%),linear-gradient(160deg,#143A31 0%,#1B4D40 55%,#24584A 100%)}
+  .dnGt::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;opacity:.35;pointer-events:none;
+    background:repeating-radial-gradient(ellipse at 50% 140%,transparent 0 22px,rgba(233,201,121,.35) 23px 24px)}
+  .dnGt-dau{display:flex;align-items:center;gap:14px}
+  .dnGt-dau img{width:58px;height:58px}
+  .dnGt-dau b{display:block;font-size:28px;letter-spacing:3px;color:#F3D58A}
+  .dnGt-dau small{font-size:13.5px;letter-spacing:1px;color:#D9CFA8}
+  .dnGt-muc small{display:block;font-size:12px;letter-spacing:2.5px;color:#E9C979;font-weight:700;margin-bottom:4px}
+  .dnGt-muc p{margin:0;font-size:17.5px;line-height:1.55;max-width:620px}
+  .dnGt-gt{display:flex;flex-wrap:wrap;gap:8px;max-width:620px}
+  .dnGt-gt span{border:1px solid rgba(233,201,121,.55);border-radius:20px;padding:5px 14px;font-size:13.5px;background:rgba(255,255,255,.06)}
+  .dnGt-anh{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:auto;position:relative;z-index:1}
+  .dnGt-anh img{width:100%;height:200px;object-fit:cover;border-radius:14px;border:2px solid rgba(233,201,121,.5);box-shadow:0 10px 24px rgba(0,0,0,.25)}
+}
+@media(min-width:1440px){.dnGt-anh img{height:240px}.dnGt-muc p{font-size:17px}}
 .tab2{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
 .tab2 button{border:1px solid var(--vien);background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;white-space:nowrap}
 .tab2 button.on{background:var(--xanh);color:#fff;border-color:var(--xanh)}
@@ -235,6 +256,13 @@ td.am{color:var(--do);font-weight:700}
 </head>
 <body>
 <div id="dangNhap">
+  <aside class="dnGt" aria-label="Giới thiệu Yến Sào Lanest">
+    <div class="dnGt-dau"><img src="icon-192.png" alt=""><div><b>YẾN SÀO LANEST</b><small>Trao sức khoẻ · Trao yêu thương</small></div></div>
+    <div class="dnGt-muc"><small>SỨ MỆNH</small><p>Lanest lan toả tinh hoa yến sào Việt, minh bạch từ nguồn gốc, chân thật từ giá trị, vì sức khoẻ cộng đồng.</p></div>
+    <div class="dnGt-muc"><small>TẦM NHÌN</small><p>Trở thành thương hiệu yến sào uy tín hàng đầu Việt Nam, từng bước vươn tầm quốc tế.</p></div>
+    <div class="dnGt-muc"><small>GIÁ TRỊ CỐT LÕI</small><div class="dnGt-gt"><span>Tận Tâm</span><span>Chất Lượng</span><span>Uy Tín</span><span>Trách Nhiệm</span><span>Phát Triển</span><span>Hiệu Quả</span></div></div>
+    <div class="dnGt-anh"><img class="lon" src="anh-hop-xanh.jpg" alt="Hộp quà yến sào Lanest Nha Trang Khánh Hòa" loading="lazy"><img src="anh-tinh-che.jpg" alt="Tổ yến tinh chế Lanest" loading="lazy"><img src="anh-hop-do.jpg" alt="Hộp quà 6 hũ yến chưng Lanest" loading="lazy"></div>
+  </aside>
   <div class="ln">
     <img class="ln-hero" src="https://lagroup79.github.io/kho-lanest/hero.jpg" alt="Công ty TNHH Yến Sào Lanest — Trao sức khoẻ, Trao yêu thương">
     <form class="ln-card" id="dnForm" autocomplete="off">
