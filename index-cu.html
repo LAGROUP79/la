@@ -1799,6 +1799,11 @@ function sbVeNhap() {
   if (!SB_DON) SB_DON = sbDonMoi();
   var d = SB_DON, k = sbKhach(d.maKH), giaKH = (SB.gia || {})[d.maKH] || {};
   if (d.soDon == null) { var tach = sbTachMa(d.nhan); d.soDon = tach[0]; d.nguoiNhan = tach[1]; }
+  if (d.cnTien == null) {
+    var cn = d.dong.filter(function (x) { return x.nhom === 'Công nợ khác'; });
+    d.cnNd = cn.length ? cn[0].sp : ''; d.cnTien = cn.reduce(function (a, x) { return a + Math.round((docSo(x.sl) || 1) * (Number(x.gia) || 0)); }, 0) || '';
+    d.dong = d.dong.filter(function (x) { return x.nhom !== 'Công nợ khác'; }); if (!d.dong.length) d.dong.push({ sp: '', nhom: '', sl: '', gia: '' });
+  }
   var h = '<div class="the">' + (d.ma ? '<p style="margin-top:0"><b>Đang sửa đơn ' + e(d.soDon || '(chưa có mã)') + '</b> · <button class="nut rong" id="sbBoSua" style="width:auto;padding:4px 10px">Bỏ sửa, nhập đơn mới</button></p>' : '') +
     '<label for="sbNgay">Ngày</label><input type="date" id="sbNgay" value="' + e(d.ngay) + '" max="' + e(SB.homNay) + '" min="2026-10-01">' +
     '<label for="sbKh">Khách hàng</label><input id="sbKh" list="dsKhSB" placeholder="Gõ tên khách…" value="' + e(k ? k.ten : '') + '">' + sbDsKhach() +
@@ -1814,7 +1819,11 @@ function sbVeNhap() {
         '<input data-sbgia="' + i + '" inputmode="numeric" placeholder="Đơn giá" value="' + e(x.gia === '' ? '' : tien(x.gia)) + '" style="width:110px">' +
         '<button data-sbxoa="' + i + '" class="nut rong" style="width:auto;padding:4px 10px">×</button></div>' +
         '<small class="muted" data-sbtt="' + i + '">' + (x.sp && giaKH[x.sp] != null && String(x.gia) === String(giaKH[x.sp]) ? 'giá lần trước · ' : '') + 'Thành tiền ' + tien(Math.round((docSo(x.sl) || 1) * (Number(x.gia) || 0))) + 'đ</small></div>';
-    }).join('') + '<button class="nut rong" id="sbThemDong" style="margin-top:8px">+ Thêm dòng hàng</button></div>';
+    }).join('') + '<button class="nut rong" id="sbThemDong" style="margin-top:8px">+ Thêm dòng hàng</button>' +
+    '<small class="muted">Gửi hàng hộ khách thì để trống phần hàng, chỉ ghi công nợ khác hoặc phí ship bên dưới.</small></div>';
+  h += '<div class="the"><h3 style="margin-top:0">Công nợ khác / gửi hàng hộ</h3><div class="hang" style="gap:8px"><div style="flex:1"><label for="sbCnNd" style="margin-top:0">Nội dung</label><input id="sbCnNd" value="' + e(d.cnNd) + '" placeholder="VD: Gửi hàng hộ, tiền hàng gửi kèm…"></div>' +
+    '<div style="width:140px"><label for="sbCnTien" style="margin-top:0">Số tiền</label><input id="sbCnTien" inputmode="numeric" value="' + e(d.cnTien === '' ? '' : tien(d.cnTien)) + '"></div></div>' +
+    '<small class="muted">Cộng vào công nợ của khách, không tính vào lợi nhuận gộp.</small></div>';
   h += '<div class="the"><div class="hang" style="gap:8px"><div style="flex:1"><label for="sbShip">Phí ship</label><input id="sbShip" inputmode="numeric" value="' + e(d.ship === '' ? '' : tien(d.ship)) + '"></div>' +
     '<div style="flex:1"><label for="sbCk">Chiết khấu</label><input id="sbCk" inputmode="numeric" value="' + e(d.ck === '' ? '' : tien(d.ck)) + '"></div>' +
     '<div style="flex:1"><label for="sbVat">VAT</label><input id="sbVat" inputmode="numeric" value="' + e(d.vat === '' ? '' : tien(d.vat)) + '"></div></div>' +
@@ -1826,7 +1835,7 @@ function sbVeNhap() {
   $('sbNoi').innerHTML = h;
   function tinh() {
     var hang = d.dong.reduce(function (a, x) { return a + Math.round((docSo(x.sl) || 1) * (Number(x.gia) || 0)); }, 0);
-    $('sbTong').textContent = tien(hang + (Number(d.ship) || 0) + (Number(d.vat) || 0) - (Number(d.ck) || 0)) + 'đ';
+    $('sbTong').textContent = tien(hang + (Number(d.cnTien) || 0) + (Number(d.ship) || 0) + (Number(d.vat) || 0) - (Number(d.ck) || 0)) + 'đ';
     d.dong.forEach(function (x, i) { var el = document.querySelector('[data-sbtt="' + i + '"]'); if (el) el.textContent = 'Thành tiền ' + tien(Math.round((docSo(x.sl) || 1) * (Number(x.gia) || 0))) + 'đ'; });
   }
   tinh();
@@ -1837,7 +1846,8 @@ function sbVeNhap() {
   $('sbSoDon').oninput = function () { d.soDon = this.value.replace(/\D/g, '').slice(0, 6); if (this.value !== d.soDon) this.value = d.soDon; ghepNhan(); };
   $('sbNhan').oninput = function () { var t = sbTachMa(this.value); if (t[0] && !d.soDon) { d.soDon = t[0]; $('sbSoDon').value = t[0]; this.value = t[1]; } d.nguoiNhan = this.value; ghepNhan(); };
   $('sbGhi').oninput = function () { d.ghiChu = this.value; };
-  [['sbShip', 'ship'], ['sbCk', 'ck'], ['sbVat', 'vat'], ['sbThu', 'thuTien']].forEach(function (p) { if ($(p[0])) $(p[0]).oninput = function () { d[p[1]] = this.value ? docTien(this.value) : ''; tinh(); }; });
+  $('sbCnNd').oninput = function () { d.cnNd = this.value; };
+  [['sbShip', 'ship'], ['sbCk', 'ck'], ['sbVat', 'vat'], ['sbThu', 'thuTien'], ['sbCnTien', 'cnTien']].forEach(function (p) { if ($(p[0])) $(p[0]).oninput = function () { d[p[1]] = this.value ? docTien(this.value) : ''; tinh(); }; });
   if ($('sbThuHT')) $('sbThuHT').onchange = function () { d.thuHT = this.value; };
   document.querySelectorAll('[data-sbsp]').forEach(function (el) {
     el.onchange = function () {
@@ -1858,6 +1868,8 @@ function sbVeNhap() {
     ghepNhan();
     var gui = { ma: d.ma, ngay: d.ngay, maKH: d.maKH, nhan: d.nhan, ghiChu: d.ghiChu, ship: d.ship, ck: d.ck, vat: d.vat, thuTien: d.thuTien, thuHT: d.thuHT,
       dong: d.dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: x.gia }; }) };
+    if (Number(d.cnTien)) gui.dong.push({ sp: (d.cnNd || '').trim() || 'Gửi hàng hộ', nhom: 'Công nợ khác', sl: '', gia: Number(d.cnTien) });
+    if (!gui.dong.some(function (x) { return x.sp && (x.sl || x.gia); }) && !Number(d.ship) && !Number(d.vat)) { bao('Đơn chưa có hàng, phí ship hay công nợ khác.', true); return; }
     goi('ktLuuDon', [TK, gui, SB_THANG], function (x) {
       SB = x.so; var sua = !!d.ma; SB_DON = sbDonMoi(); SB_DON.ngay = gui.ngay; veSo();
       bao((sua ? 'Đã sửa đơn ' : 'Đã lưu đơn ') + (x.soDon || '(chưa có mã)') + '.'); if (x.canhBao) setTimeout(function () { bao('⚠ ' + x.canhBao, true); }, 2700);
@@ -2153,7 +2165,7 @@ function sbVeBCNoi() {
   var ky = b.tu === b.den ? 'ngày ' + ngayDu(b.tu) : ngayDu(b.tu) + ' – ' + ngayDu(b.den);
   var h = '<div class="the"><h3 style="margin-top:0">Lợi nhuận gộp ' + ky + '</h3><div class="luoi2">' + o('Doanh thu (tổng đơn)', tien(b.doanhThu) + 'đ') + o('Số đơn', b.soDon) +
     o('Giá vốn', tien(b.giaVon) + 'đ') + o('Lợi nhuận gộp', mau(b.lnGop) + ' <small class="muted">' + pt(b.lnGop, b.tienCoVon) + '</small>') + o('Đã thu', tien(b.daThu) + 'đ') + o('Phí ship / VAT', tien(b.ship) + 'đ / ' + tien(b.vat) + 'đ') + '</div>' +
-    '<p class="muted" style="margin-bottom:0">Lợi nhuận gộp = tiền hàng có giá vốn − giá vốn − chiết khấu (' + tien(b.ck) + 'đ). Chưa trừ VAT, vận hành, đóng gói. Phí ship, VAT không tính vào lãi.' +
+    '<p class="muted" style="margin-bottom:0">Lợi nhuận gộp = tiền hàng có giá vốn − giá vốn − chiết khấu (' + tien(b.ck) + 'đ). Chưa trừ VAT, vận hành, đóng gói. Phí ship, VAT' + (b.cnKhac ? ', công nợ khác / gửi hộ (' + tien(b.cnKhac) + 'đ)' : '') + ' không tính vào lãi.' +
     (b.chuaVon ? ' <b class="am">' + tien(b.chuaVon) + 'đ tiền hàng chưa có giá vốn nên chưa tính lãi</b> — đặt giá vốn ở bảng sản phẩm bên dưới.' : '') + '</p></div>';
   h += '<div class="the"><h3 style="margin-top:0">Theo nhóm hàng</h3><div class="cuon"><table><tr><th>Nhóm</th><th class="s">Doanh thu</th><th class="s">Giá vốn</th><th class="s">LN gộp</th><th class="s">Biên</th><th class="s">Chưa có GV</th></tr>' +
     b.theoNhom.map(function (x) { var ln = x.tienCoVon - x.von; return '<tr><td>' + e(x.nhom) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + tien(x.von) + '</td><td class="s">' + mau(ln) + '</td><td class="s">' + pt(ln, x.tienCoVon) + '</td><td class="s">' + (x.chuaVon ? '<span class="am">' + tien(x.chuaVon) + '</span>' : '') + '</td></tr>'; }).join('') + '</table></div></div>';
