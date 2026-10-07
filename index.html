@@ -1790,7 +1790,7 @@ function sbVeNhap() {
     '<label for="sbKh">Khách hàng</label><input id="sbKh" list="dsKhSB" placeholder="Gõ tên khách…" value="' + e(k ? k.ten : '') + '">' + sbDsKhach() +
     '<div id="sbKhNo">' + sbNoKhach(k) + '</div><button class="nut rong" id="sbKhMoi" style="margin-top:6px;width:auto;padding:4px 10px">+ Khách mới</button>' +
     '<label for="sbNhan">Giao hộ người nhận (tên, SĐT, địa chỉ)</label><input id="sbNhan" value="' + e(d.nhan) + '" placeholder="VD: Phạm Thị Tho 0393608079"></div>';
-  h += '<div class="the"><h3 style="margin-top:0">Hàng</h3><datalist id="dsSpSB">' + SB.sp.map(function (s) { return '<option value="' + e(s.ten) + '">'; }).join('') + '</datalist>' +
+  h += '<div class="the"><h3 style="margin-top:0">Hàng</h3><datalist id="dsSpSB">' + SB.sp.map(function (s) { return '<option value="' + e(s.ten) + '">' + (s.kho ? 'Mã kho · ' + e(s.nhom) + ' · ' + e(s.dv) : ''); }).join('') + '</datalist>' +
     d.dong.map(function (x, i) {
       return '<div class="sbDong" style="border-bottom:1px solid #EFE6CC;padding:6px 0"><input data-sbsp="' + i + '" list="dsSpSB" placeholder="Sản phẩm" value="' + e(x.sp) + '">' +
         '<div class="hang" style="gap:6px;margin-top:4px"><select data-sbnhom="' + i + '" style="flex:1"><option value="">Nhóm…</option>' + SB.nhomHang.map(function (n) { return opt(n, x.nhom); }).join('') + '</select>' +
@@ -2013,7 +2013,7 @@ function sbSuaBang(ma, thang, r) {
         '<td class="s">' + vao('data-tt="' + ti + '"', tien(t.tien), '90px', 'inputmode="numeric"') + '</td><td><select data-tht="' + ti + '" style="padding:3px;font-size:13px">' + SB.hinhThuc.map(function (h) { return opt(h, t.ht); }).join('') + '</select> ' +
         vao('data-tgc="' + ti + '"', t.ghiChu, '45%') + ' <a href="#" data-thuy="' + ti + '">' + (t.huy ? 'Khôi phục' : 'Huỷ') + '</a></td></tr>');
     });
-    $('skBang').innerHTML = '<datalist id="dsSpSB">' + SB.sp.map(function (s) { return '<option value="' + e(s.ten) + '">'; }).join('') + '</datalist><table class="saoke"><tr class="sk-dau"><th>NGÀY</th><th>SẢN PHẨM</th><th class="s">SỐ LƯỢNG</th><th class="s">ĐƠN GIÁ</th><th class="s">THÀNH TIỀN</th><th class="s">THANH TOÁN</th><th>GIAO HỘ NGƯỜI NHẬN</th></tr>' +
+    $('skBang').innerHTML = '<datalist id="dsSpSB">' + SB.sp.map(function (s) { return '<option value="' + e(s.ten) + '">' + (s.kho ? 'Mã kho · ' + e(s.nhom) + ' · ' + e(s.dv) : ''); }).join('') + '</datalist><table class="saoke"><tr class="sk-dau"><th>NGÀY</th><th>SẢN PHẨM</th><th class="s">SỐ LƯỢNG</th><th class="s">ĐƠN GIÁ</th><th class="s">THÀNH TIỀN</th><th class="s">THANH TOÁN</th><th>GIAO HỘ NGƯỜI NHẬN</th></tr>' +
       '<tr><td></td><td colspan="3" class="sk-chot">CHỐT ĐẾN ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td class="s sk-chot">' + sbTien(r.noDau) + '</td><td></td><td></td></tr>' + rows.join('') +
       '<tr><td></td><td colspan="3" class="s"><i>TỔNG CỘNG</i></td><td class="s"><b>' + tien(tong) + '</b></td><td></td><td></td></tr>' +
       '<tr><td></td><td colspan="3" class="s"><i>ĐÃ THANH TOÁN/COD</i></td><td></td><td class="s"><b style="color:#1D4ED8">' + tien(tra) + '</b></td><td></td></tr>' +
