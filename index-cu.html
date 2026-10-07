@@ -719,7 +719,7 @@ function veTon(r) {
     return '<details open><summary>' + e(p.ten) + ' — ' + (tp.donVi ? soSL(tp.sl) + ' ' + e(tp.donVi) : tp.ma + ' mã') + (tien1 && tp.von ? ' · ' + tienNgan(tp.von) : '') + '</summary><div class="cuon"><table>' +
       '<tr><th>Mã hàng</th><th class="s">Tồn</th><th>Kiểm kho gần nhất</th><th>Cập nhật lần cuối</th>' + (tien1 ? '<th class="s">Giá vốn TB</th><th class="s">Giá trị tồn</th>' : '') + '</tr>' + p.sp.map(function (s) {
       var v = s.ton || 0, k = s.kiem;
-      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + '</td>' +
+      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + '</td>' +
         '<td>' + (k ? lucKiem(k.at) + '<br><small class="muted">đếm ' + soSL(k.sl) + (k.by ? ' · ' + e(k.by) : '') + '</small>' : '<span class="muted">chưa kiểm</span>') + '</td>' +
         '<td><small class="muted">' + (s.luc ? (s.boi ? e(s.boi) + ' · ' : '') + lucKiem(s.luc) : '–') + '</small></td>' +
         (tien1 ? '<td class="s">' + (s.von ? tien(s.von) : '<span class="muted">—</span>') + '</td><td class="s">' + (s.von && v > 0 ? tien(v * s.von) + 'đ' : '—') + '</td>' : '') + '</tr>';
@@ -732,6 +732,16 @@ function veTon(r) {
     document.querySelectorAll('[data-tim]').forEach(function (tr) { tr.classList.toggle('an', !!q && tr.dataset.tim.indexOf(q) < 0); });
     document.querySelectorAll('[data-nhomton] details').forEach(function (d) { d.open = true; d.classList.toggle('an', !!q && !d.querySelector('[data-tim]:not(.an)')); });
   };
+  document.querySelectorAll('[data-doiten]').forEach(function (a) {
+    a.onclick = function (ev) {
+      ev.preventDefault();
+      var s = x.ds.filter(function (y) { return y.ma === a.dataset.doiten; })[0]; if (!s) return;
+      var moi = prompt('Đổi tên "' + s.ten + '" thành (cả app sẽ theo tên mới: tồn kho, phiếu kho, đơn, Sổ bán hàng, giá & thưởng):', s.ten);
+      if (moi == null) return; moi = moi.trim().replace(/\s+/g, ' ');
+      if (!moi || moi === s.ten) return;
+      goi('khoDoiTen', [TK, s.ma, moi], function (k) { veTon(k.ton); bao('Đã đổi tên “' + s.ten + '” → “' + moi + '”.'); });
+    };
+  });
   if ($('tonNhap')) $('tonNhap').onclick = function () { KHO_CAT_MO = KHO_MA[x.nhom] || 'hu'; chuyenTab('kn'); };
   if ($('tonThem')) $('tonThem').onclick = function () {
     var cat = KHO_MA[x.nhom] || 'pk', dvMD = cat === 'hu' ? 'hũ' : cat === 'pk' ? 'cái' : '100g';
@@ -2103,11 +2113,14 @@ function sbVeBCNoi() {
     (b.chuaVon ? ' <b class="am">' + tien(b.chuaVon) + 'đ tiền hàng chưa có giá vốn nên chưa tính lãi</b> — đặt giá vốn ở bảng sản phẩm bên dưới.' : '') + '</p></div>';
   h += '<div class="the"><h3 style="margin-top:0">Theo nhóm hàng</h3><div class="cuon"><table><tr><th>Nhóm</th><th class="s">Doanh thu</th><th class="s">Giá vốn</th><th class="s">LN gộp</th><th class="s">Biên</th><th class="s">Chưa có GV</th></tr>' +
     b.theoNhom.map(function (x) { var ln = x.tienCoVon - x.von; return '<tr><td>' + e(x.nhom) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + tien(x.von) + '</td><td class="s">' + mau(ln) + '</td><td class="s">' + pt(ln, x.tienCoVon) + '</td><td class="s">' + (x.chuaVon ? '<span class="am">' + tien(x.chuaVon) + '</span>' : '') + '</td></tr>'; }).join('') + '</table></div></div>';
+  var khoSP = (SB.sp || []).filter(function (s) { return s.kho; }), khoTen = {}; khoSP.forEach(function (s) { khoTen[s.ten.toLowerCase()] = 1; });
+  h += '<datalist id="dsKhoSB">' + khoSP.map(function (s) { return '<option value="' + e(s.ten) + '">'; }).join('') + '</datalist>';
   h += '<div class="the"><h3 style="margin-top:0">Theo sản phẩm</h3><input id="bcTimSP" placeholder="Tìm sản phẩm…" style="margin-bottom:6px"><div class="cuon"><table><tr><th>Sản phẩm</th><th class="s">SL</th><th class="s">Doanh thu</th><th class="s">Giá vốn / đv</th><th class="s">LN gộp</th></tr>' +
     b.theoSP.map(function (x, i) {
       var gv = x.coVon ? tien(x.gia) + '<br><small class="muted">' + e(x.nguon) + '</small>' : '<span class="am">chưa có</span>';
       if (b.ghi && x.nhom !== 'Dịch vụ') gv += '<br><input data-gvsp="' + i + '" inputmode="numeric" placeholder="' + (x.coVon ? 'đổi giá' : 'nhập giá vốn') + '" style="width:100px;padding:2px 5px;font-size:12px;margin-top:2px">';
-      return '<tr data-timsp="' + e((x.sp + ' ' + x.nhom).toLowerCase()) + '"><td>' + e(x.sp) + '<br><small class="muted">' + e(x.nhom || '') + '</small></td><td class="s">' + soSL(x.sl) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + gv + '</td><td class="s">' + (x.coVon ? mau(x.tien - x.von) : '—') + '</td></tr>';
+      var ghep = b.ghi && (x.nhom === 'YẾN TINH' || x.nhom === 'YẾN THÔ') && !khoTen[x.sp.toLowerCase()] ? '<br><input data-ghepsp="' + i + '" list="dsKhoSB" placeholder="ghép vào mã kho…" style="width:170px;padding:2px 5px;font-size:12px;margin-top:2px">' : '';
+      return '<tr data-timsp="' + e((x.sp + ' ' + x.nhom).toLowerCase()) + '"><td>' + e(x.sp) + '<br><small class="muted">' + e(x.nhom || '') + '</small>' + ghep + '</td><td class="s">' + soSL(x.sl) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + gv + '</td><td class="s">' + (x.coVon ? mau(x.tien - x.von) : '—') + '</td></tr>';
     }).join('') + '</table></div>' + (b.ghi ? '<p class="muted" style="margin-bottom:0">Gõ giá vốn (đồng / 1 đơn vị bán, VD tinh tính theo 100g) rồi bấm Enter — áp cho mọi đơn của sản phẩm đó, báo cáo tính lại ngay.</p>' : '') + '</div>';
   h += '<div class="the"><h3 style="margin-top:0">Theo ngày</h3><div class="cuon"><table><tr><th>Ngày</th><th class="s">Số đơn</th><th class="s">Doanh thu</th><th class="s">LN gộp</th><th class="s">Thu tiền</th></tr>' +
     b.theoNgay.map(function (x) { return '<tr><td>' + ngayDu(x.ngay) + '</td><td class="s">' + x.don + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + mau(x.ln) + '</td><td class="s">' + tien(x.thu) + '</td></tr>'; }).join('') + '</table></div></div>';
@@ -2123,6 +2136,14 @@ function sbVeBCNoi() {
       var x = b.theoSP[+el.dataset.gvsp], g = docTien(el.value);
       if (!g && !confirm('Bỏ giá vốn đặt riêng của "' + x.sp + '"?')) return;
       goi('ktLuuGiaVon', [TK, x.sp, g, SB_BC.tu, SB_BC.den], function (r) { SB_BC.r = r; sbVeBCNoi(); bao('Đã đặt giá vốn ' + x.sp + (g ? ': ' + tien(g) + 'đ' : '') + '.'); });
+    };
+  });
+  document.querySelectorAll('[data-ghepsp]').forEach(function (el) {
+    el.onchange = function () {
+      var x = b.theoSP[+el.dataset.ghepsp], moi = el.value.trim();
+      if (!khoTen[moi.toLowerCase()]) { if (moi) bao('Chọn đúng tên trong danh sách mã kho.', true); return; }
+      if (!confirm('Đổi mọi dòng "' + x.sp + '" trong Sổ bán hàng (từ 01/10) thành mã kho "' + moi + '"?')) { el.value = ''; return; }
+      goi('ktGhepTen', [TK, x.sp, moi, SB_BC.tu, SB_BC.den], function (r) { SB_BC.r = r; sbVeBCNoi(); bao('Đã ghép "' + x.sp + '" vào "' + moi + '".'); });
     };
   });
 }
