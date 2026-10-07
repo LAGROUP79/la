@@ -2213,6 +2213,15 @@ function sbVeBCNoi() {
     o('Giá vốn', tien(b.giaVon) + 'đ') + o('Lợi nhuận gộp', mau(b.lnGop) + ' <small class="muted">' + pt(b.lnGop, b.tienCoVon) + '</small>') + o('Đã thu', tien(b.daThu) + 'đ') + o('Phí ship / VAT', tien(b.ship) + 'đ / ' + tien(b.vat) + 'đ') + '</div>' +
     '<p class="muted" style="margin-bottom:0">Lợi nhuận gộp = tiền hàng có giá vốn − giá vốn − chiết khấu (' + tien(b.ck) + 'đ). Chưa trừ VAT, vận hành, đóng gói. Phí ship, VAT' + (b.cnKhac ? ', công nợ khác / gửi hộ (' + tien(b.cnKhac) + 'đ)' : '') + ' không tính vào lãi.' +
     (b.chuaVon ? ' <b class="am">' + tien(b.chuaVon) + 'đ tiền hàng chưa có giá vốn nên chưa tính lãi</b> — đặt giá vốn ở bảng sản phẩm bên dưới.' : '') + '</p></div>';
+  if (b.tang || b.ck) {
+    h += '<div class="the"><h3 style="margin-top:0">Chiết khấu / tặng thêm cho khách</h3><table>' +
+      '<tr><td>Lãi các mặt hàng bán</td><td class="s">' + mau(b.lnHang || 0) + '</td></tr>' +
+      (b.tang ? '<tr><td>Tặng thêm / bán dưới giá vốn <small class="muted">(' + (b.tangDs || []).length + ' mặt hàng, chi tiết bên dưới)</small></td><td class="s">' + mau(-b.tang) + '</td></tr>' : '') +
+      (b.ck ? '<tr><td>Chiết khấu trên đơn</td><td class="s">' + mau(-b.ck) + '</td></tr>' : '') +
+      '<tr><td><b>Lợi nhuận gộp</b></td><td class="s"><b>' + mau(b.lnGop) + '</b></td></tr></table>' +
+      ((b.tangDs || []).length ? '<div class="cuon" style="margin-top:8px"><table><tr><th>Hàng tặng / bán dưới vốn</th><th class="s">SL</th><th class="s">Thu của khách</th><th class="s">Giá vốn</th><th class="s">Tặng thêm</th></tr>' +
+        b.tangDs.map(function (x) { return '<tr><td>' + e(x.sp) + '<br><small class="muted">' + e(x.nhom || '') + '</small></td><td class="s">' + soSL(x.sl) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + tien(x.von) + '</td><td class="s">' + mau(-x.tang) + '</td></tr>'; }).join('') + '</table></div>' : '') + '</div>';
+  }
   h += '<div class="the"><h3 style="margin-top:0">Theo nhóm hàng</h3><div class="cuon"><table><tr><th>Nhóm</th><th class="s">Doanh thu</th><th class="s">Giá vốn</th><th class="s">LN gộp</th><th class="s">Biên</th><th class="s">Chưa có GV</th></tr>' +
     b.theoNhom.map(function (x) { var ln = x.tienCoVon - x.von; return '<tr><td>' + e(x.nhom) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + tien(x.von) + '</td><td class="s">' + mau(ln) + '</td><td class="s">' + pt(ln, x.tienCoVon) + '</td><td class="s">' + (x.chuaVon ? '<span class="am">' + tien(x.chuaVon) + '</span>' : '') + '</td></tr>'; }).join('') + '</table></div></div>';
   var khoSP = (SB.sp || []).filter(function (s) { return s.kho; }), khoTen = {}; khoSP.forEach(function (s) { khoTen[s.ten.toLowerCase()] = 1; });
@@ -2222,7 +2231,7 @@ function sbVeBCNoi() {
       var gv = x.coVon ? tien(x.gia) + '<br><small class="muted">' + e(x.nguon) + '</small>' : '<span class="am">chưa có</span>';
       if (b.ghi && x.nhom !== 'Dịch vụ') gv += '<br><input data-gvsp="' + i + '" inputmode="numeric" placeholder="' + (x.coVon ? 'đổi giá' : 'nhập giá vốn') + '" style="width:100px;padding:2px 5px;font-size:12px;margin-top:2px">';
       var ghep = b.ghi && (x.nhom === 'YẾN TINH' || x.nhom === 'YẾN THÔ') && !khoTen[x.sp.toLowerCase()] ? '<br><input data-ghepsp="' + i + '" list="dsKhoSB" placeholder="ghép vào mã kho…" style="width:170px;padding:2px 5px;font-size:12px;margin-top:2px">' : '';
-      return '<tr data-timsp="' + e((x.sp + ' ' + x.nhom).toLowerCase()) + '"><td>' + e(x.sp) + '<br><small class="muted">' + e(x.nhom || '') + '</small>' + ghep + '</td><td class="s">' + soSL(x.sl) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + gv + '</td><td class="s">' + (x.coVon ? mau(x.tien - x.von) : '—') + '</td></tr>';
+      return '<tr data-timsp="' + e((x.sp + ' ' + x.nhom).toLowerCase()) + '"><td>' + e(x.sp) + '<br><small class="muted">' + e(x.nhom || '') + '</small>' + ghep + '</td><td class="s">' + soSL(x.sl) + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + gv + '</td><td class="s">' + (x.coVon ? mau(x.tien - x.von) + (x.von > x.tien ? '<br><small class="muted">tặng / chiết khấu</small>' : '') : '—') + '</td></tr>';
     }).join('') + '</table></div>' + (b.ghi ? '<p class="muted" style="margin-bottom:0">Gõ giá vốn (đồng / 1 đơn vị bán, VD tinh tính theo 100g) rồi bấm Enter — áp cho mọi đơn của sản phẩm đó, báo cáo tính lại ngay.</p>' : '') + '</div>';
   h += '<div class="the"><h3 style="margin-top:0">Theo ngày</h3><div class="cuon"><table><tr><th>Ngày</th><th class="s">Số đơn</th><th class="s">Doanh thu</th><th class="s">LN gộp</th><th class="s">Thu tiền</th></tr>' +
     b.theoNgay.map(function (x) { return '<tr><td>' + ngayDu(x.ngay) + '</td><td class="s">' + x.don + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + mau(x.ln) + '</td><td class="s">' + tien(x.thu) + '</td></tr>'; }).join('') + '</table></div></div>';
