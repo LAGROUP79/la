@@ -1777,7 +1777,7 @@ function veSo() {
   document.querySelectorAll('[data-sbtab]').forEach(function (b) { b.onclick = function () { SB_TAB = b.dataset.sbtab; SB_TIM = ''; veSo(); }; });
   ({ nhap: sbVeNhap, thu: sbVeThu, don: sbVeDon, no: sbVeNo, bc: sbVeBC })[SB_TAB]();
 }
-function sbDsKhach() { return '<datalist id="dsKhSB">' + SB.khach.filter(function (k) { return k.dung !== false; }).map(function (k) { return '<option value="' + e(k.ten) + '">'; }).join('') + '</datalist>'; }
+function sbDsKhach() { return '<datalist id="dsKhSB">' + SB.khach.filter(function (k) { return k.dung !== false; }).map(function (k) { return '<option value="' + e(k.ten) + '">' + (k.ghiChu ? e(k.ghiChu) : ''); }).join('') + '</datalist>'; }
 function sbNoKhach(k) {
   if (!k) return '';
   return '<p class="muted" style="margin:6px 0 0">Nợ hiện tại <b style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + sbTien(k.con) + '</b> · hạn mức ' + tien(k.hanMuc) + 'đ · <b style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + e(k.trangThai) + '</b>' +
@@ -1912,7 +1912,7 @@ function sbVeNo() {
     '<div class="the"><div class="hang" style="gap:8px"><input id="nTim" placeholder="Tìm khách…" value="' + e(SB_TIM) + '" style="flex:1">' + (SB.ghi ? '<button class="nut rong" id="nMoi" style="width:auto;padding:6px 12px">+ Khách mới</button>' : '') + '</div><div id="nDs" class="cuon"></div></div>';
   $('sbNoi').innerHTML = h;
   function ve() {
-    var q = SB_TIM.toLowerCase().trim(), l = ds.filter(function (k) { return !q || (k.ten + ' ' + k.ma + ' ' + (k.sdt || '')).toLowerCase().indexOf(q) >= 0; });
+    var q = SB_TIM.toLowerCase().trim(), l = ds.filter(function (k) { return !q || (k.ten + ' ' + k.ma + ' ' + (k.sdt || '') + ' ' + (k.ghiChu || '')).toLowerCase().indexOf(q) >= 0; });
     $('nDs').innerHTML = '<table><tr><th>Khách</th><th class="s">Nợ đầu tháng</th><th class="s">Phát sinh</th><th class="s">Đã trả</th><th class="s">Còn nợ</th><th class="s">Hạn mức</th><th>Trạng thái</th></tr>' + l.map(function (k) {
       return '<tr><td><a href="#" data-saoke="' + e(k.ma) + '"><b>' + e(k.ten) + '</b></a>' + (k.nhom ? '<br><small class="muted">' + e(k.nhom) + '</small>' : '') + '</td><td class="s">' + sbTien(k.noDau) + '</td><td class="s">' + tien(k.ps) + '</td><td class="s">' + tien(k.tra) + '</td>' +
         '<td class="s"><b style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + sbTien(k.con) + '</b></td><td class="s">' + tien(k.hanMuc) + '</td><td><small style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + e(k.trangThai) + '</small></td></tr>';
