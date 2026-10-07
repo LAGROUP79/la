@@ -11,7 +11,7 @@
 (function () {
   var API = 'https://script.google.com/macros/s/AKfycbzRAl04YpIxVpML2BmbFYEeQ_rHtOlvgoNbXylc6ec0OP9P6xk65rxlPeYZ-P_bg1D7mw/exec';
   function goi(ten, thamSo, ok, loi) {
-    fetch(ten === 'crmDuLieu' ? 'https://script.google.com/macros/s/AKfycbzRAl04YpIxVpML2BmbFYEeQ_rHtOlvgoNbXylc6ec0OP9P6xk65rxlPeYZ-P_bg1D7mw/exec' : API, { method: 'POST', body: JSON.stringify({ f: ten, a: thamSo }), credentials: 'omit', redirect: 'follow' })
+    fetch(API, { method: 'POST', body: JSON.stringify({ f: ten, a: thamSo }), credentials: 'omit', redirect: 'follow' })
       .then(function (r) { return r.json(); })
       .then(function (x) { if (x && x.loi != null) { if (loi) loi(new Error(x.loi)); } else if (ok) ok(x ? x.kq : null); })
       .catch(function () { if (loi) loi(new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.')); });
