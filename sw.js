@@ -1,4 +1,4 @@
-const BAN = 'la-v3';
+const BAN = 'la-v4';
 const VO = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(BAN).then(c => c.addAll(VO)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
@@ -27,4 +27,17 @@ self.addEventListener('fetch', e => {
       return x || moi;
     })));
   }
+});
+// Thông báo đẩy (07/10/2026): báo cáo 21:00 hiện trên màn hình khoá; chạm vào thì mở app.
+self.addEventListener('push', e => {
+  let d = {}; try { d = e.data ? e.data.json() : {}; } catch (x) { d = { body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'LA · Yến Sào Lanest', { body: d.body || '', icon: 'icon-bo-192.png', badge: 'icon-bo-192.png', tag: d.tag || 'la', renotify: true, data: { url: d.url || './' } }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(ws => {
+    for (const w of ws) if (w.url.indexOf(self.registration.scope) === 0 && 'focus' in w) return w.focus();
+    return self.clients.openWindow(url);
+  }));
 });

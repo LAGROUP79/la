@@ -467,7 +467,30 @@ function veHome() {
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
     }).join('') + '</div>' +
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH HÀNG</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button></div>' : '') +
-    '<h3 class="nhom">PHÒNG BAN</h3><div class="oclon nam">' + H.phongBan.map(function (p) { return oPhong(p.ma); }).join('') + '</div>';
+    '<h3 class="nhom">PHÒNG BAN</h3><div class="oclon nam">' + H.phongBan.map(function (p) { return oPhong(p.ma); }).join('') + '</div>' +
+    (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo báo cáo 21:00 trên điện thoại</b>' +
+      '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00 hiện trên màn hình khoá: số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, tình hình kiểm kho trong ngày. Bật trên từng máy muốn nhận.</p>' +
+      '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><button class="nut rong" id="tbThu" style="width:auto">Gửi thử ngay</button></div>' +
+      '<small class="muted" id="tbTT"></small></div>' : '');
+  if ($('tbBat')) tbGanNut();
+}
+var TB_KHOA = 'BNvCUndYQ2vsqjRGtB1d3V3WLunBg1Ma4q3zIUb29Ihycw6mno1K5lThNItSrcGdv433H77d7HF-6jROnggN938';
+function tbKhoa() { var s = TB_KHOA.replace(/-/g, '+').replace(/_/g, '/'), b = atob(s + '==='.slice((s.length + 3) % 4)), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+function tbGanNut() {
+  var tt = function (m) { $('tbTT').textContent = m; };
+  var coPush = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  if (!coPush) { tt(/iPhone|iPad/.test(navigator.userAgent) ? 'iPhone: mở app LA trong Safari → bấm Chia sẻ → "Thêm vào MH chính", rồi mở app từ biểu tượng ngoài màn hình và bấm "Bật" ở đây.' : 'Trình duyệt này chưa hỗ trợ thông báo — dùng Chrome trên điện thoại.'); $('tbBat').disabled = true; }
+  else navigator.serviceWorker.ready.then(function (r) { return r.pushManager.getSubscription(); }).then(function (s) { if (s) { tt('Máy này đã bật thông báo.'); $('tbBat').textContent = 'Bật lại'; } });
+  $('tbBat').onclick = function () {
+    if (!coPush) return;
+    Notification.requestPermission().then(function (p) {
+      if (p !== 'granted') throw new Error('Chưa cho phép thông báo — vào cài đặt trình duyệt / điện thoại, cho phép thông báo của app LA rồi bấm lại.');
+      return navigator.serviceWorker.ready;
+    }).then(function (r) { return r.pushManager.getSubscription().then(function (s) { return s || r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: tbKhoa() }); }); })
+      .then(function (s) { goi('tbDangKy', [TK, s.toJSON(), navigator.userAgent], function () { tt('Đã bật. 21:00 mỗi ngày máy này sẽ nhận báo cáo.'); bao('Đã bật thông báo báo cáo 21:00.'); }); })
+      .catch(function (x) { tt(x.message || 'Không bật được thông báo.'); });
+  };
+  $('tbThu').onclick = function () { goi('tbGuiThu', [TK], function (r) { bao(r.daGui ? 'Đã gửi thử tới ' + r.daGui + ' máy — xem màn hình điện thoại.' : 'Chưa gửi được (' + (r.loiGui || []).join(', ') + ').', !r.daGui); }); };
 }
 var IC_O = (function () {
   function s(p) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; }
