@@ -123,6 +123,8 @@ th,td{padding:6px 6px;border-bottom:1px solid #EFE6CC;text-align:left;vertical-a
 th{color:var(--nhat);font-weight:600;background:#FBF7EA}
 td.s,th.s{text-align:right;white-space:nowrap}
 .cuon{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
+.codinh th:first-child,.codinh td:first-child{position:sticky;left:0;z-index:1;background:#fff;box-shadow:2px 0 4px rgba(27,77,64,.08);min-width:120px;max-width:170px}
+.codinh th:first-child{background:#FBF7EA}
 tr.hn td{background:#FFF6DA;font-weight:600}
 tr.qua td{color:var(--nhat)}
 tr.cong td{font-weight:700;background:#FBF7EA}
@@ -2013,7 +2015,7 @@ function sbVeNo() {
   $('sbNoi').innerHTML = h;
   function ve() {
     var q = SB_TIM.toLowerCase().trim(), l = ds.filter(function (k) { return !q || (k.ten + ' ' + k.ma + ' ' + (k.sdt || '') + ' ' + (k.ghiChu || '')).toLowerCase().indexOf(q) >= 0; });
-    $('nDs').innerHTML = '<table><tr><th>Khách</th><th class="s">Nợ đầu tháng</th><th class="s">Phát sinh</th><th class="s">Đã trả</th><th class="s">Còn nợ</th><th class="s">Hạn mức</th><th>Trạng thái</th></tr>' + l.map(function (k) {
+    $('nDs').innerHTML = '<table class="codinh"><tr><th>Khách</th><th class="s">Nợ đầu tháng</th><th class="s">Phát sinh</th><th class="s">Đã trả</th><th class="s">Còn nợ</th><th class="s">Hạn mức</th><th>Trạng thái</th></tr>' + l.map(function (k) {
       return '<tr><td><a href="#" data-saoke="' + e(k.ma) + '"><b>' + e(k.ten) + '</b></a>' + (k.nhom ? '<br><small class="muted">' + e(k.nhom) + '</small>' : '') + '</td><td class="s">' + sbTien(k.noDau) + '</td><td class="s">' + tien(k.ps) + '</td><td class="s">' + tien(k.tra) + '</td>' +
         '<td class="s"><b style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + sbTien(k.con) + '</b></td><td class="s">' + tien(k.hanMuc) + '</td><td><small style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + e(k.trangThai) + '</small></td></tr>';
     }).join('') + '</table>';
