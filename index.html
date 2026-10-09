@@ -1838,7 +1838,51 @@ function veKb(r) {
   };
 }
 var SB = null, SB_TAB = 'nhap', SB_THANG = '', SB_DON = null, SB_TIM = '';
-var SB_TEN_TAB = { nhap: 'Nhập đơn', thu: 'Thu tiền', don: 'Đơn hàng', no: 'Công nợ', bc: 'Báo cáo' };
+var SB_TEN_TAB = { nhap: 'Nhập đơn', thu: 'Thu tiền', don: 'Đơn hàng', no: 'Công nợ', cp: 'Chi phí', bc: 'Báo cáo' };
+var SB_CP = null, SB_CP_SUA = null;
+function sbVeCP() {
+  $('sbNoi').innerHTML = '<p class="muted">Đang tải chi phí…</p>';
+  goi('ktChiPhi', [TK, SB.thang], function (r) { SB_CP = r; SB_CP_SUA = null; sbVeCPNoi(); }, true);
+}
+function sbVeCPNoi() {
+  var r = SB_CP, cungThang = r.homNay.slice(0, 7) === r.thang, d = SB_CP_SUA || { ma: '', ngay: cungThang ? r.homNay : r.thang + '-01', hm: '', nd: '', tien: '', ht: 'Chuyển khoản' };
+  var tenT = +r.thang.slice(5) + '/' + r.thang.slice(0, 4), h = '';
+  if (r.ghi) {
+    h += '<div class="the"><h3 style="margin-top:0">' + (d.ma ? 'Sửa khoản chi' : 'Nhập khoản chi') + '</h3>' +
+      '<datalist id="dsHMCP">' + r.hangMuc.map(function (x) { return '<option value="' + e(x) + '">'; }).join('') + '</datalist>' +
+      '<div class="hang" style="gap:8px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><label for="cpNgay">Ngày</label><input type="date" id="cpNgay" value="' + e(d.ngay) + '" max="' + e(r.homNay) + '"></div>' +
+      '<div style="flex:2;min-width:180px"><label for="cpHM">Hạng mục</label><input id="cpHM" list="dsHMCP" value="' + e(d.hm) + '" placeholder="Chọn hoặc gõ hạng mục mới"></div></div>' +
+      '<div class="hang" style="gap:8px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><label for="cpTien">Số tiền</label><input id="cpTien" inputmode="numeric" value="' + e(d.tien === '' ? '' : tien(d.tien)) + '"></div>' +
+      '<div style="flex:1;min-width:140px"><label for="cpHT">Hình thức</label><select id="cpHT">' + r.hinhThuc.map(function (x) { return opt(x, d.ht); }).join('') + '</select></div></div>' +
+      '<label for="cpND">Nội dung</label><input id="cpND" value="' + e(d.nd) + '" placeholder="VD: tiền điện tháng 10, phí ship GHN…">' +
+      '<small class="muted">Gõ hạng mục chưa có trong danh sách thì app tự thêm hạng mục mới.</small>' +
+      '<button class="nut" id="cpLuu" style="margin-top:10px">' + (d.ma ? 'Lưu sửa' : 'Lưu khoản chi') + '</button>' + (d.ma ? '<button class="nut rong" id="cpBo" style="margin-top:8px">Bỏ sửa</button>' : '') + '</div>';
+  }
+  h += '<div class="the"><h3 style="margin-top:0">Chi phí tháng ' + tenT + ' · <span style="color:var(--do)">' + tien(r.tong) + 'đ</span></h3>' +
+    '<p class="muted" style="margin:0 0 8px">Tháng trước: ' + tien(r.tongTruoc) + 'đ. Cộng dồn từ đầu tháng tới nay, theo từng hạng mục.</p>' +
+    (r.theoHM.length ? '<div class="cuon"><table class="codinh"><tr><th>Hạng mục</th><th class="s">Số khoản</th><th class="s">Tháng này</th><th class="s">Tháng trước</th></tr>' +
+      r.theoHM.map(function (x) { return '<tr><td>' + e(x.hm) + '</td><td class="s">' + x.so + '</td><td class="s"><b>' + tien(x.tien) + '</b></td><td class="s">' + tien(x.truoc) + '</td></tr>'; }).join('') +
+      '<tr><td><b>Tổng</b></td><td></td><td class="s"><b>' + tien(r.tong) + '</b></td><td class="s">' + tien(r.tongTruoc) + '</td></tr></table></div>' : '<p class="muted">Chưa có khoản chi nào.</p>') + '</div>';
+  h += '<div class="the"><h3 style="margin-top:0">Các khoản chi tháng ' + tenT + '</h3>' + (r.ds.length ? r.ds.map(function (x) {
+    var huy = x.tt !== 'Hợp lệ';
+    return '<div style="padding:6px 0;border-bottom:1px solid #EFE6CC' + (huy ? ';opacity:.5;text-decoration:line-through' : '') + '"><div class="hang" style="justify-content:space-between"><span>' + ngVN(x.ngay) + ' · <b>' + e(x.hm) + '</b></span><b>' + tien(x.tien) + 'đ</b></div>' +
+      '<small class="muted">' + (x.nd ? e(x.nd) + ' · ' : '') + e(x.ht) + ' · ' + e(x.nguoi) + (huy ? ' · ' + e(x.tt) : '') + '</small>' +
+      (!huy && r.ghi ? ' <button class="nut rong" data-cpsua="' + e(x.ma) + '" style="width:auto;padding:2px 8px;font-size:12px">Sửa</button> <button class="nut rong" data-cphuy="' + e(x.ma) + '" style="width:auto;padding:2px 8px;font-size:12px">Huỷ</button>' : '') + '</div>';
+  }).join('') : '<p class="muted">Chưa có khoản chi nào.</p>') + '</div>';
+  $('sbNoi').innerHTML = h;
+  if ($('cpLuu')) $('cpLuu').onclick = function () {
+    var p = { ma: d.ma, ngay: $('cpNgay').value, hm: $('cpHM').value.trim(), tien: docTien($('cpTien').value), ht: $('cpHT').value, nd: $('cpND').value.trim() };
+    if (!p.hm) { bao('Chọn hạng mục chi phí.', true); return; }
+    if (!(p.tien > 0)) { bao('Nhập số tiền chi.', true); return; }
+    goi('ktLuuChiPhi', [TK, p, SB.thang], function (x) { SB_CP = x; SB_CP_SUA = null; sbVeCPNoi(); bao((d.ma ? 'Đã sửa ' : 'Đã lưu ') + p.hm + ' ' + tien(p.tien) + 'đ.'); });
+  };
+  if ($('cpBo')) $('cpBo').onclick = function () { SB_CP_SUA = null; sbVeCPNoi(); };
+  document.querySelectorAll('[data-cpsua]').forEach(function (b) { b.onclick = function () { var x = r.ds.filter(function (y) { return y.ma === b.dataset.cpsua; })[0]; SB_CP_SUA = { ma: x.ma, ngay: x.ngay, hm: x.hm, nd: x.nd, tien: x.tien, ht: x.ht }; sbVeCPNoi(); window.scrollTo(0, 0); }; });
+  document.querySelectorAll('[data-cphuy]').forEach(function (b) { b.onclick = function () {
+    var ly = prompt('Lý do huỷ khoản chi này:'); if (ly == null) return; if (!ly.trim()) { bao('Cần ghi lý do huỷ.', true); return; }
+    goi('ktHuyChiPhi', [TK, b.dataset.cphuy, ly, SB.thang], function (x) { SB_CP = x; sbVeCPNoi(); bao('Đã huỷ khoản chi.'); });
+  }; });
+}
 var SB_MAU_TT = { 'Vượt hạn mức': 'var(--do)', 'Sắp chạm': '#B7791F', 'Trong hạn mức': 'var(--xanh)', 'Không nợ': '#6B7280', 'Đang dư': '#2B8CC4' };
 function napSo(thang) { SB_THANG = thang || SB_THANG || ''; goi('ktSo', [TK, SB_THANG], function (r) { SB = r; SB_THANG = r.thang; veSo(); }); }
 function sbKhach(ma) { return (SB.khach || []).filter(function (k) { return k.ma === ma; })[0]; }
@@ -1857,7 +1901,7 @@ function veSo() {
   $('noiDung').innerHTML = h;
   $('sbThang').onchange = function () { if (this.value) napSo(this.value); };
   document.querySelectorAll('[data-sbtab]').forEach(function (b) { b.onclick = function () { SB_TAB = b.dataset.sbtab; SB_TIM = ''; veSo(); }; });
-  ({ nhap: sbVeNhap, thu: sbVeThu, don: sbVeDon, no: sbVeNo, bc: sbVeBC })[SB_TAB]();
+  ({ nhap: sbVeNhap, thu: sbVeThu, don: sbVeDon, no: sbVeNo, cp: sbVeCP, bc: sbVeBC })[SB_TAB]();
 }
 function sbDsKhach() { return '<datalist id="dsKhSB">' + SB.khach.filter(function (k) { return k.dung !== false; }).map(function (k) { return '<option value="' + e(k.ten) + '">' + (k.ghiChu ? e(k.ghiChu) : ''); }).join('') + '</datalist>'; }
 function sbNoKhach(k) {
@@ -2234,7 +2278,7 @@ function sbVeBCNoi() {
   var o = function (t, v) { return '<div><small class="muted">' + t + '</small><br><b style="font-size:18px">' + v + '</b></div>'; };
   var ky = b.tu === b.den ? 'ngày ' + ngayDu(b.tu) : ngayDu(b.tu) + ' – ' + ngayDu(b.den);
   var h = '<div class="the"><h3 style="margin-top:0">Lợi nhuận gộp ' + ky + '</h3><div class="luoi2">' + o('Doanh thu (tổng đơn)', tien(b.doanhThu) + 'đ') + o('Số đơn', b.soDon) +
-    o('Giá vốn', tien(b.giaVon) + 'đ') + o('Lợi nhuận gộp', mau(b.lnGop) + ' <small class="muted">' + pt(b.lnGop, b.tienCoVon) + '</small>') + o('Đã thu', tien(b.daThu) + 'đ') + o('Phí ship / VAT', tien(b.ship) + 'đ / ' + tien(b.vat) + 'đ') + '</div>' +
+    o('Giá vốn', tien(b.giaVon) + 'đ') + o('Lợi nhuận gộp', mau(b.lnGop) + ' <small class="muted">' + pt(b.lnGop, b.tienCoVon) + '</small>') + o('Chi phí (kế toán nhập)', tien(b.chiPhi || 0) + 'đ') + o('Lợi nhuận sau chi phí', mau(b.lnGop - (b.chiPhi || 0))) + o('Đã thu', tien(b.daThu) + 'đ') + o('Phí ship / VAT', tien(b.ship) + 'đ / ' + tien(b.vat) + 'đ') + '</div>' +
     '<p class="muted" style="margin-bottom:0">Lợi nhuận gộp = tiền hàng có giá vốn − giá vốn − chiết khấu (' + tien(b.ck) + 'đ). Chưa trừ VAT, vận hành, đóng gói. Phí ship, VAT' + (b.cnKhac ? ', công nợ khác / gửi hộ (' + tien(b.cnKhac) + 'đ)' : '') + ' không tính vào lãi.' +
     (b.chuaVon ? ' <b class="am">' + tien(b.chuaVon) + 'đ tiền hàng chưa có giá vốn nên chưa tính lãi</b> — đặt giá vốn ở bảng sản phẩm bên dưới.' : '') + '</p></div>';
   if (b.tang || b.ck) {
