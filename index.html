@@ -2121,11 +2121,27 @@ function sbVeSaoKe(ma, thang, r) {
     (k.trangThai ? '<small style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + e(k.trangThai) + '</small>' : '') +
     '<input type="month" id="skThang" value="' + e(thang) + '" min="2026-10" style="max-width:160px;margin-left:auto"></div></div>' +
     '<div class="the"><div class="cuon">' + bang + '</div></div>' +
-    (SB.ghi ? '<div class="the"><button class="nut" id="skSuaBang">✎ Sửa trực tiếp trên bảng</button></div>' : '') + '<div class="the"><button class="nut" id="skHinh">🖼 Gửi khách bằng hình (Zalo)</button><button class="nut rong" id="skIn" style="margin-top:8px">In / lưu PDF</button><button class="nut rong" id="skXl" style="margin-top:8px">Lưu Excel</button>' +
+    (SB.ghi ? '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skSuaBang" style="flex:1">✎ Sửa trực tiếp trên bảng</button><button class="nut" id="skTra" style="flex:1;background:#1D4ED8">💵 THANH TOÁN</button></div></div>' : '') + '<div class="the"><button class="nut" id="skHinh">🖼 Gửi khách bằng hình (Zalo)</button><button class="nut rong" id="skIn" style="margin-top:8px">In / lưu PDF</button><button class="nut rong" id="skXl" style="margin-top:8px">Lưu Excel</button>' +
     (SB.ghi ? '<button class="nut rong" id="skSua" style="margin-top:8px">Sửa thông tin khách</button>' : '') + '</div>';
   $('skVe').onclick = function () { veSo(); };
   $('skThang').onchange = function () { if (this.value) sbSaoKe(ma, this.value); };
   if ($('skSuaBang')) $('skSuaBang').onclick = function () { sbSuaBang(ma, thang, r); };
+  if ($('skTra')) $('skTra').onclick = function () {
+    moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">Thanh toán · ' + e(r.kh.ten) + '</h3><small class="muted">Đang nợ đến ' + sbDMY(r.den) + ': ' + (chot < 0 ? '−' : '') + tien(Math.abs(chot)) + 'đ</small>' +
+      '<label for="ttNgay">Ngày</label><input type="date" id="ttNgay" value="' + e(SB.homNay) + '" max="' + e(SB.homNay) + '" min="2026-10-01">' +
+      '<label for="ttTien">Số tiền khách trả</label><input id="ttTien" inputmode="numeric" value="' + (chot > 0 ? tien(chot) : '') + '">' +
+      '<label for="ttHT">Hình thức</label><select id="ttHT">' + SB.hinhThuc.map(function (x) { return opt(x, 'Chuyển khoản'); }).join('') + '</select>' +
+      '<label for="ttGhi">Ghi chú</label><input id="ttGhi" placeholder="VD: CK công ty, thanh toán công nợ tháng ' + +thang.slice(5) + '">' +
+      '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="ttHuy" style="flex:1">Đóng</button><button class="nut" id="ttLuu" style="flex:1">Lưu thanh toán</button></div>');
+    $('ttHuy').onclick = dongHop;
+    $('ttLuu').onclick = function () {
+      var so = docTien($('ttTien').value); if (!(so > 0)) { bao('Nhập số tiền khách trả.', true); return; }
+      var nut = this; nut.disabled = true;
+      goi('ktLuuThu', [TK, { ngay: $('ttNgay').value, maKH: ma, tien: so, ht: $('ttHT').value, ghiChu: $('ttGhi').value }, SB_THANG], function (x) {
+        SB = x.so; dongHop(); bao('Đã ghi thanh toán ' + tien(so) + 'đ của ' + r.kh.ten + '.'); sbSaoKe(ma, thang);
+      }, false, function () { nut.disabled = false; });
+    };
+  };
   var tenFile = 'Cong no ' + r.kh.ten + ' thang ' + +thang.slice(5);
   $('skHinh').onclick = function () {
     var nut = this; nut.disabled = true; nut.textContent = 'Đang tạo hình…';
