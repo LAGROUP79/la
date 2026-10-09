@@ -2327,13 +2327,24 @@ function sbVeBCNoi() {
   });
 }
 function veXl() {
-  $('noiDung').innerHTML = quayLai() + '<div class="the"><h3>Tải dữ liệu ra Excel</h3><p class="muted">Một file Excel gồm các sổ: đơn hàng, chi tiết đơn, khách hàng, xuất kho kế toán, phiếu kho, tồn kho, danh mục hàng, chấm công, nghỉ phép, điều chỉnh công, lương, nhật ký điều chỉnh. Số liệu mới nhất lúc bấm tải. Không có mật mã, hồ sơ CCCD.</p>' +
-    '<button class="nut rong" id="xlTai">Tải file Excel</button></div>';
+  $('noiDung').innerHTML = quayLai() + '<div class="the"><h3>Tải dữ liệu ra Excel</h3><p class="muted">Tích chọn sổ cần tải, mỗi sổ là một trang trong file Excel. Số liệu mới nhất lúc bấm tải. Không có mật mã, hồ sơ CCCD.</p>' +
+    '<div id="xlDs"><p class="muted">Đang tải danh sách sổ…</p></div><button class="nut rong" id="xlTai" style="margin-top:10px">Tải file Excel</button></div>';
+  goi('ktDsTai', [TK], function (ds) {
+    var nhom = []; ds.forEach(function (x) { if (nhom.indexOf(x.nhom) < 0) nhom.push(x.nhom); });
+    $('xlDs').innerHTML = nhom.map(function (n) {
+      return '<div style="margin:10px 0 4px"><label class="chon" style="font-weight:700;color:var(--xanh)"><input type="checkbox" data-xlnhom="' + e(n) + '"> ' + e(n) + '</label></div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:4px 18px;padding-left:24px">' + ds.filter(function (x) { return x.nhom === n; }).map(function (x) {
+          return '<label class="chon" style="margin:0"><input type="checkbox" data-xl="' + e(x.ten) + '" data-xlthuoc="' + e(n) + '"> ' + e(x.ten) + '</label>'; }).join('') + '</div>';
+    }).join('');
+    document.querySelectorAll('[data-xlnhom]').forEach(function (c) { c.onchange = function () { document.querySelectorAll('[data-xlthuoc="' + c.dataset.xlnhom + '"]').forEach(function (x) { x.checked = c.checked; }); }; });
+  }, true);
   $('xlTai').onclick = function () {
+    var chon = [].slice.call(document.querySelectorAll('[data-xl]:checked')).map(function (c) { return c.dataset.xl; });
+    if (!chon.length) { bao('Tích chọn ít nhất một sổ cần tải.', true); return; }
     var nut = this; nut.disabled = true; nut.textContent = 'Đang lấy dữ liệu…';
     var xong = function () { nut.disabled = false; nut.textContent = 'Tải file Excel'; };
     napThuVienXl(function () {
-      goi('ktTaiDuLieu', [TK], function (ds) {
+      goi('ktTaiDuLieu', [TK, chon], function (ds) {
         var wb = XLSX.utils.book_new();
         ds.forEach(function (s) {
           var rows = s.rows.map(function (r) { return r.map(function (v) { return /^-?\d+(\.\d+)?$/.test(v) && v.length < 15 ? Number(v) : v; }); });
