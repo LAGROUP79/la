@@ -1492,11 +1492,20 @@ function moTaiKhoan(nv) {
     '<label>Họ tên</label><input id="tkTen" value="' + e(nv.ten) + '">' +
     '<div class="luoi2"><div><label>Bộ phận</label><input id="tkBP" value="' + e(nv.boPhan) + '" placeholder="Kinh doanh, Kho vận…"></div><div><label>Giờ vào làm theo nhóm</label><select id="tkNhom">' + opt('Văn phòng', nv.nhom) + opt('Kho', nv.nhom) + '</select></div></div>' +
     (xl ? '<label>Lương cứng (đ/tháng)</label><input id="tkLuong" data-k="1" inputmode="numeric" value="' + (nv.luong ? tien(nv.luong) : '') + '">' : '') +
+    (!moi && H.me.admin ? '<label>Mật mã đang dùng</label><div class="hang" style="gap:8px;align-items:center"><b id="tkMaCu" style="font-size:18px;letter-spacing:3px">••••</b><button class="nut rong" id="tkHienMa" style="width:auto;padding:4px 12px">Hiện</button></div>' +
+      '<small class="muted">Chỉ Admin xem được, mỗi lần xem có ghi nhật ký. Tự che lại sau 15 giây.</small>' : '') +
     '<label>' + (moi ? 'Mật mã đăng nhập (4–8 số)' : 'Đặt mật mã mới (để trống = giữ mật mã đang dùng)') + '</label><input id="tkMa" inputmode="numeric" autocomplete="off" placeholder="Nhập mật mã">' +
     (moi ? '' : '<label class="chon"><input type="checkbox" id="tkDung"' + (nv.dung ? ' checked' : '') + '> Được đăng nhập (bỏ chọn = khoá tài khoản)</label>') +
-    '<p class="muted">' + (moi ? 'Thêm xong, Admin vào Phòng Vận hành → Phân quyền xếp phòng ban thì người này mới đăng nhập được.' : (nv.coMa ? 'Người này đã có mật mã.' : 'Người này chưa có mật mã.') + ' App không hiển thị mật mã đang dùng.') + '</p>' +
+    '<p class="muted">' + (moi ? 'Thêm xong, Admin vào Phòng Vận hành → Phân quyền xếp phòng ban thì người này mới đăng nhập được.' : (nv.coMa ? 'Người này đã có mật mã.' : 'Người này chưa có mật mã.') + (H.me.admin ? '' : ' App không hiển thị mật mã đang dùng.')) + '</p>' +
     '<div class="hang"><button class="nut phu" id="tkHuy">Đóng</button><button class="nut" id="tkLuu">' + (moi ? 'Thêm nhân viên' : 'Lưu') + '</button></div>');
   $('tkHuy').onclick = dongHop;
+  if ($('tkHienMa')) $('tkHienMa').onclick = function () {
+    var nut = this;
+    goi('nsXemMa', [TK, nv.id], function (x) {
+      $('tkMaCu').textContent = x.ma || '(chưa có)'; nut.disabled = true;
+      setTimeout(function () { if ($('tkMaCu')) { $('tkMaCu').textContent = '••••'; nut.disabled = false; } }, 15000);
+    });
+  };
   $('tkLuu').onclick = function () {
     goi('nsLuuNhanVien', [TK, { id: moi ? '' : nv.id, ten: $('tkTen').value, boPhan: $('tkBP').value, nhom: $('tkNhom').value, ma: $('tkMa').value,
       luong: xl ? $('tkLuong').value : null, dung: moi ? true : $('tkDung').checked }], function (x) {
