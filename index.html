@@ -1186,7 +1186,8 @@ function veCrm() {
       return '<button class="nut nho' + (CRM.loc === k ? '' : ' phu') + '" data-crmloc="' + e(k) + '">' + e(k) + ' · ' + dem[k] + '</button>';
     }).join('') + '</div></div><div id="crmDs"></div>' +
     '<p class="muted">Chỉ xem. Số lấy tự động từ sổ TỔNG HỢP BÁN HÀNG 2026 (sheet ' + (kl ? 'DS NGUOI NHAN' : 'DS KHACH HANG') + '), lúc ' + e(r.luc) +
-    '. <button class="nut nho phu" data-crmmoi="1" style="width:auto">Làm mới</button></p>';
+    '. <button class="nut nho phu" data-crmmoi="1" style="width:auto">Làm mới</button>' +
+    (H.me.admin ? ' <button class="nut nho phu" data-crmdaxoa="1" style="width:auto">🗑 ' + (kl ? 'Khách' : 'Đại lý') + ' đã xoá (' + (r.daXoa || []).filter(function (x) { return x.loai === CRM.che; }).length + ')</button>' : '') + '</p>';
   $('noiDung').innerHTML = h;
   veCrmDs();
 }
@@ -1194,7 +1195,8 @@ function veCrmDs() {
   if (CRM.che === 'km') return veCrmKmDs();
   var kl = CRM.che === 'kl', ds = crmLoc(), xem = ds.slice(0, CRM.hien);
   CRM.xem = xem;
-  var mo = function (i) { return '<div class="don crmthe" data-crmhs="' + i + '" style="cursor:pointer">'; }, goiY = '<div style="text-align:right;font-size:12px;color:var(--xanh);font-weight:600">Xem hồ sơ ›</div>';
+  var mo = function (i) { return '<div class="don crmthe" data-crmhs="' + i + '" style="cursor:pointer">'; }, goiY = '<div class="hang" style="justify-content:flex-end;gap:10px;align-items:center;font-size:12px;color:var(--xanh);font-weight:600">' +
+    (H.me.admin ? '<button class="nut nho phu" data-crmxoa="1" style="width:auto;padding:2px 10px;font-size:12px;color:#C81E1E">🗑 Xoá</button>' : '') + '<span>Xem hồ sơ ›</span></div>';
   $('crmDs').innerHTML = '<p class="muted">' + ds.length + (kl ? ' khách' : ' đại lý') + (kl ? ' · xếp theo tổng giá trị đơn' : ' · xếp theo công nợ') + ' · bấm vào khách để xem hồ sơ</p>' + (xem.map(function (x, i) {
     if (kl) return mo(i) + '<div class="dau"><span class="ma">' + e(x[1] || '(chưa có tên)') + '</span>' + (x[8] ? '<span class="chip ' + crmChipTT(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
       '<div>' + crmSdt(x[0]) + (x[5] ? ' · đại lý <b>' + e(x[5]) + '</b>' : '') + '</div>' +
@@ -1238,12 +1240,30 @@ function moHoSoCrm(x) {
       }).join('') : '<p class="muted">Chưa có đơn từ 01/10/2026.</p>');
       if (r.thu.length) h += muc('Thanh toán gần đây') + r.thu.map(function (t) { return dong(ngayDu(t.ngay) + ' · ' + t.ht, tien(t.tien) + 'đ'); }).join('');
     }
-    h += '<button class="nut" id="hsDong" style="margin-top:14px">Đóng</button>';
+    h += (H.me.admin ? '<button class="nut rong" id="hsXoa" style="margin-top:14px;color:#C81E1E">🗑 Xoá khách này khỏi CRM</button>' : '') + '<button class="nut" id="hsDong" style="margin-top:8px">Đóng</button>';
     moHop(h); $('hsDong').onclick = dongHop;
+    if ($('hsXoa')) $('hsXoa').onclick = function () { crmXoa(x); };
   });
 }
+function crmXoa(x) {
+  var kl = CRM.che === 'kl', ten = kl ? (x[1] || x[0]) : x[0];
+  if (!confirm('Xoá "' + ten + '" khỏi CRM khách cũ?\n\nChỉ ẩn khỏi danh sách CRM — đơn hàng, công nợ trong Sổ bán hàng vẫn giữ nguyên. Khôi phục được ở nút "Khách đã xoá" cuối trang.')) return;
+  goi('crmXoaKhach', [TK, kl ? 'kl' : 'dl', ten, kl ? x[0] : x[9]], function (r) { dongHop(); crmNhan(r); bao('Đã xoá ' + ten + ' khỏi CRM.'); });
+}
+function moDaXoa() {
+  var ds = (CRM.r.daXoa || []).filter(function (x) { return x.loai === CRM.che; });
+  moHop('<h3 style="margin:0 0 6px;color:var(--xanh)">' + (CRM.che === 'kl' ? 'Khách lẻ' : 'Đại lý') + ' đã xoá khỏi CRM</h3>' + (ds.length ? ds.map(function (x) {
+    return '<div class="hang" style="justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #EFE6CC"><div><b>' + e(x.ten) + '</b>' + (x.sdt ? ' · ' + e(x.sdt) : '') +
+      '<br><small class="muted">' + e(x.nguoi) + ' xoá ' + e(String(x.luc).slice(0, 16)) + '</small></div><button class="nut nho phu" data-khoiphuc="' + e(x.khoa) + '" style="width:auto">Khôi phục</button></div>';
+  }).join('') : '<p class="muted">Chưa xoá khách nào.</p>') + '<button class="nut" id="dxDong" style="margin-top:12px">Đóng</button>');
+  $('dxDong').onclick = dongHop;
+  document.querySelectorAll('[data-khoiphuc]').forEach(function (b) { b.onclick = function () {
+    goi('crmKhoiPhuc', [TK, b.dataset.khoiphuc], function (r) { crmNhan(r); moDaXoa(); bao('Đã khôi phục.'); });
+  }; });
+}
 document.addEventListener('click', function (ev) {
-  var c = ev.target.closest('[data-crmhs]'); if (!c || ev.target.closest('a,button') || !CRM || !CRM.xem) return;
+  var c = ev.target.closest('[data-crmhs]');
+  if (c && ev.target.closest('[data-crmxoa]') && CRM && CRM.xem) { var xx = CRM.xem[+c.dataset.crmhs]; if (xx) crmXoa(xx); return; } if (!c || ev.target.closest('a,button') || !CRM || !CRM.xem) return;
   var x = CRM.xem[+c.dataset.crmhs]; if (x) moHoSoCrm(x);
 });
 function bamCrm(b) {
@@ -1252,6 +1272,7 @@ function bamCrm(b) {
   if (d.crmloc != null) { CRM.loc = CRM.loc === d.crmloc ? '' : d.crmloc; CRM.hien = 60; veCrm(); return; }
   if (d.crmthem) { CRM.hien += 60; veCrmDs(); return; }
   if (d.crmmoi) napCrm(true);
+  if (d.crmdaxoa) { moDaXoa(); return; }
   if (d.kmthem) { moKhachMoi(null); return; }
   var km = (CRM.r.khachMoi || []).filter(function (x) { return x.ma === (d.kmsua || d.kmtt); })[0];
   if (d.kmsua && km) { moKhachMoi(km); return; }
