@@ -1193,17 +1193,59 @@ function veCrm() {
 function veCrmDs() {
   if (CRM.che === 'km') return veCrmKmDs();
   var kl = CRM.che === 'kl', ds = crmLoc(), xem = ds.slice(0, CRM.hien);
-  $('crmDs').innerHTML = '<p class="muted">' + ds.length + (kl ? ' khách' : ' đại lý') + (kl ? ' · xếp theo tổng giá trị đơn' : ' · xếp theo công nợ') + '</p>' + (xem.map(function (x) {
-    if (kl) return '<div class="don"><div class="dau"><span class="ma">' + e(x[1] || '(chưa có tên)') + '</span>' + (x[8] ? '<span class="chip ' + crmChipTT(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
+  CRM.xem = xem;
+  var mo = function (i) { return '<div class="don crmthe" data-crmhs="' + i + '" style="cursor:pointer">'; }, goiY = '<div style="text-align:right;font-size:12px;color:var(--xanh);font-weight:600">Xem hồ sơ ›</div>';
+  $('crmDs').innerHTML = '<p class="muted">' + ds.length + (kl ? ' khách' : ' đại lý') + (kl ? ' · xếp theo tổng giá trị đơn' : ' · xếp theo công nợ') + ' · bấm vào khách để xem hồ sơ</p>' + (xem.map(function (x, i) {
+    if (kl) return mo(i) + '<div class="dau"><span class="ma">' + e(x[1] || '(chưa có tên)') + '</span>' + (x[8] ? '<span class="chip ' + crmChipTT(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
       '<div>' + crmSdt(x[0]) + (x[5] ? ' · đại lý <b>' + e(x[5]) + '</b>' : '') + '</div>' +
-      '<div class="muted">' + x[2] + ' lần nhận · ' + tien(x[3]) + 'đ' + (x[4] ? ' · gần nhất ' + crmNgay(x[4]) : '') + ' · im lặng ' + x[6] + ' ngày' + (x[7] ? ' · ' + e(x[7]) : '') + '</div></div>';
-    return '<div class="don"><div class="dau"><span class="ma">' + e(x[0]) + '</span>' + (x[6] ? '<span class="chip ' + crmChipTT(x[6]) + '">' + e(x[6]) + '</span>' : '') + '</div>' +
+      '<div class="muted">' + x[2] + ' lần nhận · ' + tien(x[3]) + 'đ' + (x[4] ? ' · gần nhất ' + crmNgay(x[4]) : '') + ' · im lặng ' + x[6] + ' ngày' + (x[7] ? ' · ' + e(x[7]) : '') + '</div>' + goiY + '</div>';
+    return mo(i) + '<div class="dau"><span class="ma">' + e(x[0]) + '</span>' + (x[6] ? '<span class="chip ' + crmChipTT(x[6]) + '">' + e(x[6]) + '</span>' : '') + '</div>' +
       '<div>Còn nợ <b>' + tien(x[3]) + 'đ</b>' + (x[8] ? ' <span class="chip ' + crmChipNo(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
       '<div class="muted">' + x[2] + ' giao dịch' + (x[1] ? ' · mua gần nhất ' + crmNgay(x[1]) : '') + ' · ' + x[4] + ' ngày chưa mua' + (x[7] ? ' · ' + e(x[7]) : '') + (x[5] ? ' · ' + e(x[5]) : '') + '</div>' +
-      '<div>' + crmSdt(x[9]) + (x[10] ? ' · ' + e(x[10]) : '') + (x[11] ? ' · ' + e(x[11]) : '') + '</div></div>';
+      '<div>' + crmSdt(x[9]) + (x[10] ? ' · ' + e(x[10]) : '') + (x[11] ? ' · ' + e(x[11]) : '') + '</div>' + goiY + '</div>';
   }).join('') || '<p class="muted">Không có ' + (kl ? 'khách' : 'đại lý') + ' phù hợp.</p>') +
     (ds.length > xem.length ? '<button class="nut phu rong" data-crmthem="1">Xem thêm (còn ' + (ds.length - xem.length) + ')</button>' : '');
 }
+function moHoSoCrm(x) {
+  var kl = CRM.che === 'kl', ten = kl ? (x[1] || '(chưa có tên)') : x[0], sdt = kl ? x[0] : x[9];
+  goi('crmHoSo', [TK, kl ? 'kl' : 'dl', kl ? '' : x[0], sdt], function (r) {
+    function dong(nhan, gt) { return gt === '' || gt == null ? '' : '<div class="hang" style="justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid #EFE6CC"><span class="muted">' + e(nhan) + '</span><b style="text-align:right">' + gt + '</b></div>'; }
+    function muc(t) { return '<h4 style="margin:14px 0 4px;color:var(--xanh)">' + e(t) + '</h4>'; }
+    var h = '<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(ten) + '</h3>' +
+      '<div style="margin-bottom:6px">' + crmSdt(sdt) + '</div>';
+    if (kl) {
+      h += muc('Theo sổ cũ (tới ' + e(CRM.r.luc) + ')') + dong('Số lần nhận hàng', x[2]) + dong('Tổng giá trị đơn', tien(x[3]) + 'đ') + dong('Lần nhận gần nhất', x[4] ? crmNgay(x[4]) : '') +
+        dong('Đặt qua đại lý', e(x[5])) + dong('Số ngày im lặng', x[6] + ' ngày') + dong('Xếp hạng', e(x[7])) + dong('Tình trạng', e(x[8]));
+      if (r.nguon) h += muc('Nguồn khách') + dong('Phân loại', e(r.nguon.loai)) + dong('Nguồn', e(r.nguon.nguon)) + dong('Nhập CRM', ngayDu(r.nguon.ngay) + ' · ' + e(r.nguon.nguoi));
+      h += muc('Đơn giao tới số này (sổ bán hàng từ 01/10/2026)') + (r.don.length ? dong('Số đơn · tổng', r.soDon + ' đơn · ' + tien(r.tong) + 'đ') + r.don.map(function (d) {
+        return '<div style="padding:5px 0;border-bottom:1px solid #EFE6CC"><div class="hang" style="justify-content:space-between"><span>' + ngVN(d.ngay) + (d.so ? ' · ' + e(d.so) : '') + ' · qua <b>' + e(d.daiLy) + '</b></span><b>' + tien(d.tong) + 'đ</b></div><small class="muted">' + e(d.sp) + '</small></div>';
+      }).join('') : '<p class="muted">Chưa có đơn nào ghi số này trong sổ bán hàng mới.</p>');
+    } else if (r.khongCo) {
+      h += muc('Theo sổ cũ') + dong('Còn nợ', tien(x[3]) + 'đ') + dong('Mua gần nhất', x[1] ? crmNgay(x[1]) : '') + dong('Số giao dịch', x[2]) + dong('Khu vực', e(x[10])) +
+        '<p class="muted">Chưa tìm thấy đại lý này trong Sổ bán hàng mới (khác tên hoặc chưa có số điện thoại). Kế toán kiểm tra tên trong Sổ bán hàng → Công nợ.</p>';
+    } else {
+      var k = r.kh, n = r.no;
+      h += muc('Thông tin') + dong('Mã khách', e(k.ma)) + dong('Nhóm giá', e(k.nhom)) + dong('Khu vực', e(k.khuVuc)) + dong('Nhóm (sổ cũ)', e(x[5])) + dong('Xếp hạng doanh số', e(x[7])) + dong('Tình trạng mua', e(x[6])) +
+        (k.ghiChu ? dong('Ghi chú', e(k.ghiChu)) : '') + (k.dung ? '' : dong('Trạng thái', 'Ngừng dùng'));
+      if (r.nguon) h += dong('Nguồn khách', e([r.nguon.loai, r.nguon.nguon].filter(Boolean).join(' · ')) + ' (CRM khách mới ' + ngVN(r.nguon.ngay) + ')');
+      h += muc('Công nợ tháng ' + +r.thang.slice(5)) + dong('Nợ đầu tháng', tien(n.noDau) + 'đ') + dong('Mua trong tháng', tien(n.ps) + 'đ') + dong('Đã trả trong tháng', tien(n.tra) + 'đ') +
+        dong('Còn nợ', '<span style="color:' + (n.con > n.hanMuc && n.hanMuc ? '#C81E1E' : 'inherit') + '">' + (n.con < 0 ? '−' : '') + tien(Math.abs(n.con)) + 'đ</span>') + dong('Hạn mức', tien(n.hanMuc) + 'đ') + dong('Trạng thái nợ', e(n.trangThai));
+      h += muc('Mua hàng từ 01/10/2026') + dong('Số đơn', r.soDon) + dong('Tổng mua', tien(r.tongMua) + 'đ') + dong('Tổng đã trả', tien(r.tongTra) + 'đ') +
+        r.theoThang.map(function (t) { return dong('Tháng ' + +t.thang.slice(5) + '/' + t.thang.slice(0, 4), t.soDon + ' đơn · ' + tien(t.tien) + 'đ'); }).join('');
+      if (r.sp.length) h += muc('Sản phẩm hay lấy') + r.sp.map(function (s) { return dong(s.sp, (s.sl ? soSL(s.sl) + ' · ' : '') + tien(s.tien) + 'đ'); }).join('');
+      h += muc('Đơn gần đây') + (r.don.length ? r.don.map(function (d) {
+        return '<div style="padding:5px 0;border-bottom:1px solid #EFE6CC"><div class="hang" style="justify-content:space-between"><span>' + ngVN(d.ngay) + (d.so ? ' · ' + e(d.so) : '') + '</span><b>' + tien(d.tong) + 'đ</b></div><small class="muted">' + e(d.sp) + (d.nhan ? ' → ' + e(d.nhan) : '') + '</small></div>';
+      }).join('') : '<p class="muted">Chưa có đơn từ 01/10/2026.</p>');
+      if (r.thu.length) h += muc('Thanh toán gần đây') + r.thu.map(function (t) { return dong(ngayDu(t.ngay) + ' · ' + t.ht, tien(t.tien) + 'đ'); }).join('');
+    }
+    h += '<button class="nut" id="hsDong" style="margin-top:14px">Đóng</button>';
+    moHop(h); $('hsDong').onclick = dongHop;
+  });
+}
+document.addEventListener('click', function (ev) {
+  var c = ev.target.closest('[data-crmhs]'); if (!c || ev.target.closest('a,button') || !CRM || !CRM.xem) return;
+  var x = CRM.xem[+c.dataset.crmhs]; if (x) moHoSoCrm(x);
+});
 function bamCrm(b) {
   var d = b.dataset;
   if (d.crmche) { CRM.che = d.crmche; CRM.q = ''; CRM.loc = ''; CRM.hien = 60; veCrm(); return; }
