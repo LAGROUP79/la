@@ -2505,11 +2505,112 @@ function sbVeBC() {
   xem(SB_BC.tu, SB_BC.den);
 }
 function sbThangTruoc(t) { var p = t.split('-').map(Number); return p[1] === 1 ? (p[0] - 1) + '-12' : p[0] + '-' + (p[1] < 11 ? '0' : '') + (p[1] - 1); }
+var DB_MAU = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
+var DB_NHOM = ['YẾN HŨ', 'YẾN TINH', 'YẾN THÔ', 'Phụ kiện', 'Dịch vụ', 'Công nợ khác'];
+var DB_HT = ['Chuyển khoản', 'Tiền mặt', 'COD', 'Bù trừ', 'Khác'];
+function dbMauNhom(n) { var i = DB_NHOM.indexOf(n); return DB_MAU[i < 0 ? 6 : i]; }
+function dbTr(n) { n = Math.round(n || 0); var a = Math.abs(n), s = n < 0 ? '−' : ''; return a >= 1e9 ? s + String(Math.round(a / 1e7) / 100).replace('.', ',') + ' tỷ' : a >= 1e6 ? s + String(Math.round(a / 1e5) / 10).replace('.', ',') + ' tr' : a >= 1e3 ? s + Math.round(a / 1e3) + 'k' : s + a; }
+function dbDelta(nay, cu, tot) {
+  if (cu == null) return '';
+  if (!cu) return nay ? '<small class="db-sub">kỳ trước 0</small>' : '';
+  var p = Math.round((nay - cu) / Math.abs(cu) * 1000) / 10, len = p >= 0, ok = tot === false ? !len : len;
+  return '<small class="db-delta ' + (p === 0 ? '' : ok ? 'tot' : 'xau') + '">' + (p === 0 ? '■ ' : len ? '▲ ' : '▼ ') + String(Math.abs(p)).replace('.', ',') + '%</small>';
+}
+function dbTip(t) { return ' data-tip="' + e(t) + '"'; }
+function dbGanTip(goc) {
+  var tip = $('dbTip'); if (!tip) { tip = document.createElement('div'); tip.id = 'dbTip'; tip.className = 'db-tip'; document.body.appendChild(tip); }
+  var hien = function (ev) { var el = ev.target.closest('[data-tip]'); if (!el || !goc.contains(el)) { tip.style.display = 'none'; return; }
+    tip.innerHTML = e(el.dataset.tip).replace(/\n/g, '<br>'); tip.style.display = 'block';
+    var x = (ev.touches ? ev.touches[0].clientX : ev.clientX), y = (ev.touches ? ev.touches[0].clientY : ev.clientY), w = tip.offsetWidth;
+    tip.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, x - w / 2)) + 'px'; tip.style.top = Math.max(8, y - tip.offsetHeight - 14) + 'px'; };
+  goc.onmousemove = hien; goc.onmouseleave = function () { tip.style.display = 'none'; };
+  goc.addEventListener('touchstart', hien, { passive: true });
+}
+function dbThanh(ds, mau, nhan) {
+  var max = Math.max.apply(null, ds.map(function (x) { return Math.abs(x.v); }).concat([1]));
+  return ds.map(function (x, i) {
+    return '<div class="db-hang"' + dbTip(x.tip) + '><div class="db-ten" title="' + e(x.ten) + '">' + e(x.ten) + '</div><div class="db-ray"><i style="width:' + Math.max(1.5, Math.abs(x.v) / max * 100) + '%;background:' + (typeof mau === 'function' ? mau(x, i) : mau) + '"></i></div>' +
+      '<div class="db-so">' + (nhan ? nhan(x) : dbTr(x.v)) + (x.phu ? '<br><small class="db-sub">' + x.phu + '</small>' : '') + '</div></div>';
+  }).join('');
+}
+function dbChuNgay(ds) {
+  if (!ds.length) return '<p class="muted">Chưa có đơn trong kỳ.</p>';
+  var B = 42, W = Math.max(300, ds.length * B + 70), H = 230, L = 56, T = 14, D = 28, cao = H - T - D;
+  var max = Math.max.apply(null, ds.map(function (x) { return Math.max(x.tien, x.ln); }).concat([1])), min = Math.min.apply(null, ds.map(function (x) { return x.ln; }).concat([0]));
+  var buoc = Math.pow(10, Math.floor(Math.log(max - min) / Math.LN10)), nice = Math.ceil(max / buoc) * buoc; if (nice / buoc > 6) { buoc *= 2; nice = Math.ceil(max / buoc) * buoc; }
+  var am = min < 0 ? -Math.ceil(-min / buoc) * buoc : 0, Y = function (v) { return T + (nice - v) / (nice - am) * cao; }, y0 = Y(0);
+  var s = '<svg class="db-svg" width="' + W + '" height="' + H + '" role="img" aria-label="Doanh thu và lãi gộp theo ngày">';
+  for (var g = am; g <= nice + 1; g += buoc) s += '<line x1="' + L + '" x2="' + (W - 8) + '" y1="' + Y(g) + '" y2="' + Y(g) + '" class="' + (g === 0 ? 'db-day' : 'db-luoi') + '"/><text x="' + (L - 6) + '" y="' + (Y(g) + 4) + '" class="db-truc" text-anchor="end">' + dbTr(g) + '</text>';
+  var bc = (W - L - 8) / ds.length, rong = Math.min(22, bc * 0.62), diem = [], cach = Math.ceil(ds.length / 14);
+  ds.forEach(function (x, i) {
+    var cx = L + bc * i + bc / 2, x1 = cx - rong / 2, yt = Y(Math.max(x.tien, 0)), r = Math.min(4, rong / 2, (y0 - yt));
+    if (x.tien > 0) s += '<path d="M' + x1 + ',' + y0 + 'V' + (yt + r) + 'Q' + x1 + ',' + yt + ' ' + (x1 + r) + ',' + yt + 'H' + (x1 + rong - r) + 'Q' + (x1 + rong) + ',' + yt + ' ' + (x1 + rong) + ',' + (yt + r) + 'V' + y0 + 'Z" fill="' + DB_MAU[0] + '"/>';
+    diem.push(cx + ',' + Y(x.ln));
+    if (i % cach === 0) s += '<text x="' + cx + '" y="' + (H - 8) + '" class="db-truc" text-anchor="middle">' + (+x.ngay.slice(8)) + '/' + (+x.ngay.slice(5, 7)) + '</text>';
+  });
+  s += '<polyline points="' + diem.join(' ') + '" fill="none" stroke="' + DB_MAU[1] + '" stroke-width="2" stroke-linejoin="round"/>';
+  ds.forEach(function (x, i) { var cx = L + bc * i + bc / 2; s += '<circle cx="' + cx + '" cy="' + Y(x.ln) + '" r="4" fill="' + DB_MAU[1] + '" stroke="#fff" stroke-width="2"/>'; });
+  ds.forEach(function (x, i) { s += '<rect x="' + (L + bc * i) + '" y="' + T + '" width="' + bc + '" height="' + cao + '" fill="transparent"' + dbTip(ngayDu(x.ngay) + '\nDoanh thu: ' + tien(x.tien) + 'đ\nLãi gộp: ' + tien(x.ln) + 'đ\n' + x.don + ' đơn · thu ' + tien(x.thu) + 'đ') + '/>'; });
+  return '<div class="cuon">' + s + '</svg></div>';
+}
+function sbDash(b) {
+  var t = b.truoc, ln2 = b.lnGop - (b.chiPhi || 0), bien = b.tienCoVon ? Math.round(b.lnGop / b.tienCoVon * 1000) / 10 : null;
+  var o = function (mau, ten, so, phu, delta) { return '<div class="db-o"><span class="db-cham" style="background:' + mau + '"></span><small>' + ten + '</small><b>' + so + '</b>' + (phu ? '<small class="db-sub">' + phu + '</small>' : '') + (delta || '') + '</div>'; };
+  var h = '<style>.db-luoi2{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-bottom:12px}' +
+    '.db-o{background:#fff;border:1px solid rgba(11,11,11,.08);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;position:relative}' +
+    '.db-o small{color:#52514e;font-size:12.5px}.db-o b{font-size:20px;color:#0b0b0b;font-variant-numeric:normal}.db-cham{position:absolute;top:14px;right:14px;width:10px;height:10px;border-radius:50%}' +
+    '.db-sub{color:#898781;font-size:11.5px}.db-delta{font-size:12px;font-weight:600;color:#52514e}.db-delta.tot{color:#006300}.db-delta.xau{color:#c0392b}' +
+    '.db-the{background:#fff;border:1px solid rgba(11,11,11,.08);border-radius:14px;padding:14px;margin-bottom:12px}.db-the h4{margin:0 0 10px;color:#0b0b0b;font-size:15px}' +
+    '.db-chu{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#52514e;margin-bottom:6px}.db-chu i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}.db-chu i.duong{height:3px;border-radius:2px;vertical-align:3px}' +
+    '.db-svg text{font-size:11px}.db-truc{fill:#898781}.db-luoi{stroke:#e1e0d9;stroke-width:1}.db-day{stroke:#c3c2b7;stroke-width:1}' +
+    '.db-hang{display:grid;grid-template-columns:minmax(90px,34%) 1fr auto;gap:8px;align-items:center;padding:4px 0;font-size:13px}.db-ten{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0b0b0b}' +
+    '.db-ray{height:12px;background:#f0efec;border-radius:4px;overflow:hidden}.db-ray i{display:block;height:100%;border-radius:0 4px 4px 0}.db-so{text-align:right;color:#0b0b0b;font-weight:600;white-space:nowrap;font-size:12.5px}' +
+    '.db-chong{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px;background:#fff}.db-chong i{display:block;height:100%}' +
+    '.db-doi{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.db-doi{grid-template-columns:1fr}}' +
+    '.db-tip{position:fixed;z-index:9999;display:none;background:#0b0b0b;color:#fff;font-size:12.5px;line-height:1.45;padding:7px 10px;border-radius:8px;pointer-events:none;max-width:260px;box-shadow:0 4px 14px rgba(0,0,0,.2)}</style>';
+  h += '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;margin:4px 0 10px"><h3 style="margin:0;color:var(--xanh)">📊 Dashboard ' + (b.tu === b.den ? 'ngày ' + ngayDu(b.tu) : ngayDu(b.tu) + ' – ' + ngayDu(b.den)) + '</h3>' +
+    '<small class="muted">' + (t ? 'So với ' + (t.tu === t.den ? 'ngày ' + ngayDu(t.tu) : ngayDu(t.tu) + ' – ' + ngayDu(t.den)) + (t.du ? '' : ' (sổ chỉ có từ 01/10)') : 'Chưa có kỳ trước để so (sổ bắt đầu 01/10/2026)') + '</small></div>';
+  h += '<div class="db-luoi2">' +
+    o(DB_MAU[0], 'Doanh thu', dbTr(b.doanhThu), b.soDon + ' đơn', t && dbDelta(b.doanhThu, t.doanhThu)) +
+    o(DB_MAU[1], 'Lợi nhuận gộp', dbTr(b.lnGop), bien != null ? 'biên ' + String(bien).replace('.', ',') + '%' : '', t && dbDelta(b.lnGop, t.lnGop)) +
+    o(DB_MAU[6], 'Chi phí', dbTr(b.chiPhi || 0), 'kế toán nhập', t && dbDelta(b.chiPhi || 0, t.chiPhi, false)) +
+    o(DB_MAU[5], 'Lợi nhuận sau chi phí', dbTr(ln2), '', t && dbDelta(ln2, t.lnGop - t.chiPhi)) +
+    o(DB_MAU[2], 'Đã thu', dbTr(b.daThu), b.doanhThu ? 'bằng ' + Math.round(b.daThu / b.doanhThu * 100) + '% doanh thu' : '', t && dbDelta(b.daThu, t.daThu)) +
+    o(DB_MAU[3], 'Số đơn', b.soDon, b.soDon ? 'TB ' + dbTr(b.doanhThu / b.soDon) + '/đơn' : '', t && dbDelta(b.soDon, t.soDon)) + '</div>';
+  h += '<div class="db-the"><h4>Doanh thu và lãi gộp theo ngày</h4><div class="db-chu"><span><i style="background:' + DB_MAU[0] + '"></i>Doanh thu</span><span><i class="duong" style="background:' + DB_MAU[1] + '"></i>Lãi gộp</span><span class="db-sub">chạm / rê chuột vào cột để xem số</span></div>' + dbChuNgay(b.theoNgay) + '</div>';
+  var buoc = [['Tiền hàng', b.tienCoVon, DB_MAU[0], 'tong'], ['Giá vốn', -b.giaVon, DB_MAU[7], 'tru'], ['Chiết khấu', -b.ck, DB_MAU[7], 'tru'], ['Lãi gộp', b.lnGop, DB_MAU[5], 'tong'], ['Chi phí', -(b.chiPhi || 0), DB_MAU[7], 'tru'], ['Lãi sau chi phí', ln2, DB_MAU[5], 'tong']].filter(function (x) { return x[3] === 'tong' || x[1]; });
+  var maxW = Math.max(b.tienCoVon, 1), chay = 0;
+  h += '<div class="db-doi"><div class="db-the"><h4>Từ tiền hàng tới lợi nhuận</h4><p class="db-sub" style="margin:-6px 0 6px">Tiền hàng = phần hàng đã có giá vốn</p>' + buoc.map(function (x) {
+    var trai, rong;
+    if (x[3] === 'tong') { trai = Math.min(0, x[1]); rong = Math.abs(x[1]); chay = x[1]; } else { trai = chay + x[1]; rong = -x[1]; chay = chay + x[1]; }
+    return '<div class="db-hang"' + dbTip(x[0] + ': ' + tien(x[1]) + 'đ') + '><div class="db-ten">' + x[0] + '</div><div class="db-ray" style="background:transparent;position:relative"><i style="position:absolute;left:' + Math.max(0, trai / maxW * 100) + '%;width:' + Math.max(0.8, rong / maxW * 100) + '%;background:' + x[2] + ';border-radius:4px"></i></div><div class="db-so">' + (x[3] === 'tru' && x[1] ? '−' + dbTr(-x[1]) : dbTr(x[1])) + '</div></div>';
+  }).join('') + '<p class="db-sub" style="margin:8px 0 0">Doanh thu tổng ' + dbTr(b.doanhThu) + ' gồm cả ship ' + dbTr(b.ship) + ', VAT ' + dbTr(b.vat) + (b.chuaVon ? ', hàng chưa có giá vốn ' + dbTr(b.chuaVon) : '') + (b.cnKhac ? ', công nợ khác ' + dbTr(b.cnKhac) : '') + ' — những phần này không tính lãi.</p></div>';
+  var conThu = Math.max(0, b.doanhThu - b.daThu);
+  h += '<div class="db-the"><h4>Doanh thu và tiền đã thu</h4>' + dbThanh([{ ten: 'Doanh thu', v: b.doanhThu, tip: 'Doanh thu: ' + tien(b.doanhThu) + 'đ' }, { ten: 'Đã thu', v: b.daThu, tip: 'Đã thu: ' + tien(b.daThu) + 'đ' }, { ten: 'Chưa thu', v: conThu, tip: 'Chưa thu: ' + tien(conThu) + 'đ' }],
+    function (x, i) { return [DB_MAU[0], DB_MAU[2], DB_MAU[3]][i]; });
+  var ht = DB_HT.map(function (n) { var x = (b.theoHT || []).filter(function (y) { return y.ht === n; })[0]; return { ht: n, tien: x ? x.tien : 0 }; }).concat((b.theoHT || []).filter(function (y) { return DB_HT.indexOf(y.ht) < 0; })).filter(function (x) { return x.tien > 0; });
+  var tongHT = ht.reduce(function (a, x) { return a + x.tien; }, 0);
+  if (tongHT) h += '<div style="margin-top:12px"><small class="db-sub">Tiền thu theo hình thức</small><div class="db-chong" style="margin-top:4px">' + ht.map(function (x) {
+    return '<i style="width:' + (x.tien / tongHT * 100) + '%;background:' + DB_MAU[Math.max(0, DB_HT.indexOf(x.ht)) % 8] + '"' + dbTip(x.ht + ': ' + tien(x.tien) + 'đ (' + Math.round(x.tien / tongHT * 100) + '%)') + '></i>'; }).join('') + '</div>' +
+    '<div class="db-chu" style="margin-top:6px">' + ht.map(function (x) { return '<span><i style="background:' + DB_MAU[Math.max(0, DB_HT.indexOf(x.ht)) % 8] + '"></i>' + e(x.ht) + ' ' + Math.round(x.tien / tongHT * 100) + '%</span>'; }).join('') + '</div></div>';
+  h += '</div></div>';
+  h += '<div class="db-doi"><div class="db-the"><h4>Doanh thu theo nhóm hàng</h4>' + dbThanh((b.theoNhom || []).map(function (x) {
+    var lnN = x.tienCoVon - x.von, bn = x.tienCoVon ? Math.round(lnN / x.tienCoVon * 100) : null;
+    return { ten: x.nhom, v: x.tien, phu: bn != null ? 'lãi ' + dbTr(lnN) + ' · biên ' + bn + '%' : '', tip: x.nhom + '\nDoanh thu: ' + tien(x.tien) + 'đ\nLãi gộp: ' + tien(lnN) + 'đ' + (x.chuaVon ? '\nChưa có giá vốn: ' + tien(x.chuaVon) + 'đ' : '') };
+  }), function (x) { return dbMauNhom(x.ten); }) + '</div>';
+  h += '<div class="db-the"><h4>Top 10 khách theo doanh thu</h4>' + dbThanh((b.theoKhach || []).slice(0, 10).map(function (k) {
+    return { ten: k.ten, v: k.tien, phu: k.don + ' đơn · lãi ' + dbTr(k.ln), tip: k.ten + '\n' + k.don + ' đơn · ' + tien(k.tien) + 'đ\nLãi gộp: ' + tien(k.ln) + 'đ' }; }), DB_MAU[6]) + '</div></div>';
+  h += '<div class="db-the"><h4>Top 10 sản phẩm theo doanh thu</h4>' + dbThanh((b.theoSP || []).filter(function (x) { return x.nhom !== 'Công nợ khác'; }).slice(0, 10).map(function (x) {
+    return { ten: x.sp, v: x.tien, phu: soSL(x.sl) + ' đv' + (x.coVon ? ' · lãi ' + dbTr(x.tien - x.von) : ' · chưa có giá vốn'), tip: x.sp + '\nSL ' + soSL(x.sl) + ' · ' + tien(x.tien) + 'đ' + (x.coVon ? '\nLãi gộp: ' + tien(x.tien - x.von) + 'đ' : '') }; }),
+    function (x) { return dbMauNhom((b.theoSP.filter(function (y) { return y.sp === x.ten; })[0] || {}).nhom); }) +
+    '<div class="db-chu" style="margin-top:8px">' + DB_NHOM.slice(0, 4).map(function (n) { return '<span><i style="background:' + dbMauNhom(n) + '"></i>' + n + '</span>'; }).join('') + '</div></div>';
+  return h;
+}
 function sbVeBCNoi() {
   var b = SB_BC.r, pt = function (a, c) { return c ? (Math.round(a / c * 1000) / 10) + '%' : '—'; }, mau = function (v) { return '<span style="color:' + (v < 0 ? 'var(--do)' : 'var(--xanh)') + '">' + sbTien(v) + '</span>'; };
   var o = function (t, v) { return '<div><small class="muted">' + t + '</small><br><b style="font-size:18px">' + v + '</b></div>'; };
   var ky = b.tu === b.den ? 'ngày ' + ngayDu(b.tu) : ngayDu(b.tu) + ' – ' + ngayDu(b.den);
-  var h = '<div class="the"><h3 style="margin-top:0">Lợi nhuận gộp ' + ky + '</h3><div class="luoi2">' + o('Doanh thu (tổng đơn)', tien(b.doanhThu) + 'đ') + o('Số đơn', b.soDon) +
+  var h = sbDash(b) + '<h3 style="margin:18px 0 8px;color:var(--xanh)">📋 Bảng số chi tiết</h3><div class="the"><h3 style="margin-top:0">Lợi nhuận gộp ' + ky + '</h3><div class="luoi2">' + o('Doanh thu (tổng đơn)', tien(b.doanhThu) + 'đ') + o('Số đơn', b.soDon) +
     o('Giá vốn', tien(b.giaVon) + 'đ') + o('Lợi nhuận gộp', mau(b.lnGop) + ' <small class="muted">' + pt(b.lnGop, b.tienCoVon) + '</small>') + o('Chi phí (kế toán nhập)', tien(b.chiPhi || 0) + 'đ') + o('Lợi nhuận sau chi phí', mau(b.lnGop - (b.chiPhi || 0))) + o('Đã thu', tien(b.daThu) + 'đ') + o('Phí ship / VAT', tien(b.ship) + 'đ / ' + tien(b.vat) + 'đ') + '</div>' +
     '<p class="muted" style="margin-bottom:0">Lợi nhuận gộp = tiền hàng có giá vốn − giá vốn − chiết khấu (' + tien(b.ck) + 'đ). Chưa trừ VAT, vận hành, đóng gói. Phí ship, VAT' + (b.cnKhac ? ', công nợ khác / gửi hộ (' + tien(b.cnKhac) + 'đ)' : '') + ' không tính vào lãi.' +
     (b.chuaVon ? ' <b class="am">' + tien(b.chuaVon) + 'đ tiền hàng chưa có giá vốn nên chưa tính lãi</b> — đặt giá vốn ở bảng sản phẩm bên dưới.' : '') + '</p></div>';
@@ -2540,6 +2641,7 @@ function sbVeBCNoi() {
   h += '<div class="the"><h3 style="margin-top:0">Tiền thu theo hình thức</h3><table>' + b.theoHT.map(function (x) { return '<tr><td>' + e(x.ht) + '</td><td class="s">' + tien(x.tien) + 'đ</td></tr>'; }).join('') + '</table>' +
     '<p class="muted" style="margin-bottom:0">Cần file Excel chi tiết: Phòng Tài chính Kế toán → Tải Excel.</p></div>';
   $('bcNoi').innerHTML = h;
+  dbGanTip($('bcNoi'));
   $('bcTimSP').oninput = function () { var q = this.value.toLowerCase().trim(); document.querySelectorAll('[data-timsp]').forEach(function (tr) { tr.classList.toggle('an', !!q && tr.dataset.timsp.indexOf(q) < 0); }); };
   document.querySelectorAll('[data-gvsp]').forEach(function (el) {
     el.onkeydown = function (ev) {
