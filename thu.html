@@ -606,19 +606,32 @@ function veCongViec(r) {
     if (c.capNhatDuoc && (c.tt === 'Chưa làm' || c.tt === 'Trả lại')) nut += '<button class="nut phu nho" data-cvdang="' + i + '">Đang làm</button>';
     if (c.capNhatDuoc && c.tt !== 'Chờ duyệt') nut += '<button class="nut nho" data-cvxong="' + i + '">Báo xong</button>';
     if (c.duyetDuoc) nut += '<button class="nut nho" data-cvdat="' + i + '">✓ Đạt</button><button class="nut do nho" data-cvtra="' + i + '">Trả lại</button>';
+    if (c.cuaToi && c.tt !== 'Đã huỷ') nut += '<button class="nut phu nho" data-cvgopy="' + i + '">' + (c.khoKhan || c.deXuat ? '✎ Khó khăn / đề xuất' : '＋ Khó khăn / đề xuất') + '</button>';
     if (c.suaDuoc) nut += '<button class="nut phu nho" data-cvsua="' + i + '">Sửa</button><button class="nut do nho" data-cvhuy="' + i + '">Huỷ</button>';
     return '<div class="don"><div class="dau"><span class="ma">' + e(c.tieuDe) + '</span><span class="chip ' + (tre ? 'tre' : TTD[c.tt] || '') + '">' + e(tre ? 'Trễ hạn · ' + c.tt : c.tt) + '</span></div>' +
       (c.ketQua ? '<div class="muted">Kết quả mong đợi: ' + e(c.ketQua) + '</div>' : '') +
       '<div class="muted">' + e(c.ten) + (c.laTP ? ' (TP)' : '') + ' · hạn ' + e(c.han) + (c.uuTien === 'Gấp' ? ' · <b style="color:var(--do)">GẤP</b>' : '') + ' · giao bởi ' + e(c.tenGiao) + '</div>' +
       (c.ghiChuXong ? '<div class="muted">Báo xong: ' + e(c.ghiChuXong) + (c.coAnh ? ' · có ảnh' + (c.anh ? ' (<a href="' + e(c.anh) + '" target="_blank">xem</a>)' : '') : '') + '</div>' : '') +
       (c.ghiChuDuyet ? '<div class="muted" style="color:var(--cam)">Ghi chú duyệt: ' + e(c.ghiChuDuyet) + '</div>' : '') +
+      (c.khoKhan ? '<div class="cv-gy" style="border-left:3px solid #e34948"><b>1. Khó khăn gặp phải:</b> ' + e(c.khoKhan) + '</div>' : '') +
+      (c.deXuat ? '<div class="cv-gy" style="border-left:3px solid #2a78d6"><b>2. Đề xuất phương án:</b> ' + e(c.deXuat) + '</div>' : '') +
       (nut ? '<div class="hang">' + nut + '</div>' : '') + '</div>';
   }).join('') || '<p class="muted">Không có việc nào.</p>';
   if (H.me.quanLy && r.theoNguoi.length) h += '<div class="the"><h3>Hoàn thành công việc theo người</h3><div class="cuon"><table><tr><th>Người</th><th class="s">Xong</th><th class="s">Trễ</th><th class="s">%</th></tr>' + r.theoNguoi.map(function (n) {
     return '<tr><td>' + e(n.ten) + '<div class="muted">' + (n.laTP ? 'Trưởng phòng' : 'Nhân viên') + (n.team ? ' · ' + e(n.team) : '') + '</div></td><td class="s">' + n.xong + '/' + n.tong + '</td><td class="s">' + n.tre + '</td><td class="s">' + (n.pt == null ? '—' : n.pt + '%') + '</td></tr>';
   }).join('') + '</table></div></div>';
-  $('noiDung').innerHTML = h;
+  $('noiDung').innerHTML = '<style>.cv-gy{background:#faf8f2;border-radius:6px;padding:6px 10px;margin:6px 0 2px;font-size:13.5px;white-space:pre-wrap}</style>' + h;
   if ($('cvGiao')) $('cvGiao').onclick = function () { moGiaoViec(null); };
+}
+function cvOGopY(c) {
+  return '<label for="gyKK">1. Khó khăn gặp phải</label><textarea id="gyKK" rows="3" placeholder="VD: thiếu ảnh sản phẩm mới, khách chưa phản hồi…">' + e(c.khoKhan || '') + '</textarea>' +
+    '<label for="gyDX">2. Đề xuất phương án</label><textarea id="gyDX" rows="3" placeholder="VD: xin thêm 2 ngày, nhờ kho chụp ảnh lại…">' + e(c.deXuat || '') + '</textarea>';
+}
+function moGopY(c) {
+  moHop('<h3 style="margin:0;color:var(--xanh)">' + e(c.tieuDe) + '</h3><p class="muted">Ghi lúc nào cũng được, người giao việc sẽ thấy ngay trên thẻ việc.</p>' + cvOGopY(c) +
+    '<div class="hang" style="margin-top:12px"><button class="nut phu" id="gyDong">Đóng</button><button class="nut" id="gyLuu">Lưu</button></div>');
+  $('gyDong').onclick = dongHop;
+  $('gyLuu').onclick = function () { goi('cvGopY', [TK, c.ma, $('gyKK').value, $('gyDX').value], function (x) { H = x.home; dongHop(); veCongViec(x.cv); bao('Đã lưu khó khăn / đề xuất.'); }); };
 }
 function moGiaoViec(c) {
   var r = CV, hn = H.homNay;
@@ -637,13 +650,13 @@ function moGiaoViec(c) {
 }
 function moBaoXong(c) {
   moHop('<h3 style="margin:0;color:var(--xanh)">Báo xong: ' + e(c.tieuDe) + '</h3>' + (c.ketQua ? '<p class="muted">Kết quả mong đợi: ' + e(c.ketQua) + '</p>' : '') +
-    '<label>Kết quả đã làm</label><textarea id="bxGC" rows="3" placeholder="Ghi ngắn kết quả"></textarea>' +
+    '<label>Kết quả đã làm</label><textarea id="bxGC" rows="3" placeholder="Ghi ngắn kết quả"></textarea>' + cvOGopY(c) +
     '<label class="nut phu rong" for="bxAnh" style="color:var(--xanh);margin-top:10px">📷 Thêm ảnh (không bắt buộc)</label><input id="bxAnh" type="file" accept="image/&#42;" class="an"><img id="bxXem" class="anh an" alt="">' +
     '<div class="hang" style="margin-top:12px"><button class="nut phu" id="bxDong">Đóng</button><button class="nut" id="bxGui">Báo xong</button></div>');
   var anh = '';
   $('bxDong').onclick = dongHop;
   $('bxAnh').onchange = function (ev) { thuNhoAnh(ev.target.files[0], function (d) { anh = d; $('bxXem').src = d; $('bxXem').classList.remove('an'); }); };
-  $('bxGui').onclick = function () { goi('cvCapNhat', [TK, c.ma, 'Xong', $('bxGC').value, anh], function (x) { H = x.home; dongHop(); veCongViec(x.cv); bao('Đã báo xong.'); }); };
+  $('bxGui').onclick = function () { goi('cvCapNhat', [TK, c.ma, 'Xong', $('bxGC').value, anh, $('gyKK').value, $('gyDX').value], function (x) { H = x.home; dongHop(); veCongViec(x.cv); bao('Đã báo xong.'); }); };
 }
 function thuNhoAnh(f, xong, max) {
   if (!f) return;
@@ -664,6 +677,7 @@ function bamCongViec(b) {
   if (d.cvloc) { CV_LOC = d.cvloc; veCongViec(CV); return; }
   if (d.cvdang != null) { c = CV.ds[d.cvdang]; goi('cvCapNhat', [TK, c.ma, 'Đang làm', '', ''], function (x) { H = x.home; veCongViec(x.cv); bao('Đã nhận việc.'); }); }
   if (d.cvxong != null) moBaoXong(CV.ds[d.cvxong]);
+  if (d.cvgopy != null) moGopY(CV.ds[d.cvgopy]);
   if (d.cvdat != null) { c = CV.ds[d.cvdat]; goi('cvDuyet', [TK, c.ma, true, ''], function (x) { H = x.home; veCongViec(x.cv); bao('Đã duyệt: ' + c.tieuDe); }); }
   if (d.cvtra != null) { c = CV.ds[d.cvtra]; var ly = prompt('Lý do trả lại (cần sửa gì):'); if (ly == null) return; goi('cvDuyet', [TK, c.ma, false, ly], function (x) { H = x.home; veCongViec(x.cv); bao('Đã trả lại việc.'); }); }
   if (d.cvsua != null) moGiaoViec(CV.ds[d.cvsua]);
