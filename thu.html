@@ -2081,11 +2081,11 @@ function sbVeCPNoi() {
     h += '<div class="the"><h3 style="margin-top:0">' + (d.ma ? 'Sửa khoản chi' : 'Nhập khoản chi') + '</h3>' +
       '<datalist id="dsHMCP">' + r.hangMuc.map(function (x) { return '<option value="' + e(x) + '">'; }).join('') + '</datalist>' +
       '<div class="hang" style="gap:8px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><label for="cpNgay">Ngày</label><input type="date" id="cpNgay" value="' + e(d.ngay) + '" max="' + e(r.homNay) + '"></div>' +
-      '<div style="flex:2;min-width:180px"><label for="cpHM">Hạng mục</label><input id="cpHM" list="dsHMCP" value="' + e(d.hm) + '" placeholder="Chọn hoặc gõ hạng mục mới"></div></div>' +
+      '<div style="flex:2;min-width:180px"><label for="cpHM">Hạng mục <small class="muted">(có thể bỏ trống)</small></label><input id="cpHM" list="dsHMCP" value="' + e(d.hm) + '"' + (d.hm && d.hm !== d.nd ? ' data-tay="1"' : '') + ' placeholder="Gõ để chọn hạng mục cố định, hoặc để trống"></div></div>' +
       '<div class="hang" style="gap:8px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><label for="cpTien">Số tiền</label><input id="cpTien" inputmode="numeric" value="' + e(d.tien === '' ? '' : tien(d.tien)) + '"></div>' +
       '<div style="flex:1;min-width:140px"><label for="cpHT">Hình thức</label><select id="cpHT">' + r.hinhThuc.map(function (x) { return opt(x, d.ht); }).join('') + '</select></div></div>' +
       '<label for="cpND">Nội dung</label><input id="cpND" value="' + e(d.nd) + '" placeholder="VD: tiền điện tháng 10, phí ship GHN…">' +
-      '<small class="muted">Gõ hạng mục chưa có trong danh sách thì app tự thêm hạng mục mới.</small>' +
+      '<small class="muted">Hạng mục để trống thì app lấy nội dung làm hạng mục. Gõ hạng mục mới vào ô Hạng mục thì app thêm vào danh sách gợi ý.</small>' +
       '<button class="nut" id="cpLuu" style="margin-top:10px">' + (d.ma ? 'Lưu sửa' : 'Lưu khoản chi') + '</button>' + (d.ma ? '<button class="nut rong" id="cpBo" style="margin-top:8px">Bỏ sửa</button>' : '') + '</div>';
   }
   h += '<div class="the"><h3 style="margin-top:0">Chi phí tháng ' + tenT + ' · <span style="color:var(--do)">' + tien(r.tong) + 'đ</span></h3>' +
@@ -2100,11 +2100,16 @@ function sbVeCPNoi() {
       (!huy && r.ghi ? ' <button class="nut rong" data-cpsua="' + e(x.ma) + '" style="width:auto;padding:2px 8px;font-size:12px">Sửa</button> <button class="nut rong" data-cphuy="' + e(x.ma) + '" style="width:auto;padding:2px 8px;font-size:12px">Huỷ</button>' : '') + '</div>';
   }).join('') : '<p class="muted">Chưa có khoản chi nào.</p>') + '</div>';
   $('sbNoi').innerHTML = h;
+  if ($('cpND')) {
+    $('cpHM').oninput = function () { if (this.value.trim()) this.dataset.tay = '1'; else delete this.dataset.tay; };
+    $('cpND').oninput = function () { if (!$('cpHM').dataset.tay) $('cpHM').value = this.value; };
+  }
   if ($('cpLuu')) $('cpLuu').onclick = function () {
-    var p = { ma: d.ma, ngay: $('cpNgay').value, hm: $('cpHM').value.trim(), tien: docTien($('cpTien').value), ht: $('cpHT').value, nd: $('cpND').value.trim() };
-    if (!p.hm) { bao('Chọn hạng mục chi phí.', true); return; }
+    var p = { ma: d.ma, ngay: $('cpNgay').value, hm: $('cpHM').dataset.tay ? $('cpHM').value.trim() : '', tien: docTien($('cpTien').value), ht: $('cpHT').value, nd: $('cpND').value.trim() };
+    if (!p.hm && !p.nd) { bao('Ghi nội dung khoản chi (hạng mục có thể bỏ trống).', true); return; }
+    if (!p.hm) p.hm = '';
     if (!(p.tien > 0)) { bao('Nhập số tiền chi.', true); return; }
-    goi('ktLuuChiPhi', [TK, p, SB.thang], function (x) { SB_CP = x; SB_CP_SUA = null; sbVeCPNoi(); bao((d.ma ? 'Đã sửa ' : 'Đã lưu ') + p.hm + ' ' + tien(p.tien) + 'đ.'); });
+    goi('ktLuuChiPhi', [TK, p, SB.thang], function (x) { SB_CP = x; SB_CP_SUA = null; sbVeCPNoi(); bao((d.ma ? 'Đã sửa ' : 'Đã lưu ') + (p.hm || p.nd) + ' ' + tien(p.tien) + 'đ.'); });
   };
   if ($('cpBo')) $('cpBo').onclick = function () { SB_CP_SUA = null; sbVeCPNoi(); };
   document.querySelectorAll('[data-cpsua]').forEach(function (b) { b.onclick = function () { var x = r.ds.filter(function (y) { return y.ma === b.dataset.cpsua; })[0]; SB_CP_SUA = { ma: x.ma, ngay: x.ngay, hm: x.hm, nd: x.nd, tien: x.tien, ht: x.ht }; sbVeCPNoi(); window.scrollTo(0, 0); }; });
