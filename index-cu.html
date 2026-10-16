@@ -2001,7 +2001,7 @@ function veDoiSoatKT(d) {
   var n = function (v) { return v == null ? '—' : soSL(v); };
   function oL(l, ktGhi) {
     if (l == null) return '<span class="muted">chưa kiểm</span>';
-    return l === 0 ? '<span style="color:var(--xanhla)">✔ khớp</span>' : '<b class="am">' + (l > 0 ? '+' : '') + soSL(l) + '</b>';
+    return l === 0 ? '<span style="color:var(--xanhla)">✔ khớp</span>' : '<b class="am">' + (l > 0 ? 'Kho thiếu ' : 'Kho dư ') + soSL(Math.abs(l)) + '</b><br><small class="muted">' + (l > 0 ? 'hàng đi nhiều hơn đơn' : 'đơn nhiều hơn hàng đi') + '</small>';
   }
   function dong(ten, x, phu) { return '<tr><td>' + ten + (phu ? '<div class="muted">' + phu + '</div>' : '') + '</td><td class="s">' + n(x.khoDi) + '</td><td class="s">' + n(x.ktGhi) + '</td><td class="s">' + oL(x.lech) + '</td></tr>'; }
   var h = '<div class="the" id="kbDSKT"><h3 style="margin-top:0">Đối soát đơn kế toán ↔ kiểm kho · ' + ngVN(d.ngay) + '</h3>';
@@ -2016,7 +2016,7 @@ function veDoiSoatKT(d) {
     ma.map(function (x) { return dong(e(x.ten), x, x.coKiem ? '' : 'mã này chưa được kiểm hôm nay'); }).join('') + '</table></div>';
   if (d.khongKhop.length) h += '<p class="am" style="margin:8px 0 0">Đơn kế toán có tên không trùng mã kho nào (không trừ kho được): ' + d.khongKhop.map(function (x) { return e(x.ten) + ' × ' + soSL(x.sl); }).join(', ') + '.</p>';
   return h + '<p class="muted" style="margin:8px 0 0">Kho đếm đi = số đếm lần kiểm trước + nhập − xuất khác (giao thợ, hao hụt…) − số đếm hôm nay. Đơn kế toán = số lượng trên các đơn Sổ bán hàng từ sau lần kiểm trước tới ngày này. ' +
-    'Lệch dương: hàng đi nhiều hơn đơn (thiếu đơn hoặc hao hụt). Lệch âm: đơn nhiều hơn hàng đi (đếm dư hoặc đơn ghi nhầm). Hũ 7g có tem + không tem + hàng nhà so chung vì sổ không ghi vị và kế toán ghi hũ hàng nhà là "không tem".</p></div>';
+    'Kho thiếu: hàng đi nhiều hơn đơn (quên lên đơn, tặng/mẫu không ghi, hao hụt). Kho dư: đơn nhiều hơn hàng đi (đơn ghi dư/trùng, hàng chưa giao, đếm dư). Hũ 7g có tem + không tem + hàng nhà so chung vì sổ không ghi vị và kế toán ghi hũ hàng nhà là "không tem".</p></div>';
 }
 function veKb(r) {
   KB = r; var t = r.coTien, n = function (v) { return v == null ? '—' : soSL(v); };
