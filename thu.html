@@ -1179,9 +1179,9 @@ function kmNgay(s) { if (!s) return ''; var n = Math.round((new Date(H.homNay + 
 function kmSao(x) { var h = ''; for (var i = 1; i <= 3; i++) h += '<button class="km-sao' + (i <= (x.sao || 0) ? ' on' : '') + '" data-kmsao="' + i + '" data-ma="' + e(x.ma) + '" title="Mức quan tâm ' + i + '/3">★</button>'; return h; }
 function veCrmKm() {
   var h = quayLai() + crmNutChe() +
-    '<style>.km-cot-wrap{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}' +
-    '.km-cot{flex:0 0 280px;scroll-snap-align:start;background:#f4f1e8;border-radius:14px;padding:10px;min-height:260px;display:flex;flex-direction:column;gap:8px}' +
-    '@media(max-width:600px){.km-cot{flex-basis:84vw}}.km-cot.keo{outline:2px dashed var(--xanh);background:#eef5f1}' +
+    '<style>.km-cot-wrap{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:2px 0 12px}' +
+    '.km-cot{min-width:0;background:#f4f1e8;border-radius:14px;padding:8px;min-height:260px;display:flex;flex-direction:column;gap:8px}' +
+    '@media(max-width:760px){.km-cot-wrap{grid-template-columns:1fr}.km-cot{min-height:0}}.km-the>*{min-width:0;overflow-wrap:anywhere}.km-chan{flex-wrap:wrap}.km-cot.keo{outline:2px dashed var(--xanh);background:#eef5f1}' +
     '.km-dau{display:flex;align-items:center;gap:6px;font-weight:700;color:#0b0b0b;font-size:14.5px}.km-dau .so{margin-left:auto;font-weight:600;color:#52514e;font-size:13px}' +
     '.km-dau button{border:0;background:#fff;border-radius:8px;width:28px;height:28px;font-size:18px;line-height:1;color:var(--xanh);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08)}' +
     '.km-thanh{height:6px;border-radius:4px;background:#e3dfd2;overflow:hidden}.km-thanh i{display:block;height:100%;border-radius:4px}' +
@@ -1193,7 +1193,7 @@ function veCrmKm() {
     '.km-rong{color:#898781;font-size:12.5px;text-align:center;padding:16px 4px;border:1px dashed #d6d3c8;border-radius:10px}</style>' +
     '<div class="the"><div class="hang" style="gap:8px;flex-wrap:wrap;align-items:end"><div style="flex:1;min-width:200px"><label for="crmQ" style="margin-top:0">Tìm khách</label><input id="crmQ" value="' + e(CRM.q) + '" placeholder="Tên, số điện thoại, tỉnh, phân loại, nguồn…"></div>' +
     '<button class="nut" data-kmthem="Khách mới" style="width:auto;padding:10px 16px">＋ Thêm khách mới</button></div>' +
-    '<p class="muted" style="margin:8px 0 0">Kéo thẻ sang cột khác để đổi luồng (máy tính), hoặc chạm vào thẻ để sửa / chuyển luồng. ★ = mức quan tâm. Khách sang <b>Đã mua hàng</b> hoặc <b>Chuyển đại lý</b> sẽ tự có tên trong Sổ bán hàng.</p></div>' +
+    '<p class="muted" style="margin:8px 0 0">Kéo thẻ sang cột khác để đổi luồng, hoặc bấm vào thẻ để sửa / chuyển luồng. ★ = mức quan tâm. Khách sang <b>Đã mua hàng</b> hoặc <b>Chuyển đại lý</b> sẽ tự có tên trong Sổ bán hàng.</p></div>' +
     '<div id="crmDs"></div>';
   $('noiDung').innerHTML = h;
   veCrmDs();
