@@ -1069,22 +1069,80 @@ function bamDon(b) {
   }
 }
 
-function napKhach(q) { goi('dsKhach', [TK, q || ''], veKhach); }
+function napKhach(q) { KH_LOC = { q: '', tt: '', nv: '', loai: '', hien: 60 }; goi('dsKhach', [TK, q || ''], veKhach); }
+var KH_LOC = { q: '', tt: '', nv: '', loai: '', hien: 60 }, KH_TT = ['Đang mua', 'Chậm lại', 'Cần gọi lại', 'Lâu rồi không mua', 'Chưa mua'];
+function khNgay(k) { return k.donCuoi ? Math.max(0, Math.round((new Date(H.homNay + 'T00:00:00') - new Date(k.donCuoi.slice(0, 10) + 'T00:00:00')) / 864e5)) : null; }
+function khTT(k) { var n = khNgay(k); return n == null ? 'Chưa mua' : n <= 30 ? 'Đang mua' : n <= 60 ? 'Chậm lại' : n <= 90 ? 'Cần gọi lại' : 'Lâu rồi không mua'; }
+function khChip(t) { return t === 'Đang mua' ? 'giao' : t === 'Chậm lại' ? 'gui' : t === 'Cần gọi lại' ? 'cho' : t === 'Chưa mua' ? '' : 'huy'; }
+function khLoc() {
+  var q = KH_LOC.q.toLowerCase().trim(), g = q.replace(/[\s.]/g, '');
+  return DS_KH.ds.map(function (k, i) { k._i = i; k._tt = khTT(k); return k; }).filter(function (k) {
+    if (KH_LOC.tt && k._tt !== KH_LOC.tt) return false;
+    if (KH_LOC.nv && (k.tenNV || '(chưa có)') !== KH_LOC.nv) return false;
+    if (KH_LOC.loai && (k.loai || '(chưa ghi)') !== KH_LOC.loai) return false;
+    if (!q) return true;
+    var s = [k.ten, k.sdt, k.diaChi, k.tinh, k.tenNV, k.team, k.loai].join(' ').toLowerCase();
+    return s.indexOf(q) >= 0 || (g && s.replace(/[\s.]/g, '').indexOf(g) >= 0);
+  });
+}
 function veKhach(r) {
   DS_KH = r;
-  var h = quayLai() + '<h2 class="tieude">Khách hàng</h2><div class="the"><label for="kQ" style="margin-top:0">Tìm khách</label><input id="kQ" placeholder="Tên, số điện thoại, tỉnh… rồi bấm Enter"></div>';
-  h += '<p class="muted">' + r.ds.length + ' khách' + (r.quanLy ? '' : ' bạn đang chăm sóc') + '</p>';
-  h += r.ds.map(function (k, i) {
-    return '<div class="don"><div class="dau"><span class="ma">' + e(k.ten) + (k.loai ? ' <span class="chip ' + (k.loai === 'Đại lý' ? 'giao' : 'gui') + '">' + e(k.loai) + '</span>' : '') + '</span><span class="muted">' + e(k.tinh) + '</span></div>' +
-      '<div>' + e(k.sdt) + ' · ' + e(k.diaChi) + '</div>' +
-      '<div class="muted">' + k.soDon + ' đơn · ' + tien(k.tong) + 'đ' + (k.donCuoi ? ' · đơn gần nhất ' + ngVN(k.donCuoi) : '') + (r.quanLy ? ' · chăm sóc: ' + e(k.tenNV) + (k.team ? ' (' + e(k.team) + ')' : '') : '') + '</div>' +
-      '<div class="hang"><button class="nut nho" data-lendon="' + i + '">Lên đơn cho khách này</button>' +
-      (r.quanLy ? '<button class="nut phu nho" data-chuyen="' + i + '">Chuyển người chăm sóc</button>' : '') + '</div></div>';
-  }).join('') || '<p class="muted">Chưa có khách.</p>';
+  var ds = r.ds, dem = function (f) { var m = {}; ds.forEach(function (k) { var v = f(k); m[v] = (m[v] || 0) + 1; }); return m; };
+  var dTT = dem(khTT), dNV = dem(function (k) { return k.tenNV || '(chưa có)'; }), dLoai = dem(function (k) { return k.loai || '(chưa ghi)'; });
+  function o4(ten, v) { return '<div><small>' + e(ten) + '</small><b>' + v + '</b></div>'; }
+  function chips(ten, key, m, thuTu) {
+    var keys = (thuTu || []).filter(function (v) { return m[v]; }).concat(Object.keys(m).filter(function (v) { return (thuTu || []).indexOf(v) < 0; }).sort(function (a, b) { return m[b] - m[a]; }));
+    return '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px"><small class="muted" style="width:96px">' + ten + '</small>' + keys.map(function (v) {
+      return '<button class="nut nho' + (KH_LOC[key] === v ? '' : ' phu') + '" data-khloc="' + key + '|' + e(v) + '" style="width:auto">' + e(v) + ' · ' + m[v] + '</button>'; }).join('') + '</div>';
+  }
+  var h = quayLai() + '<h2 class="tieude">Khách hàng</h2>' +
+    '<div class="o">' + o4(r.quanLy ? 'Tổng khách' : 'Khách bạn chăm sóc', tien(ds.length)) + o4('Đang mua', tien(dTT['Đang mua'] || 0)) + o4('Cần gọi lại', tien(dTT['Cần gọi lại'] || 0)) + o4('Lâu rồi không mua', tien(dTT['Lâu rồi không mua'] || 0)) + '</div>' +
+    '<div class="the"><label for="kQ" style="margin-top:0">Tìm khách</label><input id="kQ" value="' + e(KH_LOC.q) + '" placeholder="Tên, số điện thoại, tỉnh, NV phụ trách…">' +
+    chips('Tình trạng mua', 'tt', dTT, KH_TT) + (r.quanLy ? chips('NV phụ trách', 'nv', dNV) : '') + chips('Loại khách', 'loai', dLoai, ['Đại lý', 'Khách lẻ']) +
+    ((KH_LOC.tt || KH_LOC.nv || KH_LOC.loai) ? '<button class="nut nho rong" data-khloc="bo|" style="width:auto;margin-top:8px">✕ Bỏ lọc</button>' : '') +
+    '<p class="muted" style="margin:8px 0 0">Tình trạng theo đơn gần nhất: Đang mua ≤ 30 ngày · Chậm lại 31–60 · Cần gọi lại 61–90 · Lâu rồi không mua > 90 ngày. Bấm vào khách để xem hồ sơ.</p></div><div id="khDs"></div>';
   $('noiDung').innerHTML = h;
-  $('kQ').onkeydown = function (ev) { if (ev.key === 'Enter') napKhach($('kQ').value); };
+  veKhachDs();
+  $('kQ').oninput = function () { KH_LOC.q = this.value; KH_LOC.hien = 60; veKhachDs(); };
 }
+function veKhachDs() {
+  var r = DS_KH, ds = khLoc(), xem = ds.slice(0, KH_LOC.hien);
+  $('khDs').innerHTML = '<p class="muted">' + ds.length + ' khách · đơn gần nhất ở trên · bấm vào khách để xem hồ sơ</p>' + (xem.map(function (k) {
+    var i = k._i, n = khNgay(k), sdt = String(k.sdt || '').replace(/\D/g, '');
+    return '<div class="don" data-khhs="' + i + '" style="cursor:pointer"><div class="dau"><span class="ma">' + e(k.ten) + (k.loai ? ' <span class="chip ' + (k.loai === 'Đại lý' ? 'giao' : 'gui') + '">' + e(k.loai) + '</span>' : '') + '</span><span class="chip ' + khChip(k._tt) + '">' + e(k._tt) + '</span></div>' +
+      '<div style="font-size:13.5px">👤 Phụ trách: <b>' + e(k.tenNV || 'chưa có') + '</b>' + (k.team ? ' <span class="muted">(' + e(k.team) + ')</span>' : '') + '</div>' +
+      '<div>' + crmSdt(sdt) + (k.tinh ? ' · ' + e(k.tinh) : '') + '</div>' +
+      '<div class="muted">' + k.soDon + ' đơn · ' + tien(k.tong) + 'đ' + (k.donCuoi ? ' · đơn gần nhất ' + ngVN(k.donCuoi) + ' · ' + n + ' ngày chưa mua' : ' · chưa có đơn') + '</div>' +
+      '<div class="hang" style="gap:6px;flex-wrap:wrap;margin-top:4px"><button class="nut nho" data-lendon="' + i + '" style="width:auto">Lên đơn cho khách này</button>' +
+      (r.quanLy ? '<button class="nut phu nho" data-chuyen="' + i + '" style="width:auto">Chuyển người chăm sóc</button>' : '') + '<span class="muted" style="margin-left:auto;font-size:12px;color:var(--xanh);font-weight:600">Xem hồ sơ ›</span></div></div>';
+  }).join('') || '<p class="muted">Không có khách phù hợp.</p>') +
+    (ds.length > xem.length ? '<button class="nut phu rong" data-khthem="1">Xem thêm (còn ' + (ds.length - xem.length) + ')</button>' : '');
+}
+function moHoSoKhach(k) {
+  goi('khHoSo', [TK, k.ma], function (r) {
+    var x = r.kh, sdt = String(x.sdt || '').replace(/\D/g, '');
+    function dong(nhan, gt) { return gt === '' || gt == null ? '' : '<div class="hang" style="justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid #EFE6CC"><span class="muted">' + e(nhan) + '</span><b style="text-align:right">' + gt + '</b></div>'; }
+    function muc(t) { return '<h4 style="margin:14px 0 4px;color:var(--xanh)">' + e(t) + '</h4>'; }
+    var h = '<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(x.ten) + (x.loai ? ' <span class="chip ' + (x.loai === 'Đại lý' ? 'giao' : 'gui') + '">' + e(x.loai) + '</span>' : '') + '</h3><div style="margin-bottom:6px">' + crmSdt(sdt) + '</div>' +
+      muc('Thông tin') + dong('NV phụ trách', e(x.tenNV || 'chưa có') + (x.team ? ' (' + e(x.team) + ')' : '')) + dong('Tình trạng mua', e(khTT(k))) + dong('Địa chỉ', e(x.diaChi)) + dong('Tỉnh', e(x.tinh)) +
+      dong('Thêm vào danh sách', e(String(x.tao || '').slice(0, 10).split('-').reverse().join('/'))) + (x.ghiChu ? dong('Ghi chú', e(x.ghiChu)) : '') +
+      muc('Mua hàng') + dong('Số đơn', r.soDon) + dong('Tổng giá trị', tien(r.tong) + 'đ') +
+      r.theoThang.map(function (t) { return dong('Tháng ' + +t.thang.slice(5) + '/' + t.thang.slice(0, 4), t.soDon + ' đơn · ' + tien(t.tien) + 'đ'); }).join('');
+    if (r.sp.length) h += muc('Sản phẩm hay lấy') + r.sp.map(function (s) { return dong(s.ten, soSL(s.sl) + ' · ' + tien(s.tien) + 'đ'); }).join('');
+    h += muc('Đơn gần đây') + (r.don.length ? r.don.map(function (d) {
+      return '<div style="padding:5px 0;border-bottom:1px solid #EFE6CC"><div class="hang" style="justify-content:space-between"><span>' + ngVN(d.ngay) + ' · ' + e(d.ma) + ' <span class="chip ' + (TTD[d.tt] || '') + '">' + e(d.tt) + '</span></span><b>' + tien(d.tong) + 'đ</b></div><small class="muted">' + e(d.sp) + ' · ' + e(d.tenNV) + ' lên đơn</small></div>';
+    }).join('') : '<p class="muted">Chưa có đơn.</p>');
+    h += '<button class="nut" id="khhsDong" style="margin-top:14px">Đóng</button>';
+    moHop(h); $('khhsDong').onclick = dongHop;
+  });
+}
+document.addEventListener('click', function (ev) {
+  var c = ev.target.closest('[data-khhs]'); if (!c || ev.target.closest('a,button') || !DS_KH) return;
+  var k = DS_KH.ds[+c.dataset.khhs]; if (k) moHoSoKhach(k);
+});
 function bamKhach(b) {
+  if (b.dataset.khloc) { var p = b.dataset.khloc.split('|'), kk = p[0], v = p.slice(1).join('|'); if (kk === 'bo') { KH_LOC.tt = ''; KH_LOC.nv = ''; KH_LOC.loai = ''; } else KH_LOC[kk] = KH_LOC[kk] === v ? '' : v; KH_LOC.hien = 60; veKhach(DS_KH); return; }
+  if (b.dataset.khthem) { KH_LOC.hien += 60; veKhachDs(); return; }
   if (b.dataset.lendon != null) {
     var k = DS_KH.ds[b.dataset.lendon];
     SUA = null; TAB = 'len'; veNav(); veLenDon();
