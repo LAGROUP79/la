@@ -1172,58 +1172,98 @@ function crmThe(x, i, kl, them) {
     '<div class="muted">' + x[2] + ' giao dịch' + (x[1] ? ' · mua gần nhất ' + crmNgay(x[1]) : '') + ' · ' + x[4] + ' ngày chưa mua' + (x[7] ? ' · ' + e(x[7]) : '') + (x[5] ? ' · ' + e(x[5]) : '') + '</div>' +
     '<div>' + crmSdt(x[9]) + (x[10] ? ' · ' + e(x[10]) : '') + (x[11] ? ' · ' + e(x[11]) : '') + '</div>' + goiY + '</div>';
 }
-var CKM_MAU = { 'Đang tư vấn': 'cho', 'Đã tư vấn': 'gui', 'Đã mua hàng': 'giao' };
+var KM_COT = [['Khách mới', '#2a78d6', '🆕'], ['Đang tư vấn', '#eda100', '💬'], ['Từ chối', '#e34948', '✋'], ['Đã mua hàng', '#1baf7a', '🛒'], ['Chuyển đại lý', '#4a3aa7', '🤝']];
+function kmMau(tt) { var c = KM_COT.filter(function (x) { return x[0] === tt; })[0]; return c ? c[1] : '#898781'; }
+function kmNgay(s) { if (!s) return ''; var n = Math.round((new Date(H.homNay + 'T00:00:00') - new Date(s + 'T00:00:00')) / 864e5); return n <= 0 ? 'hôm nay' : n + ' ngày'; }
+function kmSao(x) { var h = ''; for (var i = 1; i <= 3; i++) h += '<button class="km-sao' + (i <= (x.sao || 0) ? ' on' : '') + '" data-kmsao="' + i + '" data-ma="' + e(x.ma) + '" title="Mức quan tâm ' + i + '/3">★</button>'; return h; }
 function veCrmKm() {
-  var ds = CRM.r.khachMoi || [], dem = {};
-  ds.forEach(function (x) { dem[x.tt] = (dem[x.tt] || 0) + 1; });
-  function o4(ten, v) { return '<div><small>' + e(ten) + '</small><b>' + v + '</b></div>'; }
   var h = quayLai() + crmNutChe() +
-    '<div class="o">' + o4('Tổng khách mới', ds.length) + o4('Đang tư vấn', dem['Đang tư vấn'] || 0) + o4('Đã tư vấn', dem['Đã tư vấn'] || 0) + o4('Đã mua hàng', dem['Đã mua hàng'] || 0) + '</div>' +
-    '<div class="the"><button class="nut" data-kmthem="1">＋ Thêm khách hàng mới</button>' +
-    '<label for="crmQ">Tìm khách mới</label><input id="crmQ" value="' + e(CRM.q) + '" placeholder="Tên, số điện thoại, tỉnh, phân loại, nguồn…">' +
-    '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + CRM.r.kmDm.tt.filter(function (k) { return dem[k]; }).map(function (k) {
-      return '<button class="nut nho' + (CRM.loc === k ? '' : ' phu') + '" data-crmloc="' + e(k) + '">' + e(k) + ' · ' + dem[k] + '</button>';
-    }).join('') + '</div></div><div id="crmDs"></div>' +
-    '<p class="muted">Khách chuyển sang <b>Đã mua hàng</b> sẽ tự có tên trong Sổ bán hàng (kế toán lên đơn được ngay) và hiện ở mục Đại lý.</p>';
+    '<style>.km-cot-wrap{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}' +
+    '.km-cot{flex:0 0 280px;scroll-snap-align:start;background:#f4f1e8;border-radius:14px;padding:10px;min-height:260px;display:flex;flex-direction:column;gap:8px}' +
+    '@media(max-width:600px){.km-cot{flex-basis:84vw}}.km-cot.keo{outline:2px dashed var(--xanh);background:#eef5f1}' +
+    '.km-dau{display:flex;align-items:center;gap:6px;font-weight:700;color:#0b0b0b;font-size:14.5px}.km-dau .so{margin-left:auto;font-weight:600;color:#52514e;font-size:13px}' +
+    '.km-dau button{border:0;background:#fff;border-radius:8px;width:28px;height:28px;font-size:18px;line-height:1;color:var(--xanh);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08)}' +
+    '.km-thanh{height:6px;border-radius:4px;background:#e3dfd2;overflow:hidden}.km-thanh i{display:block;height:100%;border-radius:4px}' +
+    '.km-the{background:#fff;border-radius:10px;padding:10px 10px 8px 12px;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:4px solid;cursor:pointer;display:flex;flex-direction:column;gap:4px}' +
+    '.km-the:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}.km-the b{font-size:14.5px;color:#0b0b0b}.km-the .muted{font-size:12.5px}' +
+    '.km-tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:10px;margin:0 4px 2px 0;background:#eef3fb;color:#1c5cab}.km-tag.ng{background:#fdeee6;color:#a8461e}.km-tag.dl{background:#efedfb;color:#4a3aa7}' +
+    '.km-chan{display:flex;align-items:center;gap:6px;margin-top:2px}.km-sao{border:0;background:none;padding:0 1px;font-size:17px;line-height:1;color:#d6d3c8;cursor:pointer}.km-sao.on{color:#eda100}' +
+    '.km-chan a{font-size:15px;text-decoration:none}.km-av{margin-left:auto;width:24px;height:24px;border-radius:50%;background:#1F5A4C;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}' +
+    '.km-rong{color:#898781;font-size:12.5px;text-align:center;padding:16px 4px;border:1px dashed #d6d3c8;border-radius:10px}</style>' +
+    '<div class="the"><div class="hang" style="gap:8px;flex-wrap:wrap;align-items:end"><div style="flex:1;min-width:200px"><label for="crmQ" style="margin-top:0">Tìm khách</label><input id="crmQ" value="' + e(CRM.q) + '" placeholder="Tên, số điện thoại, tỉnh, phân loại, nguồn…"></div>' +
+    '<button class="nut" data-kmthem="Khách mới" style="width:auto;padding:10px 16px">＋ Thêm khách mới</button></div>' +
+    '<p class="muted" style="margin:8px 0 0">Kéo thẻ sang cột khác để đổi luồng (máy tính), hoặc chạm vào thẻ để sửa / chuyển luồng. ★ = mức quan tâm. Khách sang <b>Đã mua hàng</b> hoặc <b>Chuyển đại lý</b> sẽ tự có tên trong Sổ bán hàng.</p></div>' +
+    '<div id="crmDs"></div>';
   $('noiDung').innerHTML = h;
   veCrmDs();
 }
 function veCrmKmDs() {
-  var ds = crmLoc(), xem = ds.slice(0, CRM.hien);
-  $('crmDs').innerHTML = '<p class="muted">' + ds.length + ' khách · mới nhập ở trên</p>' + (xem.map(function (x) {
-    return '<div class="don"><div class="dau"><span class="ma">' + e(x.ten) + '</span><span class="chip ' + (CKM_MAU[x.tt] || '') + '">' + e(x.tt) + '</span></div>' +
-      '<div>' + crmSdt(x.sdt) + (x.tinh ? ' · ' + e(x.tinh) : '') + '</div>' +
-      '<div class="muted">' + [x.loai, x.nguon ? 'nguồn ' + x.nguon : ''].filter(Boolean).map(e).join(' · ') + '</div>' +
-      (x.ghiChu ? '<div>' + e(x.ghiChu) + '</div>' : '') +
-      (x.maKH ? '<div style="color:var(--xanh)">✔ Đã chuyển sang đại lý · ' + e(x.tenKH || x.maKH) + ' (' + e(x.maKH) + ')</div>' : '') +
-      '<div class="muted" style="font-size:12px">' + ngayDu(x.ngay) + ' · ' + e(x.nguoi) + ' nhập' + (x.nguoiSua ? ' · ' + e(x.nguoiSua) + ' sửa ' + e(String(x.lucSua).slice(0, 16)) : '') + '</div>' +
-      '<div class="hang" style="gap:6px;margin-top:6px;flex-wrap:wrap"><button class="nut nho phu" data-kmsua="' + e(x.ma) + '" style="width:auto">✎ Sửa</button>' +
-      (x.tt !== 'Đã mua hàng' ? CRM.r.kmDm.tt.filter(function (t) { return t !== x.tt; }).map(function (t) {
-        return '<button class="nut nho phu" data-kmtt="' + e(x.ma) + '" data-tt="' + e(t) + '" style="width:auto">→ ' + e(t) + '</button>'; }).join('') : '') + '</div></div>';
-  }).join('') || '<p class="muted">Chưa có khách mới nào' + (CRM.q || CRM.loc ? ' phù hợp' : '') + '.</p>') +
-    (ds.length > xem.length ? '<button class="nut phu rong" data-crmthem="1">Xem thêm (còn ' + (ds.length - xem.length) + ')</button>' : '');
+  var ds = crmLoc(), tong = (CRM.r.khachMoi || []).length || 1;
+  CRM.kmXem = ds;
+  $('crmDs').innerHTML = '<div class="km-cot-wrap">' + KM_COT.map(function (c) {
+    var the = ds.filter(function (x) { return x.tt === c[0]; }), sl = (CRM.r.khachMoi || []).filter(function (x) { return x.tt === c[0]; }).length;
+    return '<div class="km-cot" data-kmcot="' + e(c[0]) + '"><div class="km-dau"><span>' + c[2] + ' ' + e(c[0]) + '</span><span class="so">' + sl + '</span><button data-kmthem="' + e(c[0]) + '" title="Thêm khách vào ' + e(c[0]) + '">+</button></div>' +
+      '<div class="km-thanh"><i style="width:' + Math.round(sl / tong * 100) + '%;background:' + c[1] + '"></i></div>' +
+      (the.map(function (x) {
+        var sdt = String(x.sdt || '').replace(/\D/g, '');
+        return '<div class="km-the" draggable="true" data-kmthe="' + e(x.ma) + '" style="border-left-color:' + c[1] + '"><b>' + e(x.ten) + '</b>' +
+          '<div class="muted">' + (sdt ? sdt.slice(0, 4) + ' ' + sdt.slice(4, 7) + ' ' + sdt.slice(7) : '') + (x.tinh ? ' · ' + e(x.tinh) : '') + '</div>' +
+          '<div>' + (x.loai ? '<span class="km-tag">' + e(x.loai) + '</span>' : '') + (x.nguon ? '<span class="km-tag ng">' + e(x.nguon) + '</span>' : '') + (x.maKH ? '<span class="km-tag dl">Sổ bán hàng · ' + e(x.maKH) + '</span>' : '') + '</div>' +
+          (x.ghiChu ? '<div class="muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + e(x.ghiChu) + '">📝 ' + e(x.ghiChu) + '</div>' : '') +
+          '<div class="km-chan">' + kmSao(x) + (sdt ? ' <a href="tel:' + sdt + '" title="Gọi">📞</a><a href="https:\/\/zalo.me\/' + sdt + '" target="_blank" rel="noopener" title="Zalo">💬</a>' : '') +
+          '<span class="muted" style="font-size:11.5px">' + kmNgay(x.ngay) + '</span><span class="km-av" title="' + e(x.nguoi) + ' nhập">' + e(String(x.nguoi || '?').trim().split(' ').pop().charAt(0).toUpperCase()) + '</span></div></div>';
+      }).join('') || '<div class="km-rong">' + (CRM.q ? 'Không có khách phù hợp' : 'Chưa có khách') + '</div>') + '</div>';
+  }).join('') + '</div>';
+  document.querySelectorAll('[data-kmthe]').forEach(function (el) {
+    el.ondragstart = function (ev) { ev.dataTransfer.setData('text/plain', el.dataset.kmthe); ev.dataTransfer.effectAllowed = 'move'; };
+  });
+  document.querySelectorAll('[data-kmcot]').forEach(function (cot) {
+    cot.ondragover = function (ev) { ev.preventDefault(); cot.classList.add('keo'); };
+    cot.ondragleave = function () { cot.classList.remove('keo'); };
+    cot.ondrop = function (ev) { ev.preventDefault(); cot.classList.remove('keo'); kmChuyen(ev.dataTransfer.getData('text/plain'), cot.dataset.kmcot); };
+  });
 }
-function moKhachMoi(x) {
-  var dm = CRM.r.kmDm, moi = !x; x = x || { ten: '', sdt: '', tinh: '', loai: '', nguon: '', tt: 'Đang tư vấn', ghiChu: '' };
+function kmTim(ma) { return (CRM.r.khachMoi || []).filter(function (x) { return x.ma === ma; })[0]; }
+function kmChuyen(ma, tt) {
+  var km = kmTim(ma); if (!km || km.tt === tt) return;
+  if ((tt === 'Đã mua hàng' || tt === 'Chuyển đại lý') && !km.maKH && !confirm('Chuyển ' + km.ten + ' sang "' + tt + '"? App sẽ tạo khách này trong Sổ bán hàng để kế toán lên đơn.')) return;
+  goi('crmLuuKhachMoi', [TK, Object.assign({}, km, { tt: tt })], function (r) { crmNhan(r); dongHop(); bao(km.ten + ' → ' + tt + '.'); });
+}
+function moKhachMoi(x, ttMoi) {
+  var dm = CRM.r.kmDm, moi = !x; x = x || { ten: '', sdt: '', tinh: '', loai: '', nguon: '', tt: ttMoi || 'Khách mới', ghiChu: '', sao: 0 };
   function ds(id, mang) { return '<datalist id="' + id + '">' + mang.map(function (v) { return '<option value="' + e(v) + '">'; }).join('') + '</datalist>'; }
-  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">' + (moi ? 'Thêm khách hàng mới' : 'Sửa · ' + e(x.ten)) + '</h3>' +
+  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">' + (moi ? 'Thêm khách hàng mới' : e(x.ten)) + '</h3>' +
+    (moi ? '' : '<label style="margin-top:6px">Chuyển luồng</label><div style="display:flex;gap:6px;flex-wrap:wrap">' + KM_COT.map(function (c) {
+      return '<button class="nut nho' + (c[0] === x.tt ? '' : ' phu') + '" data-kmdoi="' + e(c[0]) + '" style="width:auto;' + (c[0] === x.tt ? 'background:' + c[1] + ';border-color:' + c[1] : '') + '">' + c[2] + ' ' + e(c[0]) + '</button>'; }).join('') + '</div>') +
     '<label for="kmTen">Họ tên</label><input id="kmTen" value="' + e(x.ten) + '" placeholder="VD: Nguyễn Thị Lan – Quầy thuốc Lan Anh">' +
     '<label for="kmSdt">Số điện thoại</label><input id="kmSdt" inputmode="tel" value="' + e(x.sdt) + '" placeholder="10 số">' +
     '<label for="kmTinh">Tỉnh / thành</label><input id="kmTinh" list="kmDsTinh" value="' + e(x.tinh) + '" placeholder="Gõ để chọn tỉnh">' + ds('kmDsTinh', dm.tinh) +
     '<label for="kmLoai">Phân loại khách</label><input id="kmLoai" list="kmDsLoai" value="' + e(x.loai) + '" placeholder="Chọn hoặc gõ loại khác">' + ds('kmDsLoai', dm.loai) +
     '<label for="kmNguon">Nguồn khách</label><input id="kmNguon" list="kmDsNguon" value="' + e(x.nguon) + '" placeholder="Chọn hoặc gõ nguồn khác">' + ds('kmDsNguon', dm.nguon) +
-    '<label for="kmTT">Trạng thái</label><select id="kmTT">' + dm.tt.map(function (t) { return opt(t, x.tt); }).join('') + '</select>' +
-    '<label for="kmGhi">Ghi chú</label><input id="kmGhi" value="' + e(x.ghiChu) + '" placeholder="VD: quan tâm yến hũ 7g, hẹn gọi lại thứ 2">' +
-    (x.maKH ? '<p class="muted">Khách này đã có trong Sổ bán hàng (' + e(x.maKH) + ').</p>' : '<p class="muted">Chọn "Đã mua hàng" thì khách tự chuyển sang Sổ bán hàng và CRM Đại lý.</p>') +
+    (moi ? '<label for="kmTT">Luồng</label><select id="kmTT">' + dm.tt.map(function (t) { return opt(t, x.tt); }).join('') + '</select>' : '') +
+    '<label>Mức quan tâm</label><div id="kmSaoChon" data-sao="' + (x.sao || 0) + '">' + [1, 2, 3].map(function (i) { return '<button type="button" class="km-sao' + (i <= (x.sao || 0) ? ' on' : '') + '" data-kmsaochon="' + i + '" style="font-size:26px">★</button>'; }).join('') + '</div>' +
+    '<label for="kmGhi">Ghi chú</label><textarea id="kmGhi" rows="2" placeholder="VD: quan tâm yến hũ 7g, hẹn gọi lại thứ 2; từ chối vì giá…">' + e(x.ghiChu) + '</textarea>' +
+    (x.maKH ? '<p class="muted">Khách này đã có trong Sổ bán hàng (' + e(x.maKH) + ').</p>' : '') +
+    (moi ? '' : '<p class="muted" style="font-size:12px">' + ngayDu(x.ngay) + ' · ' + e(x.nguoi) + ' nhập' + (x.nguoiSua ? ' · ' + e(x.nguoiSua) + ' sửa ' + e(String(x.lucSua).slice(0, 16)) : '') + '</p>') +
     '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="kmDong" style="flex:1">Đóng</button><button class="nut" id="kmLuu" style="flex:1">Lưu</button></div>');
   $('kmDong').onclick = dongHop;
-  $('kmLuu').onclick = function () {
-    var k = { ma: x.ma || '', ten: $('kmTen').value, sdt: $('kmSdt').value, tinh: $('kmTinh').value, loai: $('kmLoai').value, nguon: $('kmNguon').value, tt: $('kmTT').value, ghiChu: $('kmGhi').value };
-    if (k.tt === 'Đã mua hàng' && !x.maKH && !confirm('Chuyển ' + k.ten + ' sang khách đại lý (tạo trong Sổ bán hàng)?')) return;
-    var nut = this; nut.disabled = true;
-    goi('crmLuuKhachMoi', [TK, k], function (r) { crmNhan(r); dongHop(); bao(moi ? 'Đã thêm khách mới.' : 'Đã lưu.'); }, false, function () { nut.disabled = false; });
+  document.querySelectorAll('[data-kmsaochon]').forEach(function (b) { b.onclick = function () {
+    var n = +b.dataset.kmsaochon, cu = +$('kmSaoChon').dataset.sao; n = n === cu ? 0 : n; $('kmSaoChon').dataset.sao = n;
+    document.querySelectorAll('[data-kmsaochon]').forEach(function (y) { y.classList.toggle('on', +y.dataset.kmsaochon <= n); });
+  }; });
+  var doc = function (tt) { return { ma: x.ma || '', ten: $('kmTen').value, sdt: $('kmSdt').value, tinh: $('kmTinh').value, loai: $('kmLoai').value, nguon: $('kmNguon').value, tt: tt, ghiChu: $('kmGhi').value, sao: +$('kmSaoChon').dataset.sao }; };
+  var luu = function (k, nut) {
+    if ((k.tt === 'Đã mua hàng' || k.tt === 'Chuyển đại lý') && !x.maKH && !confirm('Chuyển ' + k.ten + ' sang "' + k.tt + '"? App sẽ tạo khách này trong Sổ bán hàng để kế toán lên đơn.')) return;
+    if (nut) nut.disabled = true;
+    goi('crmLuuKhachMoi', [TK, k], function (r) { crmNhan(r); dongHop(); bao(moi ? 'Đã thêm khách mới.' : k.tt !== x.tt ? k.ten + ' → ' + k.tt + '.' : 'Đã lưu.'); }, false, function () { if (nut) nut.disabled = false; });
   };
+  document.querySelectorAll('[data-kmdoi]').forEach(function (b) { b.onclick = function () { if (b.dataset.kmdoi !== x.tt) luu(doc(b.dataset.kmdoi), b); }; });
+  $('kmLuu').onclick = function () { luu(doc(moi ? $('kmTT').value : x.tt), this); };
 }
+document.addEventListener('click', function (ev) {
+  var c = ev.target.closest('[data-kmthe]'); if (!c || ev.target.closest('a,button') || !CRM) return;
+  var km = kmTim(c.dataset.kmthe); if (km) moKhachMoi(km);
+});
 function crmNhan(r) { CRM.r = r; veCrm(); }
 function veCrm() {
   if (CRM.che === 'km') return veCrmKm();
@@ -1329,12 +1369,10 @@ function bamCrm(b) {
   if (d.crmthem) { CRM.hien += 60; veCrmDs(); return; }
   if (d.crmmoi) napCrm(true);
   if (d.khoiphuc) { crmVe(d.khoiphuc); return; }
-  if (d.kmthem) { moKhachMoi(null); return; }
-  var km = (CRM.r.khachMoi || []).filter(function (x) { return x.ma === (d.kmsua || d.kmtt); })[0];
-  if (d.kmsua && km) { moKhachMoi(km); return; }
-  if (d.kmtt && km) {
-    if (d.tt === 'Đã mua hàng') { moKhachMoi(Object.assign({}, km, { tt: 'Đã mua hàng' })); return; }
-    goi('crmLuuKhachMoi', [TK, Object.assign({}, km, { tt: d.tt })], function (r) { crmNhan(r); bao(km.ten + ': ' + d.tt + '.'); });
+  if (d.kmthem) { moKhachMoi(null, d.kmthem); return; }
+  if (d.kmsao) {
+    var km = kmTim(d.ma); if (!km) return; var n = +d.kmsao; if (n === km.sao) n = 0;
+    goi('crmLuuKhachMoi', [TK, Object.assign({}, km, { sao: n })], function (r) { crmNhan(r); }, true);
   }
 }
 
