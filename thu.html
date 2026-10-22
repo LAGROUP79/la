@@ -1186,6 +1186,7 @@ function crmLoc() {
     var q2 = CRM.q.toLowerCase().trim(), g2 = q2.replace(/[\s.]/g, '');
     return (CRM.r.lauKhong || []).filter(function (o) {
       if (CRM.loc && o.loai !== CRM.loc) return false;
+      if (!crmGcKhop(o.x && o.x[20])) return false;
       if (!q2) return true;
       var s = [o.ten, o.sdt].concat(o.x ? (o.loai === 'kl' ? [o.x[5]] : [o.x[9], o.x[10], o.x[5]]) : []).join(' ').toLowerCase();
       return s.indexOf(q2) >= 0 || (g2 && s.replace(/[\s.]/g, '').indexOf(g2) >= 0);
@@ -1194,6 +1195,7 @@ function crmLoc() {
   var kl = CRM.che === 'kl', q = CRM.q.toLowerCase().trim(), qGon = q.replace(/[\s.]/g, ''), tt = kl ? 8 : 6;
   return (kl ? CRM.r.khach : CRM.r.daiLy).filter(function (x) {
     if (CRM.loc && x[tt] !== CRM.loc) return false;
+    if (!crmGcKhop(x[20])) return false;
     if (!q) return true;
     var s = (kl ? [x[0], x[1], x[5]] : [x[0], x[9], x[10], x[5]]).join(' ').toLowerCase();
     return s.indexOf(q) >= 0 || (qGon && s.replace(/[\s.]/g, '').indexOf(qGon) >= 0);
@@ -1216,13 +1218,52 @@ function veCrmLk() {
     '<div class="the"><label for="crmQ" style="margin-top:0">Tìm khách lâu không lấy</label><input id="crmQ" value="' + e(CRM.q) + '" placeholder="Tên, số điện thoại, khu vực…">' +
     '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + [['dl', 'Đại lý'], ['kl', 'Khách lẻ']].map(function (k) {
       return '<button class="nut nho' + (CRM.loc === k[0] ? '' : ' phu') + '" data-crmloc="' + k[0] + '">' + k[1] + ' · ' + ds.filter(function (o) { return o.loai === k[0]; }).length + '</button>';
-    }).join('') + '</div></div><div id="crmDs"></div>' +
+    }).join('') + '</div>' + crmGcChips(ds.map(function (o) { return o.x && o.x[20]; })) + '</div><div id="crmDs"></div>' +
     '<p class="muted">Khách ' + (H.me.admin ? 'chị' : 'Admin') + ' chuyển sang đây để chăm sóc riêng. Đơn hàng và công nợ trong Sổ bán hàng vẫn giữ nguyên.' + (H.me.admin ? ' Bấm "↩ Đưa về danh sách" khi khách lấy hàng lại.' : '') + '</p>';
   $('noiDung').innerHTML = h;
   veCrmDs();
 }
+function crmHenToi(g) { return !!(g && g.hen && g.hen <= (CRM.r.homNay || H.homNay)); }
+function crmGcKhop(g) {
+  var f = CRM.gc; if (!f) return true;
+  if (f === '_co') return !!g; if (f === '_han') return crmHenToi(g); if (f === '_chua') return !g;
+  return !!g && g.tt === f;
+}
+function crmGcChips(ds) {
+  var co = 0, han = 0, m = {};
+  ds.forEach(function (g) { if (!g) return; co++; if (crmHenToi(g)) han++; if (g.tt) m[g.tt] = (m[g.tt] || 0) + 1; });
+  var nut = function (k, ten, n) { return '<button class="nut nho' + (CRM.gc === k ? '' : ' phu') + '" data-crmgcloc="' + e(k) + '" style="width:auto">' + ten + ' · ' + n + '</button>'; };
+  var thuTu = (CRM.r.gcTT || []).filter(function (t) { return m[t]; }).concat(Object.keys(m).filter(function (t) { return (CRM.r.gcTT || []).indexOf(t) < 0; }));
+  return '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed #E6DDC4"><small class="muted" style="width:100%">Tình trạng khách hiện tại (CSKH ghi chú)</small>' +
+    nut('_co', '📝 Có ghi chú', co) + nut('_han', '⏰ Đến hạn gọi lại', han) + nut('_chua', 'Chưa ghi chú', ds.length - co) +
+    thuTu.map(function (t) { return nut(t, e(t), m[t]); }).join('') + '</div>';
+}
+function crmGcHop(g) {
+  if (!g) return '';
+  var tre = crmHenToi(g);
+  return '<div style="background:#FFF8E6;border-left:3px solid #eda100;border-radius:6px;padding:5px 9px;margin:4px 0;font-size:13px">📝 <b>' + e(g.tt || 'Ghi chú') + '</b>' + (g.nd ? ' · ' + e(g.nd.length > 110 ? g.nd.slice(0, 110) + '…' : g.nd) : '') +
+    '<br><small class="muted">' + e(String(g.luc).slice(0, 10).split('-').reverse().join('/')) + ' · ' + e(g.nguoi) + (g.n > 1 ? ' · ' + g.n + ' lần ghi' : '') + '</small>' +
+    (g.hen ? ' <small style="color:' + (tre ? '#C81E1E' : 'var(--xanh)') + ';font-weight:600">⏰ hẹn gọi ' + e(g.hen.split('-').reverse().join('/')) + (tre ? ' (đến hạn)' : '') + '</small>' : '') + '</div>';
+}
+function moGhiChuCrm(x, kl, lichSu) {
+  var ten = kl ? (x[1] || x[0]) : x[0], sdt = kl ? x[0] : x[9], g = x[20] || {};
+  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">📝 Ghi chú CSKH · ' + e(ten) + '</h3>' +
+    '<label for="gcTT">Tình trạng hiện tại</label><input id="gcTT" list="gcDsTT" value="" placeholder="Chọn hoặc gõ tình trạng">' +
+    '<datalist id="gcDsTT">' + (CRM.r.gcTT || []).map(function (t) { return '<option value="' + e(t) + '">'; }).join('') + '</datalist>' +
+    '<label for="gcND">Nội dung</label><textarea id="gcND" rows="3" placeholder="VD: khách còn 2 thùng, hẹn đầu tháng lấy tiếp; chê giá cao hơn bên khác…"></textarea>' +
+    '<label for="gcHen">Hẹn gọi lại (không bắt buộc)</label><input type="date" id="gcHen" min="' + e(H.homNay) + '">' +
+    (g.tt || g.nd ? '<p class="muted" style="font-size:12.5px">Lần trước: <b>' + e(g.tt || '') + '</b> ' + e(g.nd || '') + ' · ' + e(g.nguoi || '') + '</p>' : '') + (lichSu || '') +
+    '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="gcDong" style="flex:1">Đóng</button><button class="nut" id="gcLuu" style="flex:1">Lưu ghi chú</button></div>');
+  $('gcDong').onclick = dongHop;
+  $('gcLuu').onclick = function () {
+    var tt = $('gcTT').value.trim(), nd = $('gcND').value.trim(); if (!tt && !nd) { bao('Chọn tình trạng hoặc ghi nội dung.', true); return; }
+    var nut = this; nut.disabled = true;
+    goi('crmGhiChu', [TK, kl ? 'kl' : 'dl', ten, sdt, tt, nd, $('gcHen').value], function (r) { crmNhan(r); dongHop(); bao('Đã lưu ghi chú cho ' + ten + '.'); }, false, function () { nut.disabled = false; });
+  };
+}
 function crmThe(x, i, kl, them) {
-  var goiY = '<div class="hang" style="justify-content:flex-end;gap:10px;align-items:center;font-size:12px;color:var(--xanh);font-weight:600">' + (them || '') + '<span>Xem hồ sơ ›</span></div>';
+  var goiY = crmGcHop(x[20]) + '<div class="hang" style="justify-content:flex-end;gap:10px;align-items:center;font-size:12px;color:var(--xanh);font-weight:600">' +
+    (CRM.r.ghiGc ? '<button class="nut nho phu" data-crmgc="1" style="width:auto;padding:2px 10px;font-size:12px">📝 Ghi chú</button>' : '') + (them || '') + '<span>Xem hồ sơ ›</span></div>';
   var mo = '<div class="don crmthe" data-crmhs="' + i + '" style="cursor:pointer">';
   if (kl) return mo + '<div class="dau"><span class="ma">' + e(x[1] || '(chưa có tên)') + '</span>' + (x[8] ? '<span class="chip ' + crmChipTT(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
     '<div>' + crmSdt(x[0]) + (x[5] ? ' · đại lý <b>' + e(x[5]) + '</b>' : '') + '</div>' +
@@ -1344,7 +1385,7 @@ document.addEventListener('click', function (ev) {
   var c = ev.target.closest('[data-kmthe]'); if (!c || ev.target.closest('a,button') || !CRM) return;
   var km = kmTim(c.dataset.kmthe); if (km) moKhachMoi(km);
 });
-function crmNhan(r) { CRM.r = r; veCrm(); }
+function crmNhan(r) { if (r.ghiGc == null && CRM.r) r.ghiGc = CRM.r.ghiGc; CRM.r = r; veCrm(); }
 function veCrm() {
   if (CRM.che === 'km') return veCrmKm();
   if (CRM.che === 'lk') return veCrmLk();
@@ -1360,8 +1401,8 @@ function veCrm() {
     '<div class="the"><label for="crmQ" style="margin-top:0">Tìm ' + (kl ? 'khách' : 'đại lý') + '</label><input id="crmQ" value="' + e(CRM.q) + '" placeholder="' + (kl ? 'Tên, số điện thoại, đại lý…' : 'Tên đại lý, số điện thoại, khu vực…') + '">' +
     '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + thuTu.filter(function (k) { return dem[k]; }).map(function (k) {
       return '<button class="nut nho' + (CRM.loc === k ? '' : ' phu') + '" data-crmloc="' + e(k) + '">' + e(k) + ' · ' + dem[k] + '</button>';
-    }).join('') + '</div></div><div id="crmDs"></div>' +
-    '<p class="muted">Chỉ xem. Số lấy tự động từ sổ TỔNG HỢP BÁN HÀNG 2026 (sheet ' + (kl ? 'DS NGUOI NHAN' : 'DS KHACH HANG') + '), lúc ' + e(r.luc) +
+    }).join('') + '</div>' + crmGcChips(ds.map(function (x) { return x[20]; })) + '</div><div id="crmDs"></div>' +
+    '<p class="muted">Số liệu mua hàng chỉ xem. Số lấy tự động từ sổ TỔNG HỢP BÁN HÀNG 2026 (sheet ' + (kl ? 'DS NGUOI NHAN' : 'DS KHACH HANG') + '), lúc ' + e(r.luc) +
     '. <button class="nut nho phu" data-crmmoi="1" style="width:auto">Làm mới</button></p>';
   $('noiDung').innerHTML = h;
   veCrmDs();
@@ -1394,6 +1435,12 @@ function moHoSoCrm(x, kl, khoaLk) {
     function muc(t) { return '<h4 style="margin:14px 0 4px;color:var(--xanh)">' + e(t) + '</h4>'; }
     var h = '<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(ten) + '</h3>' +
       '<div style="margin-bottom:6px">' + crmSdt(sdt) + '</div>';
+    var lsGc = (r.gcDs || []).map(function (g) {
+      return '<div style="padding:5px 0;border-bottom:1px solid #EFE6CC;font-size:13px"><b>' + e(g.tt || 'Ghi chú') + '</b>' + (g.nd ? ' · ' + e(g.nd) : '') +
+        '<br><small class="muted">' + e(String(g.luc).slice(0, 16)) + ' · ' + e(g.nguoi) + (g.hen ? ' · ⏰ hẹn ' + e(g.hen.split('-').reverse().join('/')) : '') + '</small></div>';
+    }).join('');
+    h += muc('📝 Tình trạng khách (CSKH)') + (lsGc || '<p class="muted" style="margin:0">Chưa có ghi chú.</p>') +
+      (CRM.r.ghiGc ? '<button class="nut nho" id="hsGc" style="width:auto;margin-top:6px">＋ Cập nhật tình trạng</button>' : '');
     if (kl) {
       h += muc('Theo sổ cũ (tới ' + e(CRM.r.luc) + ')') + dong('Số lần nhận hàng', x[2]) + dong('Tổng giá trị đơn', tien(x[3]) + 'đ') + dong('Lần nhận gần nhất', x[4] ? crmNgay(x[4]) : '') +
         dong('Đặt qua đại lý', e(x[5])) + dong('Số ngày im lặng', x[6] + ' ngày') + dong('Xếp hạng', e(x[7])) + dong('Tình trạng', e(x[8]));
@@ -1423,6 +1470,7 @@ function moHoSoCrm(x, kl, khoaLk) {
       '<button class="nut rong" id="hsXoa" style="margin-top:14px;color:#C81E1E">🗑 Xoá → chuyển sang Khách lâu không lấy</button>') : '') + '<button class="nut" id="hsDong" style="margin-top:8px">Đóng</button>';
     moHop(h); $('hsDong').onclick = dongHop;
     if ($('hsXoa')) $('hsXoa').onclick = function () { crmXoa(x, kl); };
+    if ($('hsGc')) $('hsGc').onclick = function () { moGhiChuCrm(x, kl); };
     if ($('hsVe')) $('hsVe').onclick = function () { crmVe(khoaLk); };
   });
 }
@@ -1439,16 +1487,18 @@ document.addEventListener('click', function (ev) {
   var o = CRM.xem[+c.dataset.crmhs]; if (!o) return;
   var lk = CRM.che === 'lk', x = lk ? o.x : o, kl = lk ? o.loai === 'kl' : CRM.che === 'kl';
   if (ev.target.closest('[data-crmxoa]')) { crmXoa(x, kl); return; }
+  if (ev.target.closest('[data-crmgc]')) { if (x) moGhiChuCrm(x, kl); return; }
   if (ev.target.closest('a,button') || !x) return;
   moHoSoCrm(x, kl, lk ? o.khoa : '');
 });
 function bamCrm(b) {
   var d = b.dataset;
-  if (d.crmche) { CRM.che = d.crmche; CRM.q = ''; CRM.loc = ''; CRM.hien = 60; veCrm(); return; }
+  if (d.crmche) { CRM.che = d.crmche; CRM.q = ''; CRM.loc = ''; CRM.gc = ''; CRM.hien = 60; veCrm(); return; }
   if (d.crmloc != null) { CRM.loc = CRM.loc === d.crmloc ? '' : d.crmloc; CRM.hien = 60; veCrm(); return; }
   if (d.crmthem) { CRM.hien += 60; veCrmDs(); return; }
   if (d.crmmoi) napCrm(true);
   if (d.khoiphuc) { crmVe(d.khoiphuc); return; }
+  if (d.crmgcloc != null) { CRM.gc = CRM.gc === d.crmgcloc ? '' : d.crmgcloc; CRM.hien = 60; veCrm(); return; }
   if (d.kmthem) { moKhachMoi(null, d.kmthem); return; }
   if (d.kmloc) {
     var p = d.kmloc.split('|'), k = p[0], v = p.slice(1).join('|'); CRM.kmLoc = CRM.kmLoc || {};
