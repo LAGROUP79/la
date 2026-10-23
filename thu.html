@@ -404,7 +404,8 @@ function veNav() {
       var vao = H.me.phongVao.indexOf(p.ma) >= 0, m = MAU_P[p.ma] || ['#eee', '#888', '#555'];
       return '<button data-tab="p_' + p.ma + '" class="' + (PHONG_HT === p.ma ? 'on' : '') + (vao ? '' : ' khoa') + '" style="--dam:' + m[1] + '"><i></i>' + e(tenPhong(p.ma).replace(/^PHÒNG /, '')) + (vao ? '' : ' 🔒') + '</button>';
     }).join('') + '</div>' +
-    (H.me.crm ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '');
+    (H.me.crm ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '') +
+    '<div class="navPhong"><small>CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button></div>';
 }
 var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
@@ -425,14 +426,14 @@ function chuyenTab(t) {
   if (t === 'cd' && !H.me.chiaKpi && !H.me.admin) can = ['VH'];
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
   if ((t === 'crm' || t === 'crmm') && !H.me.crm) { bao('Bạn chưa có quyền xem CRM. Vui lòng liên hệ Admin (anh Thanh / chị Lê).', true); return; }
-  if (t === 'crm' || t === 'crmm') PHONG_HT = '';
+  if (t === 'crm' || t === 'crmm' || t === 'cskh') PHONG_HT = '';
   if (t.indexOf('p_') === 0) PHONG_HT = t.slice(2); else if (t === 'home') PHONG_HT = '';
   if (t !== 'len') SUA = null; TAB = t; veNav(); veTab(); window.scrollTo(0, 0);
 }
 function veTab() {
   if (TAB.indexOf('p_') === 0) return vePhong(TAB.slice(2));
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
-    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
+    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); },
     kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
   (m[TAB] || veHome)();
@@ -459,7 +460,7 @@ function veHome() {
   var hn = k.homNay;
   var mau = MAU_O = { cc: ['#E2F3EE', '#18946F', '#0F5A43'], cv: ['#E7EBFC', '#4C63D9', '#2C3C93'], np: ['#F1E8FB', '#8A4FD1', '#57308A'], bc: ['#E5F4E3', '#3F9B3A', '#276224'],
     th: ['#FFF3D9', '#D89A12', '#8A5F00'], len: ['#FFE9E1', '#E5643A', '#9C3A1A'], ds: ['#FCEFC4', '#B8862B', '#6E4E0E'], ton: ['#E1F1FA', '#2B8CC4', '#175A80'],
-    kh: ['#FCE6EE', '#D24C7E', '#8C2A50'], cd: ['#ECEFF1', '#5F7480', '#37474F'], hs: ['#FDEBDD', '#C8742B', '#7A4210'], dy: ['#E6F6F4', '#1E9A8A', '#0F5E54'], crm: ['#E4EEF7', '#3D6FA8', '#21456E'], crmm: ['#E6F4EA', '#2E8B57', '#1B5E3A'] };
+    kh: ['#FCE6EE', '#D24C7E', '#8C2A50'], cd: ['#ECEFF1', '#5F7480', '#37474F'], hs: ['#FDEBDD', '#C8742B', '#7A4210'], dy: ['#E6F6F4', '#1E9A8A', '#0F5E54'], crm: ['#E4EEF7', '#3D6FA8', '#21456E'], crmm: ['#E6F4EA', '#2E8B57', '#1B5E3A'], cskh: ['#FFF3E0', '#D9822B', '#8A4B0F'] };
   var chao = (H.me.mk || H.me.phongGhi.indexOf('KD') < 0 ? '' : '<div><small>Target hôm nay</small><br><b class="vang">' + (k.kpi ? (hn && hn.laLam ? tien(hn.chiTieu) + 'đ' : 'Nghỉ CN') : 'Chưa chia') + '</b><br><small>đã bán ' + tien(hn ? hn.dt : 0) + 'đ</small></div>');
   $('noiDung').innerHTML = '<div class="chao"><div class="luoi2"><div><small>Xin chào</small><br><b>' + e(H.me.ten) + '</b><br><small>' + e(H.me.vai) + (H.me.team ? ' · ' + e(H.me.team) : '') + '</small></div>' + chao + '</div>' +
     (k.kpi ? '<div class="phong"><small>Tháng ' + H.homNay.slice(5, 7) + ' của bạn: ' + tien(k.dat) + ' / ' + tien(k.kpi) + 'đ · ' + (k.pt || 0) + '%</small>' + thanh(k.pt) + '</div>' : '') +
@@ -471,6 +472,7 @@ function veHome() {
     }).join('') + '</div>' +
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
+    '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button></div>' +
     '<h3 class="nhom">PHÒNG BAN</h3><div class="oclon nam">' + H.phongBan.map(function (p) { return oPhong(p.ma); }).join('') + '</div>' +
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo báo cáo 21:00 trên điện thoại</b>' +
       '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00 hiện trên màn hình khoá: số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, tình hình kiểm kho trong ngày. Bật trên từng máy muốn nhận.</p>' +
@@ -500,6 +502,7 @@ var IC_O = (function () {
   function s(p) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; }
   return {
     cc: s('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+    cskh: s('<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M19.5 19c0 1.5-2 2.5-5 2.5h-2"/>'),
     cv: s('<path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/>'),
     np: s('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M9 15l2 2 4-4"/>'),
     bc: s('<path d="M4 20V11M10 20V5M16 20v-8M21 20H3"/>'),
@@ -1158,6 +1161,70 @@ function bamKhach(b) {
   }
 }
 
+var CSKH = null, CSKH_TAB = 'traloi', CSKH_Q = '';
+function napCskh() { goi('cskhDuLieu', [TK], function (r) { CSKH = r; veCskh(); }); }
+function cskhSach(t) { return String(t || '').split('\n').filter(function (l) { return !/^\((Lưu ý nội bộ|Nội bộ)/i.test(l.trim()); }).join('\n').trim(); }
+function cskhHien(t) {
+  return String(t || '').split('\n').map(function (l) {
+    var nb = /^\((Lưu ý nội bộ|Nội bộ)/i.test(l.trim());
+    l = e(l).replace(/\[([^\]]+)\]/g, '<mark style="background:#FFE9A8;border-radius:3px;padding:0 2px">[$1]</mark>');
+    return nb ? '<span class="muted" style="font-style:italic">' + l + '</span>' : l;
+  }).join('<br>');
+}
+function veCskh() {
+  var r = CSKH, q = CSKH_Q.toLowerCase().trim();
+  var ds = r.ds.filter(function (x) { return q ? (x.tieuDe + ' ' + x.noiDung + ' ' + x.muc).toLowerCase().indexOf(q) >= 0 : x.nhom === CSKH_TAB; });
+  var dem = {}; r.ds.forEach(function (x) { dem[x.nhom] = (dem[x.nhom] || 0) + 1; });
+  var h = quayLai() + '<h2 class="tieude">CSKH · Cẩm nang &amp; chính sách</h2>' +
+    '<style>.cs-the{background:#fff;border:1px solid #EFE6CC;border-radius:12px;padding:12px 14px;margin-bottom:10px}.cs-the .cs-nd{white-space:normal;line-height:1.55;font-size:14.5px;margin:6px 0 8px}' +
+    '.cs-nhan{display:inline-block;font-size:11.5px;font-weight:600;border-radius:10px;padding:1px 8px;margin-left:6px}.cs-nhan.si{background:#FDEEE6;color:#A8461E}.cs-nhan.noibo{background:#ECEFF1;color:#5F7480}' +
+    '.cs-muc{display:flex;align-items:center;gap:8px;margin:16px 0 8px}.cs-muc h3{margin:0;font-size:15.5px;color:var(--xanh)}</style>' +
+    '<div class="the"><input id="csQ" value="' + e(CSKH_Q) + '" placeholder="🔎 Tìm nhanh: giá sỉ, vỡ hũ, chuyển khoản, bảo hành…">' +
+    '<div class="tab2" style="margin-top:10px">' + r.nhom.map(function (n) { return '<button data-cstab="' + n[0] + '" class="' + (!q && CSKH_TAB === n[0] ? 'on' : '') + '">' + e(n[1]) + ' <small>' + (dem[n[0]] || 0) + '</small></button>'; }).join('') + '</div>' +
+    '<p class="muted" style="margin:8px 0 0">Bấm <b>📋 Copy</b> rồi dán vào Zalo gửi khách. Chữ <mark style="background:#FFE9A8">[trong ngoặc]</mark> nhớ thay bằng thông tin thật trước khi gửi. Mục <span class="cs-nhan si" style="margin:0">🔒 Khách sỉ</span> chỉ gửi khách sỉ đã xác nhận, mục <span class="cs-nhan noibo" style="margin:0">Nội bộ</span> không gửi khách.</p>' +
+    (r.sua ? '<button class="nut nho" data-csthem="1" style="width:auto;margin-top:8px">＋ Thêm nội dung</button>' : '') + '</div>';
+  var nhom = {}, thuTu = [];
+  ds.forEach(function (x) { var k = (q ? (r.nhom.filter(function (n) { return n[0] === x.nhom; })[0] || [0, ''])[1] + ' · ' : '') + (x.muc || 'Khác'); if (!nhom[k]) { nhom[k] = []; thuTu.push(k); } nhom[k].push(x); });
+  h += thuTu.map(function (k, gi) {
+    return '<div class="cs-muc"><h3>' + e(k) + '</h3>' + (nhom[k].length > 1 && nhom[k].every(function (x) { return x.loai === ''; }) && nhom[k][0].nhom !== 'traloi' ? '<button class="nut nho phu" data-csmuc="' + gi + '" style="width:auto;margin-left:auto;font-size:12px">📋 Copy cả mục</button>' : '') + '</div>' +
+      nhom[k].map(function (x) {
+        return '<div class="cs-the"><b>' + e(x.tieuDe) + '</b>' + (x.loai === 'si' ? '<span class="cs-nhan si">🔒 Chỉ gửi khách sỉ đã xác nhận</span>' : x.loai === 'noibo' ? '<span class="cs-nhan noibo">Nội bộ – không gửi khách</span>' : '') +
+          '<div class="cs-nd">' + cskhHien(x.noiDung) + '</div><div class="hang" style="gap:6px;flex-wrap:wrap"><button class="nut nho" data-cscopy="' + e(x.ma) + '" style="width:auto">📋 Copy</button>' +
+          (r.sua ? '<button class="nut nho phu" data-cssua="' + e(x.ma) + '" style="width:auto">✎ Sửa</button><button class="nut nho phu" data-csan="' + e(x.ma) + '" style="width:auto;color:#C81E1E">🗑 Ẩn</button>' : '') +
+          (x.nguoi && x.nguoi.indexOf('Mẫu') !== 0 ? '<small class="muted" style="margin-left:auto">' + e(x.nguoi) + ' sửa ' + e(String(x.luc).slice(0, 10).split('-').reverse().join('/')) + '</small>' : '') + '</div></div>';
+      }).join('');
+  }).join('') || '<p class="muted">Không tìm thấy nội dung phù hợp.</p>';
+  CSKH.nhomXem = thuTu.map(function (k) { return nhom[k]; });
+  $('noiDung').innerHTML = h;
+  $('csQ').oninput = function () { CSKH_Q = this.value; var vt = this.selectionStart; veCskh(); var o = $('csQ'); o.focus(); o.setSelectionRange(vt, vt); };
+}
+function cskhTim(ma) { return CSKH.ds.filter(function (x) { return x.ma === ma; })[0]; }
+function cskhCopy(t) { copyChu(t); if (/\[[^\]]+\]/.test(t)) setTimeout(function () { bao('Đã copy. Nhớ thay chữ [trong ngoặc] bằng thông tin thật trước khi gửi khách.'); }, 1200); }
+function moSuaCskh(x) {
+  var r = CSKH, moi = !x; x = x || { nhom: CSKH_TAB, muc: '', tieuDe: '', noiDung: '', loai: '' };
+  var mucs = {}; r.ds.forEach(function (y) { if (y.muc) mucs[y.muc] = 1; });
+  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">' + (moi ? 'Thêm nội dung CSKH' : 'Sửa nội dung') + '</h3>' +
+    '<label for="csNhom">Phần</label><select id="csNhom">' + r.nhom.map(function (n) { return '<option value="' + n[0] + '"' + (n[0] === x.nhom ? ' selected' : '') + '>' + e(n[1]) + '</option>'; }).join('') + '</select>' +
+    '<label for="csMuc">Mục (nhóm nhỏ)</label><input id="csMuc" list="csDsMuc" value="' + e(x.muc) + '" placeholder="VD: 4.3. Chốt đơn"><datalist id="csDsMuc">' + Object.keys(mucs).map(function (m) { return '<option value="' + e(m) + '">'; }).join('') + '</datalist>' +
+    '<label for="csTieuDe">Tiêu đề / câu khách hỏi</label><input id="csTieuDe" value="' + e(x.tieuDe) + '">' +
+    '<label for="csND">Nội dung gửi khách</label><textarea id="csND" rows="9" placeholder="Viết đúng như sẽ gửi Zalo. Chữ cần thay ghi trong [ngoặc vuông]. Dòng bắt đầu bằng (Nội bộ ...) sẽ không bị copy.">' + e(x.noiDung) + '</textarea>' +
+    '<label for="csLoai">Ai được nhận</label><select id="csLoai"><option value=""' + (x.loai === '' ? ' selected' : '') + '>Gửi khách được</option><option value="si"' + (x.loai === 'si' ? ' selected' : '') + '>Chỉ gửi khách sỉ đã xác nhận</option><option value="noibo"' + (x.loai === 'noibo' ? ' selected' : '') + '>Nội bộ – không gửi khách</option></select>' +
+    '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="csDong" style="flex:1">Đóng</button><button class="nut" id="csLuu" style="flex:1">Lưu</button></div>');
+  $('csDong').onclick = dongHop;
+  $('csLuu').onclick = function () {
+    var nut = this; nut.disabled = true;
+    goi('cskhLuu', [TK, { ma: x.ma || '', nhom: $('csNhom').value, muc: $('csMuc').value, tieuDe: $('csTieuDe').value, noiDung: $('csND').value, loai: $('csLoai').value }], function (r2) { CSKH = r2; CSKH_TAB = $('csNhom') ? $('csNhom').value : CSKH_TAB; dongHop(); veCskh(); bao('Đã lưu.'); }, false, function () { nut.disabled = false; });
+  };
+}
+function bamCskh(b) {
+  var d = b.dataset;
+  if (d.cstab) { CSKH_TAB = d.cstab; CSKH_Q = ''; veCskh(); window.scrollTo(0, 0); return; }
+  if (d.cscopy) { var x = cskhTim(d.cscopy); if (x) cskhCopy(cskhSach(x.noiDung)); return; }
+  if (d.csmuc != null) { var g = CSKH.nhomXem[+d.csmuc] || []; cskhCopy(g.map(function (y) { return y.tieuDe.toUpperCase() + '\n' + cskhSach(y.noiDung); }).join('\n\n')); return; }
+  if (d.csthem) { moSuaCskh(null); return; }
+  if (d.cssua) { moSuaCskh(cskhTim(d.cssua)); return; }
+  if (d.csan) { var y = cskhTim(d.csan); if (!y || !confirm('Ẩn "' + y.tieuDe + '" khỏi mục CSKH?')) return; goi('cskhAn', [TK, y.ma], function (r) { CSKH = r; veCskh(); bao('Đã ẩn.'); }); }
+}
 var CRM = null;
 var CRM_THU_TU = { kl: ['Đang mua', 'Chậm lại', 'Cần gọi lại', 'Lâu rồi không mua'], dl: ['Đang mua đều', 'Chậm lại', 'Cần gọi lại', 'Coi như đã mất'] };
 function crmChipTT(t) { return /^Đang mua/.test(t) ? 'giao' : t === 'Chậm lại' ? 'gui' : t === 'Cần gọi lại' ? 'cho' : t ? 'huy' : ''; }
@@ -2918,6 +2985,7 @@ document.addEventListener('click', function (ev) {
   if (TAB === 'ds') bamDon(b);
   if (TAB === 'kh' && DS_KH) bamKhach(b);
   if ((TAB === 'crm' || TAB === 'crmm') && CRM) bamCrm(b);
+  if (TAB === 'cskh' && CSKH) bamCskh(b);
   if (/^(hs|ns_)/.test(TAB)) bamNS(b);
   if (/^k[knxpb]$/.test(TAB)) bamKho(b);
 });
