@@ -1160,9 +1160,101 @@ function bamKhach(b) {
   }
 }
 
-var CSKH = null, CSKH_TAB = 'traloi', CSKH_Q = '';
+var CSKH = null, CSKH_TAB = 'traloi', CSKH_Q = '', CSKH_LINK = 'https:' + '/' + '/claude.ai/artifact/3sBYFHH72ZcUJXGR3BqcjP';
 function napCskh() { goi('cskhDuLieu', [TK], function (r) { CSKH = r; veCskh(); }); }
 function cskhSach(t) { return String(t || '').split('\n').filter(function (l) { return !/^\((Lưu ý nội bộ|Nội bộ)/i.test(l.trim()); }).join('\n').trim(); }
+var CSKH_SO = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+var CSKH_CHAN = '━━━━━━━━━━━━━━\n🌿 Yến Sào Lanest – Trao sức khỏe, Trao yêu thương\n📞 Hotline: 025.8627.8627\n🌐 lanest.com.vn';
+function cskhHoa(s) { s = String(s || '').trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function cskhMuc(s) { s = cskhHoa(s.replace(/[.;,]\s*$/, '')); if (/\d[\d.]*đ/.test(s)) s = s.replace(/\s+giá\s+(lẻ\s+)?(?=\d)/i, function (m0, le) { return ': ' + (le ? 'giá lẻ ' : ''); }); return s; }
+function cskhCau(s, cuoi) {
+  var ra = [], phu = [], ngoac = [];
+  s = s.replace(/\[[^\]]*\]/g, function (m0) { ngoac.push(m0); return '\u0002' + (ngoac.length - 1) + '\u0002'; });
+  var tra = function (v) { return v.replace(/\u0002(\d+)\u0002/g, function (m0, k) { return ngoac[+k]; }); };
+  s = s.replace(/\s*\(([^()]*,[^()]*)\)/g, function (m0, nd) { phu.push(nd); return ''; });
+  var ketQua = function (dau, ds, duoi) {
+    if (dau) ra.push(tra(cskhHoa(dau)) + ':');
+    ds.forEach(function (p) { ra.push('▪️ ' + tra(cskhMuc(p))); });
+    if (duoi) ra.push(tra(cskhHoa(duoi)));
+    phu.forEach(function (p) { ra.push((/tặng/i.test(p) ? '🎁 ' : '📌 ') + tra(cskhHoa(p))); });
+    return ra;
+  };
+  if ((s.match(/\s·\s/g) || []).length >= 2) { s.split(/\s·\s/).forEach(function (p) { ra.push(tra(cskhHoa(p.replace(/[.]\s{0,3}$/, '')))); }); return ra; }
+  var m = s.match(/^(.{6,}?):\s+(.+)$/);
+  if (m && /\(1\)/.test(m[2]) && /\(2\)/.test(m[2])) {
+    var dsn = m[2].split(/,?\s{0,3}\(\d\)\s{0,3}/).filter(function (p) { return p.trim(); }), duoi = '';
+    var mm = dsn[dsn.length - 1].match(/^(.*?),\s+(.*(\s)(sẽ|nha|ạ)(\s|$).*)$/);
+    if (mm) { dsn[dsn.length - 1] = mm[1]; duoi = mm[2]; }
+    return ketQua(m[1], dsn, duoi);
+  }
+  if (!m && (s.match(/;\s+/g) || []).length >= 2) return ketQua('', s.replace(/[.]\s{0,3}$/, '').split(/;\s+/), '');
+  if (m) {
+    var than = m[2], ds = [];
+    if (/;\s+/.test(than)) ds = than.split(/;\s+(?:hoặc\s+)?/);
+    else if (/\s+và\s+/.test(than) && than.split(/\s+và\s+/).every(function (p) { return /\d/.test(p); })) ds = than.split(/\s+và\s+/);
+    else if (than.split(/,\s+/).length >= 3 && than.split(/,\s+/).every(function (p) { return p.length <= 48; })) ds = than.split(/,\s+(?:và\s+)?/);
+    if (ds.length >= 2) return ketQua(m[1], ds, '');
+  }
+  if (!m && (s.match(/\s·\s/g) || []).length >= 2) { s.split(/\s·\s/).forEach(function (p) { ra.push(tra(cskhHoa(p.replace(/[.]\s{0,3}$/, '')))); }); return ra; }
+  if (cuoi && /\?\s*$/.test(s)) ra.push('👉 ' + tra(cskhHoa(s))); else ra.push(tra(cskhHoa(s)));
+  phu.forEach(function (p) { ra.push((/tặng/i.test(p) ? '🎁 ' : '📌 ') + tra(cskhHoa(p))); });
+  return ra;
+}
+function cskhDep(x) {
+  var t = cskhSach(x.noiDung), khoi = [], laTL = x.nhom === 'traloi';
+  t.split(/\n+/).forEach(function (l) {
+    l = l.trim(); if (!l) return;
+    var m;
+    if (/^•\s{0,5}/.test(l)) { khoi.push(['ds', '▪️ ' + cskhMuc(l.replace(/^•\s{0,5}/, ''))]); return; }
+    if ((m = l.match(/^(\d{1,2})\.\s+(.*)$/))) { khoi.push(['ds', (CSKH_SO[+m[1]] || m[1] + '.') + ' ' + m[2]]); return; }
+    if (/^[☐☑]/.test(l)) { khoi.push(['ds', l]); return; }
+    if (l === l.toUpperCase() && /[A-ZĐ]/.test(l) && l.length < 80) { khoi.push(['tieu', '🌿 ' + l]); return; }
+    var cau = l.replace(/([.?!])\s+(?=[A-ZĐÀ-Ỹ"(])/g, '$1\u0001').split('\u0001');
+    cau.forEach(function (c, i) {
+      var r = cskhCau(c, i === cau.length - 1);
+      if (/^(Dạ|Chào|Em chào)/i.test(c) && i === 0 && cau.length > 1) { khoi.push(['chao', r.join('\n')]); return; }
+      if (/^👉/.test(r[0])) { khoi.push(['hoi', r.join('\n')]); return; }
+      khoi.push([r.length > 1 ? 'nhom' : 'cau', r.join('\n')]);
+    });
+  });
+  var ra = '', truoc = '';
+  khoi.forEach(function (k) {
+    var lien = (truoc === 'ds' && k[0] === 'ds') || (truoc === 'cau' && k[0] === 'cau' && !laTL);
+    ra += (ra ? (lien ? '\n' : '\n\n') : '') + k[1]; truoc = k[0];
+  });
+  if (!laTL) {
+    var td = x.tieuDe.replace(/^Khách:\s{0,3}/, '');
+    if (!/^🌿/.test(ra)) ra = '🌿 ' + td.toUpperCase() + '\n\n' + ra;
+    ra += '\n\n' + CSKH_CHAN;
+  }
+  return ra;
+}
+function cskhHinh(x, nut) {
+  var chu = cskhDep(x).split('\n━━━━')[0], td = x.tieuDe.replace(/^Khách:\s{0,3}/, '');
+  if (/^🌿 /.test(chu)) chu = chu.replace(/^🌿 [^\n]*\n+/, '');
+  var cu = nut.textContent, xong = function () { nut.disabled = false; nut.textContent = cu; };
+  nut.disabled = true; nut.textContent = 'Đang tạo hình…';
+  napThuVien('html2canvas', 'html2canvas/1.4.1/html2canvas.min.js', function () {
+    var hop = document.createElement('div');
+    hop.style.cssText = 'position:fixed;left:-10000px;top:0;width:640px;background:#FBF6EA;font-family:Arial,Helvetica,sans-serif;color:#1d1d1b';
+    hop.innerHTML = '<div style="background:#1F5A4C;color:#fff;padding:22px 28px 18px;border-bottom:5px solid #C9A227"><div style="font-size:13px;letter-spacing:3px;color:#E8D48B">CÔNG TY TNHH</div><div style="font-size:28px;font-weight:800;letter-spacing:1px">YẾN SÀO LANEST</div><div style="font-size:14px;color:#E8D48B;margin-top:2px;font-style:italic">Trao sức khỏe – Trao yêu thương</div></div>' +
+      '<div style="padding:22px 28px 8px"><div style="font-size:21px;font-weight:800;color:#1F5A4C;margin-bottom:12px;line-height:1.3">' + e(td) + '</div>' +
+      '<div style="font-size:17px;line-height:1.6;white-space:pre-wrap">' + e(chu) + '</div></div>' +
+      '<div style="margin:16px 28px 0;padding:14px 0 20px;border-top:2px solid #C9A227;display:flex;justify-content:space-between;font-size:14.5px;color:#1F5A4C;font-weight:700"><span>📞 025.8627.8627</span><span>🌐 lanest.com.vn</span></div>';
+    document.body.appendChild(hop);
+    html2canvas(hop, { scale: 2, backgroundColor: '#FBF6EA' }).then(function (cv) {
+      hop.remove();
+      cv.toBlob(function (blob) {
+        var tep = new File([blob], 'Lanest - ' + td.replace(/[^\wÀ-ỹ\s-]/g, '').slice(0, 40) + '.png', { type: 'image/png' });
+        var taiVe = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = tep.name; a.click(); bao('Đã lưu hình — mở Zalo, gửi hình này cho khách.'); };
+        var dt = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+        if (dt && navigator.canShare && navigator.canShare({ files: [tep] })) navigator.share({ files: [tep], title: td }).then(xong, xong);
+        else if (navigator.clipboard && window.ClipboardItem) navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(function () { bao('Đã chép hình — mở Zalo, bấm Ctrl+V để dán gửi khách.'); xong(); }, function () { taiVe(); xong(); });
+        else { taiVe(); xong(); }
+      }, 'image/png');
+    }, function () { hop.remove(); xong(); bao('Không tạo được hình, thử lại.', true); });
+  }, function () { xong(); bao('Không tải được bộ tạo hình, kiểm tra mạng rồi thử lại.', true); });
+}
 function cskhHien(t) {
   return String(t || '').split('\n').map(function (l) {
     var nb = /^\((Lưu ý nội bộ|Nội bộ)/i.test(l.trim());
@@ -1176,19 +1268,23 @@ function veCskh() {
   var dem = {}; r.ds.forEach(function (x) { dem[x.nhom] = (dem[x.nhom] || 0) + 1; });
   var h = quayLai() + '<h2 class="tieude">CSKH · Cẩm nang &amp; chính sách</h2>' +
     '<style>.cs-the{background:#fff;border:1px solid #EFE6CC;border-radius:12px;padding:12px 14px;margin-bottom:10px}.cs-the .cs-nd{white-space:normal;line-height:1.55;font-size:14.5px;margin:6px 0 8px}' +
-    '.cs-nhan{display:inline-block;font-size:11.5px;font-weight:600;border-radius:10px;padding:1px 8px;margin-left:6px}.cs-nhan.si{background:#FDEEE6;color:#A8461E}.cs-nhan.noibo{background:#ECEFF1;color:#5F7480}' +
+    '.cs-zalo{background:#EAF3FF;border-radius:4px 14px 14px 14px;padding:10px 12px;max-width:560px}.cs-nhan{display:inline-block;font-size:11.5px;font-weight:600;border-radius:10px;padding:1px 8px;margin-left:6px}.cs-nhan.si{background:#FDEEE6;color:#A8461E}.cs-nhan.noibo{background:#ECEFF1;color:#5F7480}' +
     '.cs-muc{display:flex;align-items:center;gap:8px;margin:16px 0 8px}.cs-muc h3{margin:0;font-size:15.5px;color:var(--xanh)}</style>' +
     '<div class="the"><input id="csQ" value="' + e(CSKH_Q) + '" placeholder="🔎 Tìm nhanh: giá sỉ, vỡ hũ, chuyển khoản, bảo hành…">' +
     '<div class="tab2" style="margin-top:10px">' + r.nhom.map(function (n) { return '<button data-cstab="' + n[0] + '" class="' + (!q && CSKH_TAB === n[0] ? 'on' : '') + '">' + e(n[1]) + ' <small>' + (dem[n[0]] || 0) + '</small></button>'; }).join('') + '</div>' +
     '<p class="muted" style="margin:8px 0 0">Bấm <b>📋 Copy</b> rồi dán vào Zalo gửi khách. Chữ <mark style="background:#FFE9A8">[trong ngoặc]</mark> nhớ thay bằng thông tin thật trước khi gửi. Mục <span class="cs-nhan si" style="margin:0">🔒 Khách sỉ</span> chỉ gửi khách sỉ đã xác nhận, mục <span class="cs-nhan noibo" style="margin:0">Nội bộ</span> không gửi khách.</p>' +
-    (r.sua ? '<button class="nut nho" data-csthem="1" style="width:auto;margin-top:8px">＋ Thêm nội dung</button>' : '') + '</div>';
+    (r.dongBo ? '<p class="muted" style="margin:6px 0 0;font-size:12.5px">🔄 Phần <b>Cẩm nang</b> và <b>Mẫu trả lời</b> tự cập nhật theo tài liệu Cẩm nang CSKH, lần cuối ' + e(String(r.dongBo).slice(0, 16).replace(/^(\d{4})-(\d\d)-(\d\d)/, '$3/$2/$1')) + '.</p>' : '') +
+    '<div class="hang" style="gap:8px;flex-wrap:wrap;margin-top:8px"><a class="nut nho phu" href="' + CSKH_LINK + '" target="_blank" rel="noopener" style="width:auto;text-decoration:none">📖 Mở Cẩm nang CSKH đầy đủ</a>' +
+    (r.sua ? '<button class="nut nho" data-csthem="1" style="width:auto">＋ Thêm nội dung</button>' : '') + '</div></div>';
   var nhom = {}, thuTu = [];
   ds.forEach(function (x) { var k = (q ? (r.nhom.filter(function (n) { return n[0] === x.nhom; })[0] || [0, ''])[1] + ' · ' : '') + (x.muc || 'Khác'); if (!nhom[k]) { nhom[k] = []; thuTu.push(k); } nhom[k].push(x); });
   h += thuTu.map(function (k, gi) {
     return '<div class="cs-muc"><h3>' + e(k) + '</h3>' + (nhom[k].length > 1 && nhom[k].every(function (x) { return x.loai === ''; }) && nhom[k][0].nhom !== 'traloi' ? '<button class="nut nho phu" data-csmuc="' + gi + '" style="width:auto;margin-left:auto;font-size:12px">📋 Copy cả mục</button>' : '') + '</div>' +
       nhom[k].map(function (x) {
         return '<div class="cs-the"><b>' + e(x.tieuDe) + '</b>' + (x.loai === 'si' ? '<span class="cs-nhan si">🔒 Chỉ gửi khách sỉ đã xác nhận</span>' : x.loai === 'noibo' ? '<span class="cs-nhan noibo">Nội bộ – không gửi khách</span>' : '') +
-          '<div class="cs-nd">' + cskhHien(x.noiDung) + '</div><div class="hang" style="gap:6px;flex-wrap:wrap"><button class="nut nho" data-cscopy="' + e(x.ma) + '" style="width:auto">📋 Copy</button>' +
+          (x.loai === 'noibo' ? '<div class="cs-nd">' + cskhHien(x.noiDung) + '</div>' : '<div class="cs-nd cs-zalo">' + cskhHien(cskhDep(x)) + '</div>') +
+          '<div class="hang" style="gap:6px;flex-wrap:wrap"><button class="nut nho" data-cscopy="' + e(x.ma) + '" style="width:auto">📋 Copy</button>' +
+          (x.loai === 'noibo' ? '' : '<button class="nut nho phu" data-cshinh="' + e(x.ma) + '" style="width:auto">🖼 Gửi hình</button>') +
           (r.sua ? '<button class="nut nho phu" data-cssua="' + e(x.ma) + '" style="width:auto">✎ Sửa</button><button class="nut nho phu" data-csan="' + e(x.ma) + '" style="width:auto;color:#C81E1E">🗑 Ẩn</button>' : '') +
           (x.nguoi && x.nguoi.indexOf('Mẫu') !== 0 ? '<small class="muted" style="margin-left:auto">' + e(x.nguoi) + ' sửa ' + e(String(x.luc).slice(0, 10).split('-').reverse().join('/')) + '</small>' : '') + '</div></div>';
       }).join('');
@@ -1207,6 +1303,7 @@ function moSuaCskh(x) {
     '<label for="csMuc">Mục (nhóm nhỏ)</label><input id="csMuc" list="csDsMuc" value="' + e(x.muc) + '" placeholder="VD: 4.3. Chốt đơn"><datalist id="csDsMuc">' + Object.keys(mucs).map(function (m) { return '<option value="' + e(m) + '">'; }).join('') + '</datalist>' +
     '<label for="csTieuDe">Tiêu đề / câu khách hỏi</label><input id="csTieuDe" value="' + e(x.tieuDe) + '">' +
     '<label for="csND">Nội dung gửi khách</label><textarea id="csND" rows="9" placeholder="Viết đúng như sẽ gửi Zalo. Chữ cần thay ghi trong [ngoặc vuông]. Dòng bắt đầu bằng (Nội bộ ...) sẽ không bị copy.">' + e(x.noiDung) + '</textarea>' +
+    (x.nguoi === 'Cẩm nang (tự đồng bộ)' ? '<p class="muted" style="color:var(--cam)">⚠ Mục này lấy từ tài liệu Cẩm nang CSKH. Sửa ở đây chỉ tạm thời, lần cẩm nang thay đổi sau sẽ ghi đè. Muốn sửa lâu dài thì sửa trong tài liệu cẩm nang.</p>' : '') +
     '<label for="csLoai">Ai được nhận</label><select id="csLoai"><option value=""' + (x.loai === '' ? ' selected' : '') + '>Gửi khách được</option><option value="si"' + (x.loai === 'si' ? ' selected' : '') + '>Chỉ gửi khách sỉ đã xác nhận</option><option value="noibo"' + (x.loai === 'noibo' ? ' selected' : '') + '>Nội bộ – không gửi khách</option></select>' +
     '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="csDong" style="flex:1">Đóng</button><button class="nut" id="csLuu" style="flex:1">Lưu</button></div>');
   $('csDong').onclick = dongHop;
@@ -1218,8 +1315,10 @@ function moSuaCskh(x) {
 function bamCskh(b) {
   var d = b.dataset;
   if (d.cstab) { CSKH_TAB = d.cstab; CSKH_Q = ''; veCskh(); window.scrollTo(0, 0); return; }
-  if (d.cscopy) { var x = cskhTim(d.cscopy); if (x) cskhCopy(cskhSach(x.noiDung)); return; }
-  if (d.csmuc != null) { var g = CSKH.nhomXem[+d.csmuc] || []; cskhCopy(g.map(function (y) { return y.tieuDe.toUpperCase() + '\n' + cskhSach(y.noiDung); }).join('\n\n')); return; }
+  if (d.cscopy) { var x = cskhTim(d.cscopy); if (x) cskhCopy(x.loai === 'noibo' ? cskhSach(x.noiDung) : cskhDep(x)); return; }
+  if (d.cshinh) { var xh = cskhTim(d.cshinh); if (xh) cskhHinh(xh, b); return; }
+  if (d.csmuc != null) { var g = CSKH.nhomXem[+d.csmuc] || [];
+    cskhCopy('🌿 ' + String(g[0].muc || '').toUpperCase() + '\n\n' + g.map(function (y) { return '📌 ' + y.tieuDe.toUpperCase() + '\n' + cskhDep({ nhom: 'traloi', tieuDe: y.tieuDe, noiDung: y.noiDung }); }).join('\n\n') + '\n\n' + CSKH_CHAN); return; }
   if (d.csthem) { moSuaCskh(null); return; }
   if (d.cssua) { moSuaCskh(cskhTim(d.cssua)); return; }
   if (d.csan) { var y = cskhTim(d.csan); if (!y || !confirm('Ẩn "' + y.tieuDe + '" khỏi mục CSKH?')) return; goi('cskhAn', [TK, y.ma], function (r) { CSKH = r; veCskh(); bao('Đã ẩn.'); }); }
