@@ -1922,7 +1922,7 @@ function vePhong(ma) {
       ['knx', 'NHẬP · XUẤT KHO', 'Nhập hàng về · xuất bán, giao thợ, đi chưng', 'len'], ['kb', 'BÁO CÁO NGÀY', 'Hũ: nhập, xuất · Tinh thô: nhập, xuất, chênh lệch', 'bc'],
       ['kp', 'PHIẾU TRONG NGÀY', 'Xem lại, huỷ phiếu nhập sai', 'cv'], ['ton', 'TỒN KHO', 'Tồn theo nhóm hàng, sản phẩm', 'ton']];
     if (!ghi) o = o.filter(function (x) { return ['chot', 'kb', 'kp', 'ton'].indexOf(x[0]) >= 0; });
-    if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
+    o.splice(1, 0, ['cv', 'CÔNG VIỆC', 'Đơn kho theo bước, công việc trong ngày, tra cứu đơn' + (H.me.giaoViec ? ', giao việc' : ''), 'cv']);
     ghiChu = 'Phiếu kiểm, nhập, xuất ở đây ghi chung sổ với app Kho, nên 2 app chạy song song vẫn một số. Hàng hũ không ghi xuất từng đơn: kiểm kho cuối ngày, app tự tính xuất = kiểm lần trước + nhập − kiểm hôm nay.';
   }
   var m = MAU_P[ma];
@@ -2060,6 +2060,8 @@ function moChotThe(x) {
       var duoc = t !== x.tt && (r.ghiDuyet || (j > 0 && !cho));
       return duoc ? '<button class="nut nho" data-chden="' + e(t) + '" style="width:auto;background:' + CHOT_MAU[t][0] + '">' + CHOT_MAU[t][1] + ' ' + e(t) + '</button>' : '';
     }).join('') + '</div>' : '') +
+    (r.ghiDuyet && x.khoa.indexOf('KT:') === 0 ? '<button class="nut" id="chSua" style="margin-top:10px">✏️ Sửa đơn</button>' : '') +
+    (r.ghiDuyet && laKD && cho ? '<button class="nut" id="chSuaKD" style="margin-top:10px">✏️ Sửa đơn phòng KD</button>' : '') +
     (x.doiGoc && r.ghiDuyet ? '<button class="nut vang" id="chLay" style="margin-top:10px">↻ Cập nhật theo đơn gốc</button>' : '') +
     (cho && r.ghiDuyet ? '<button class="nut do rong" id="chBo" style="margin-top:10px">Bỏ đơn này (trùng / không giao)</button>' : '') +
     (x.ls ? '<details style="margin-top:10px"><summary class="muted">Lịch sử chuyển bước</summary><div class="muted" style="font-size:12.5px;line-height:1.6;margin-top:4px">' + x.ls.split('\n').reverse().map(function (l) { return e(l); }).join('<br>') + '</div></details>' : '') +
@@ -2072,6 +2074,8 @@ function moChotThe(x) {
   if ($('chLuuMa')) $('chLuuMa').onclick = function () { var m = $('chMa').value.trim(); if (!m) { bao('Mã đơn không được để trống.', true); return; } goi('chotChuyen', [TK, x.khoa, x.tt, m], function (r2) { chotNhan(r2); dongHop(); bao('Đã lưu mã ' + m + '.'); }); };
   if ($('chLay')) $('chLay').onclick = function () { goi('chotChuyen', [TK, x.khoa, x.tt, null, true], function (r2) { chotNhan(r2); dongHop(); bao('Đã cập nhật theo đơn gốc.'); }); };
   if ($('chBo')) $('chBo').onclick = function () { chotBo(x); };
+  if ($('chSua')) $('chSua').onclick = function () { moSuaChot(x); };
+  if ($('chSuaKD')) $('chSuaKD').onclick = function () { goi('dsDon', [TK, { ky: 'ngay', ngay: x.ngay, q: x.maNguon }], function (d) { var o = d.ds.filter(function (y) { return y.ma === x.maNguon; })[0]; if (!o) { bao('Không mở được đơn phòng KD.', true); return; } dongHop(); SUA = o; TAB = 'len'; veNav(); veLenDon(); window.scrollTo(0, 0); }); };
 }
 function chotBo(x) {
   var ly = prompt('Lý do bỏ đơn của ' + x.khach + ' (VD: trùng đơn KD, khách huỷ):'); if (ly == null) return;
@@ -2195,6 +2199,13 @@ function cnKiem() {
   if (!d.maDon) canh.push('Chưa có mã đơn 6 số (có thể nhập sau ở bước Chờ duyệt).');
   return canh;
 }
+function moSuaChot(x) {
+  goi('chotLayDon', [TK, x.khoa], function (r) {
+    var d = r.don, k = r.khach.filter(function (y) { return y.ma === d.maKH; })[0];
+    d.tenKH = k ? cnNhanKH(k) : d.tenKH; d.dong = d.dong.length ? d.dong : [{ sp: '', nhom: '', sl: '', gia: '', ct: '' }];
+    CN = { dm: r, tin: '', d: d, sua: d.maSo }; dongHop(); veNhapChot(); window.scrollTo(0, 0);
+  });
+}
 function moNhapChot() {
   goi('chotDmNhap', [TK], function (dm) {
     CN = { dm: dm, tin: '', d: { ngay: dm.homNay, maDon: '', tenKH: '', maKH: '', nhan: { ten: '', sdt: '', dc: '' }, ghiChu: '', ship: '', ck: '', vat: '', dong: [{ sp: '', nhom: '', sl: '', gia: '', ct: '' }] } };
@@ -2205,7 +2216,7 @@ function cnNhanKHds(ma) { var k = (CHOT_DM || CN && CN.dm || { khach: [] }).khac
 function cnNhanKH(k) { return k.ten + (k.sdt ? ' · ' + k.sdt : '') + (k.khuVuc ? ' · ' + k.khuVuc : ''); }
 function veNhapChot() {
   var d = CN.d, dm = CN.dm;
-  var h = '<button class="quaylai" id="cnVe">‹ Quay lại bảng đơn</button><h2 class="tieude">Nhập đơn vào Chốt đơn</h2>' +
+  var h = '<button class="quaylai" id="cnVe">‹ Quay lại bảng đơn</button><h2 class="tieude">' + (CN.sua ? 'Sửa đơn ' + e(d.maDon || '') : 'Nhập đơn vào Chốt đơn') + '</h2>' + (CN.sua ? '<p class="muted">Sửa xong bấm Lưu: Sổ bán hàng (doanh thu, công nợ, tồn kho nếu đã xuất) và thẻ trên bảng cập nhật theo, lịch sử ghi lại người sửa.</p>' : '') +
     '<div class="the"><h3 style="margin-top:0">1. Dán tin nhắn đơn</h3><textarea id="cnTin" rows="7" placeholder="Dán tin nhắn chốt đơn (Zalo) vào đây, hoặc dán / chọn ẢNH chụp tin nhắn.">' + e(CN.tin) + '</textarea>' +
     '<div class="hang" style="margin-top:8px;gap:8px;flex-wrap:wrap"><button class="nut vang" id="cnDoc" style="width:auto;padding:10px 16px">✨ Nhận diện</button>' +
     '<label class="nut phu" style="width:auto;padding:10px 16px;margin:0;cursor:pointer">📷 Ảnh tin nhắn<input type="file" id="cnAnh" accept="image/png,image/jpeg,image/webp,image/heic" style="display:none"></label><span class="muted" id="cnTT"></span></div>' +
@@ -2228,7 +2239,7 @@ function veNhapChot() {
     '<label>Ghi chú thanh toán <small class="muted">(kho không thấy)</small></label><textarea id="cnGCTT" rows="2" placeholder="Đã cọc, thu COD, chuyển khoản, công nợ…">' + e(d.ghiChuTT || '') + '</textarea>' +
     '<label>Ghi chú khác <small class="muted">(kho thấy khi soạn đơn)</small></label><textarea id="cnGC" rows="2">' + e(d.ghiChu) + '</textarea>' +
     '<div class="tong"><span>Tổng đơn</span><span id="cnTong">0đ</span></div><div id="cnCanh"></div>' +
-    '<button class="nut vang" id="cnLuu" style="margin-top:12px">Lưu → Chờ duyệt</button></div>';
+    '<button class="nut vang" id="cnLuu" style="margin-top:12px">' + (CN.sua ? 'Lưu sửa đơn' : 'Lưu → Chờ duyệt') + '</button></div>';
   $('noiDung').innerHTML = h;
   cnTinh();
   $('cnVe').onclick = function () { CN = null; if (TAB === 'cv') napCongViec(); else veChot(); window.scrollTo(0, 0); };
@@ -2301,10 +2312,11 @@ function cnLuu() {
   var thieu = dong.filter(function (x) { return !docSo(x.sl); }); if (thieu.length) { bao('Nhập số lượng cho: ' + thieu.map(function (x) { return x.sp; }).join(', '), true); return; }
   var canh = cnKiem().filter(function (c) { return !/^Chưa có mã đơn/.test(c); });
   if (canh.length && !confirm('Còn ' + canh.length + ' điểm cần xem:\n- ' + canh.join('\n- ') + '\n\nVẫn lưu?')) return;
-  goi('chotNhapDon', [TK, { ngay: d.ngay, maKH: d.maKH, maDon: d.maDon, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck,
+  var sua = CN.sua;
+  goi('chotNhapDon', [TK, { maSo: sua || '', ngay: d.ngay, maKH: d.maKH, maDon: d.maDon, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck,
     dong: dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: Number(x.gia) || 0, ct: x.ct }; }) }], function (r) {
     var v = r.vuaNhap || {}; CN = null; CHOT = { r: r, q: '' }; if (TAB === 'cv') napCongViec(); else veChot(); window.scrollTo(0, 0);
-    bao('Đã lưu đơn ' + (v.soDon || '') + ' vào Sổ bán hàng và cột Chờ duyệt.');
+    bao(sua ? 'Đã lưu sửa đơn ' + (v.soDon || '') + '.' : 'Đã lưu đơn ' + (v.soDon || '') + ' vào Sổ bán hàng và cột Chờ duyệt.');
     if (v.canhBao) setTimeout(function () { bao('⚠ ' + v.canhBao, true); }, 2800);
   });
 }
