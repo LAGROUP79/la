@@ -906,7 +906,7 @@ function tinhTong() {
   if (giam > tong) loiG = 'Giảm giá lớn hơn giá trị đơn';
   $('fTam').textContent = tien(tong) + 'đ';
   $('fGiamTien').innerHTML = loiG ? '<span class="am">' + loiG + '</span>' : giam ? '−' + tien(giam) + 'đ' : '0đ';
-  $('fTong').textContent = tien(Math.max(0, tong - giam)) + 'đ';
+  $('fTong').textContent = tien(Math.max(0, tong - giam) + docTien($('fShip').value)) + 'đ';
   $('fThuong').textContent = th ? 'Thưởng dự kiến của đơn: ' + tien(th) + 'đ' : '';
 }
 function veLenDon() {
@@ -930,6 +930,7 @@ function veLenDon() {
     '<button class="nut phu nho" id="fThem">＋ Thêm sản phẩm</button>' +
     '<div class="hang" style="justify-content:space-between;margin-top:10px"><span>Tạm tính</span><b id="fTam">0đ</b></div>' +
     '<label for="fGiam">Chiết khấu / giảm giá cho khách</label><div class="hang" style="flex-wrap:nowrap"><input id="fGiam" inputmode="decimal" value="' + e(d.giamGhi || '') + '" placeholder="VD: 50.000 hoặc 5%"><b id="fGiamTien" style="flex:0 0 auto;white-space:nowrap">0đ</b></div>' +
+    '<label for="fShip">Phí ship thu của khách (để trống nếu miễn phí ship)</label><input id="fShip" inputmode="numeric" value="' + (d.ship ? tien(d.ship) : '') + '" placeholder="VD: 30.000">' +
     '<div class="tong"><span>Khách thanh toán</span><span id="fTong">0đ</span></div><div class="muted" id="fThuong" style="text-align:right"></div></div>' +
     '<div class="the"><label for="fGC" style="margin-top:0">Ghi chú</label><textarea id="fGC" rows="2" placeholder="Giờ giao, cách thu tiền (COD/chuyển khoản), quà tặng kèm…">' + e(d.ghiChu) + '</textarea>' +
     '<label><input type="checkbox" id="fCoHD" style="width:auto;min-height:0;margin-right:6px"' + (d.hd ? ' checked' : '') + '>Khách lấy hoá đơn (xuất HĐ)</label>' +
@@ -946,7 +947,7 @@ function docForm() {
       sl: docSo(b.querySelector('[data-f=sl]').value), gia: docTien(b.querySelector('[data-f=gia]').value) });
   });
   return { ma: SUA ? SUA.ma : '', sdt: $('fSdt').value, ten: $('fTen').value, diaChi: $('fDC').value, tinh: $('fTinh').value, ghiChu: $('fGC').value,
-    hd: $('fCoHD').checked ? $('fHD').value : '', giam: $('fGiam').value.trim(), items: items, loai: fLoai() };
+    hd: $('fCoHD').checked ? $('fHD').value : '', giam: $('fGiam').value.trim(), ship: docTien($('fShip').value), items: items, loai: fLoai() };
 }
 function fLoai() { var b = document.querySelector('[data-floai]:not(.phu)'); return b ? b.dataset.floai : ''; }
 function datLoai(l) { document.querySelectorAll('[data-floai]').forEach(function (b) { b.classList.toggle('phu', b.dataset.floai !== l); }); }
@@ -960,11 +961,79 @@ function guiDon() {
   goi('guiDon', [TK, d], function (r) {
     H = r.home; SUA = null; veNav();
     if (dangSua) chuyenTab('ds'); else veLenDon();
-    moHop('<h3 style="margin:0;color:var(--xanh)">' + (dangSua ? 'Đã lưu đơn ' : 'Đã gửi phiếu ') + e(r.ma) + '</h3><p class="muted">Bấm COPY rồi dán vào nhóm Zalo soạn hàng.</p><pre>' + e(r.phieu) + '</pre>' +
-      '<div class="hang"><button class="nut vang" id="kqCopy">COPY</button><button class="nut phu" id="kqDong">' + (dangSua ? 'Đóng' : 'Lên đơn tiếp') + '</button></div>');
-    $('kqCopy').onclick = function () { copyChu(r.phieu); };
-    $('kqDong').onclick = dongHop;
+    moHoaDon(r.don, r.phieu, (dangSua ? 'Đã lưu đơn ' : 'Đã gửi phiếu ') + r.ma, dangSua ? 'Đóng' : 'Lên đơn tiếp');
   });
+}
+var CTY = { ten: 'CÔNG TY TNHH YẾN SÀO LANEST', mst: '4201991164', dc: 'Kios 2 N3A, KĐT Căn Cứ Cam Ranh, P. Bắc Cam Ranh, Khánh Hòa', tel: '025.8627.8627', web: 'lanest.com.vn', stk: '997979369', nh: 'MB Bank' };
+function hoaDonHtml(o) {
+  var tam = o.tong + (o.giam || 0), tra = o.tong + (o.ship || 0), xanh = '#1F5A4C', vang = '#C9A227';
+  var dong = function (a, b, dam) { return '<tr><td style="padding:3px 0;color:' + (dam ? xanh : '#555') + (dam ? ';font-weight:800;font-size:17px' : '') + '">' + a + '</td><td style="padding:3px 0;text-align:right;' + (dam ? 'font-weight:800;font-size:19px;color:' + xanh : 'font-weight:600') + '">' + b + '</td></tr>'; };
+  var tt = function (k, v) { return v ? '<div style="margin:2px 0"><span style="color:#777;display:inline-block;min-width:92px">' + k + '</span><b style="font-weight:600">' + e(v) + '</b></div>' : ''; };
+  var sp = (o.items || []).map(function (it, i) {
+    return '<tr style="border-bottom:1px solid #EFE6CC"><td style="padding:7px 4px;text-align:center;color:#777">' + (i + 1) + '</td><td style="padding:7px 4px">' + e(it.ten) + '</td>' +
+      '<td style="padding:7px 4px;text-align:center;white-space:nowrap">' + soSL(it.sl) + (it.dv ? ' <span style="color:#888;font-size:12px">' + e(it.dv) + '</span>' : '') + '</td>' +
+      '<td style="padding:7px 4px;text-align:right;white-space:nowrap">' + (it.gia ? tien(it.gia) : 'Tặng') + '</td><td style="padding:7px 4px;text-align:right;white-space:nowrap;font-weight:600">' + tien(it.tien) + '</td></tr>';
+  }).join('');
+  return '<div style="width:640px;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#1d1d1b;font-size:14px;line-height:1.45;border:1px solid #E6DCC0">' +
+    '<div style="background:' + xanh + ';color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;border-bottom:4px solid ' + vang + '">' +
+      '<img src="logo-tron.png" style="width:64px;height:64px;border-radius:50%;background:#fff;flex:0 0 auto" crossorigin="anonymous">' +
+      '<div style="flex:1"><div style="font-size:19px;font-weight:800">' + CTY.ten + '</div>' +
+      '<div style="font-size:12.5px;color:#E8D48B;margin-top:3px">MST: ' + CTY.mst + ' · Hotline: ' + CTY.tel + ' · ' + CTY.web + '</div>' +
+      '<div style="font-size:12.5px;color:#DDE8E4">' + CTY.dc + '</div></div></div>' +
+    '<div style="padding:16px 24px 0;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px dashed #D9CDA8;padding-bottom:12px">' +
+      '<div><div style="font-size:22px;font-weight:800;color:' + xanh + '">HÓA ĐƠN BÁN HÀNG</div><div style="color:#777;font-size:12.5px">Phiếu bán hàng · không thay thế hóa đơn GTGT</div></div>' +
+      '<div style="text-align:right;font-size:13px"><div>Số: <b style="color:' + xanh + '">' + e(o.ma) + '</b></div><div>Ngày: <b>' + ngVN(o.ngay) + '/' + String(o.ngay).slice(0, 4) + ' ' + e(o.gio || '') + '</b></div>' +
+      '<div>NV bán: <b>' + e(o.tenNV) + '</b></div></div></div>' +
+    '<div style="padding:12px 24px;background:#FBF6EA"><div style="font-weight:800;color:' + xanh + ';margin-bottom:4px;font-size:13px">THÔNG TIN KHÁCH HÀNG</div>' +
+      tt('Khách hàng', o.khach + (o.loai ? ' (' + o.loai + ')' : '')) + tt('Điện thoại', o.sdt) + tt('Địa chỉ', o.diaChi + (o.tinh && String(o.diaChi).toLowerCase().indexOf(String(o.tinh).toLowerCase().replace('tp. ', '')) < 0 ? ', ' + o.tinh : '')) + '</div>' +
+    '<div style="padding:8px 24px 0"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><thead><tr style="background:' + xanh + ';color:#fff">' +
+      '<th style="padding:7px 4px;width:30px">#</th><th style="padding:7px 4px;text-align:left">Sản phẩm</th><th style="padding:7px 4px">SL</th><th style="padding:7px 4px;text-align:right">Đơn giá</th><th style="padding:7px 4px;text-align:right">Thành tiền</th></tr></thead><tbody>' + sp + '</tbody></table></div>' +
+    '<div style="padding:10px 24px 4px;display:flex;justify-content:flex-end"><table style="width:62%;border-collapse:collapse;font-size:14px">' +
+      dong('Tổng tiền hàng', tien(tam) + 'đ') +
+      (o.giam ? dong('Chiết khấu' + (/%$/.test(o.giamGhi || '') ? ' (' + e(o.giamGhi) + ')' : ''), '−' + tien(o.giam) + 'đ') : '') +
+      dong('Phí vận chuyển', o.ship ? tien(o.ship) + 'đ' : 'Miễn phí') +
+      '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' + dong('KHÁCH THANH TOÁN', tien(tra) + 'đ', 1) + '</table></div>' +
+    '<div style="padding:8px 24px 0;font-size:13px">' +
+      (o.ghiChu ? '<div style="margin:3px 0"><b style="color:' + xanh + '">Ghi chú:</b> ' + e(o.ghiChu) + '</div>' : '') +
+      '<div style="margin:3px 0"><b style="color:' + xanh + '">Thông tin xuất HĐ:</b> ' + (o.hd ? e(o.hd).replace(/\n/g, '<br>') : 'Không xuất hóa đơn') + '</div></div>' +
+    '<div style="margin:12px 24px 0;padding:10px 14px;border:1px solid ' + vang + ';border-radius:8px;background:#FFFCF2;font-size:13px">' +
+      '<b style="color:' + xanh + '">Chuyển khoản:</b> STK <b>' + CTY.stk + '</b> · ' + CTY.nh + ' · ' + CTY.ten + '<br><span style="color:#777">Nội dung: ' + e(o.ma) + ' – ' + e(o.khach) + ' – ' + e(o.sdt) + '</span></div>' +
+    '<div style="text-align:center;padding:14px 24px 16px;color:' + xanh + '"><div style="font-weight:800;font-size:14.5px">Cảm ơn quý khách đã tin chọn Yến Sào Lanest!</div><div style="font-style:italic;color:' + vang + ';font-size:13px">Trao sức khỏe – Trao yêu thương</div></div></div>';
+}
+function moHoaDon(o, phieu, tieuDe, nutDong) {
+  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(tieuDe || ('Hóa đơn ' + o.ma)) + '</h3><p class="muted" style="margin:0 0 8px">Bấm <b>🖼 Gửi hình hóa đơn</b> để dán thẳng vào Zalo cho khách · <b>COPY phiếu</b> để gửi nhóm soạn hàng.</p>' +
+    '<div style="overflow:auto;max-height:58vh;border-radius:8px;background:#F3EEDF;padding:6px"><div id="hdXem" style="transform-origin:0 0"></div></div>' +
+    '<div class="hang" style="margin-top:10px"><button class="nut vang" id="hdHinh">🖼 Gửi hình hóa đơn</button><button class="nut" id="hdCopy">COPY phiếu</button><button class="nut phu" id="hdDong">' + e(nutDong || 'Đóng') + '</button></div>');
+  var xem = $('hdXem'), w = xem.parentNode.clientWidth - 12;
+  xem.innerHTML = hoaDonHtml(o);
+  if (w < 642) { var k = w / 642; xem.style.transform = 'scale(' + k + ')'; xem.style.height = Math.ceil(xem.firstChild.offsetHeight * k) + 'px'; }
+  $('hdHinh').onclick = function () { chupHinh(hoaDonHtml(o), 'Hoa don ' + o.ma, this); };
+  $('hdCopy').onclick = function () { copyChu(phieu); };
+  $('hdDong').onclick = dongHop;
+}
+function chupHinh(html, ten, nut) {
+  var cu = nut.textContent, xong = function () { nut.disabled = false; nut.textContent = cu; };
+  nut.disabled = true; nut.textContent = 'Đang tạo hình…';
+  napThuVien('html2canvas', 'html2canvas/1.4.1/html2canvas.min.js', function () {
+    var hop = document.createElement('div');
+    hop.style.cssText = 'position:fixed;left:-10000px;top:0;width:642px';
+    hop.innerHTML = html;
+    document.body.appendChild(hop);
+    var anh = hop.querySelector('img'), chup = function () {
+      html2canvas(hop.firstChild, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(function (cv) {
+        hop.remove();
+        cv.toBlob(function (blob) {
+          var tep = new File([blob], ten + '.png', { type: 'image/png' });
+          var taiVe = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = tep.name; a.click(); bao('Đã lưu hình — mở Zalo, gửi hình này cho khách.'); };
+          var dt = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+          if (dt && navigator.canShare && navigator.canShare({ files: [tep] })) navigator.share({ files: [tep], title: ten }).then(xong, xong);
+          else if (navigator.clipboard && window.ClipboardItem) navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(function () { bao('Đã chép hình hóa đơn — mở Zalo, bấm Ctrl+V để dán gửi khách.'); xong(); }, function () { taiVe(); xong(); });
+          else { taiVe(); xong(); }
+        }, 'image/png');
+      }, function () { hop.remove(); xong(); bao('Không tạo được hình, thử lại.', true); });
+    };
+    if (anh && !anh.complete) { anh.onload = chup; anh.onerror = chup; } else chup();
+  }, function () { xong(); bao('Không tải được bộ tạo hình, kiểm tra mạng rồi thử lại.', true); });
 }
 var henTim = null;
 function timKhach() {
@@ -1016,16 +1085,19 @@ function veDon(r) {
   h += veLocDon(r);
   h += '<div class="o"><div><small>TỔNG DOANH THU · ' + e(tenKy) + '</small><b>' + tien(t.tong) + 'đ</b></div><div><small>Số đơn</small><b>' + t.soDon + '</b>' + (t.huy ? '<span class="muted"> (+' + t.huy + ' huỷ)</span>' : '') + '</div>' +
     '<div><small>Hàng hũ</small><b>' + tienNgan(t.hu) + '</b></div><div><small>Hàng tinh thô</small><b>' + tienNgan(t.tt) + '</b></div></div>';
+  if (r.xemSua && r.soDonSua) h += '<p class="muted" style="margin:6px 2px">✏️ <b>' + r.soDonSua + '</b> đơn trong kỳ đã được sửa sau khi gửi — bấm nhãn “Đã sửa” trên từng đơn để xem sửa gì, ai sửa, lúc nào.</p>';
   if (r.vuotGioiHan) h += '<p class="muted">Đang hiện 300 đơn mới nhất. Tổng doanh thu phía trên vẫn tính đủ cả kỳ.</p>';
   h += r.ds.map(function (o, i) {
-    return '<div class="don"><div class="dau"><span class="ma">' + e(o.ma) + '</span><span class="chip ' + (TTD[o.trangThai] || '') + '">' + e(o.trangThai) + '</span></div>' +
+    return '<div class="don"><div class="dau"><span class="ma">' + e(o.ma) + '</span>' + (o.soSua ? '<button class="chip gui" data-lsua="' + i + '" style="cursor:pointer;margin-left:auto;margin-right:6px;border:0;font:inherit;font-size:12px" title="Xem lịch sử sửa">✏️ Đã sửa ' + o.soSua + ' lần</button>' : '') + '<span class="chip ' + (TTD[o.trangThai] || '') + '">' + e(o.trangThai) + '</span></div>' +
       '<div class="kh">' + e(o.khach) + (o.loai ? ' <span class="chip ' + (o.loai === 'Đại lý' ? 'giao' : 'gui') + '">' + e(o.loai) + '</span>' : '') + ' · ' + e(o.sdt) + '</div>' +
       '<div class="muted">' + ngVN(o.ngay) + ' ' + e(o.gio) + ' · ' + e(o.tenNV) + (o.team ? ' (' + e(o.team) + ')' : '') + ' · ' + e(o.tinh) + '</div>' +
       '<div class="muted">' + o.items.map(function (it) { return e(it.ten) + ' ×' + soSL(it.sl) + ' · ' + tien(it.tien) + 'đ'; }).join('<br>') + '</div>' +
       (o.giam ? '<div class="muted">Tạm tính ' + tien(o.tong + o.giam) + 'đ · chiết khấu −' + tien(o.giam) + 'đ' + (/%$/.test(o.giamGhi) ? ' (' + e(o.giamGhi) + ')' : '') + '</div>' : '') +
-      '<div style="font-weight:700;color:var(--xanh);margin-top:4px">' + tien(o.tong) + 'đ' + (o.thuong ? '<span class="muted" style="font-weight:400"> · thưởng ' + tien(o.thuong) + 'đ</span>' : '') + '</div>' +
+      '<div style="font-weight:700;color:var(--xanh);margin-top:4px">' + tien(o.tong) + 'đ' + (o.ship ? '<span class="muted" style="font-weight:400"> + ship ' + tien(o.ship) + 'đ = khách trả ' + tien(o.tong + o.ship) + 'đ</span>' : '') + (o.thuong ? '<span class="muted" style="font-weight:400"> · thưởng ' + tien(o.thuong) + 'đ</span>' : '') + '</div>' +
+      (o.soSua && o.lichSua ? '<div class="muted" style="font-size:12px;margin-top:2px">✏️ Sửa gần nhất: ' + e(o.lichSua.split('\n').pop().split(' · ').slice(0, 2).join(' · ')) + '</div>' : '') +
       (o.lyDoHuy ? '<div class="muted" style="color:var(--do)">Huỷ: ' + e(o.lyDoHuy) + ' (' + e(o.nguoiXL) + ')</div>' : (o.nguoiXL ? '<div class="muted">' + e(o.trangThai) + ': ' + e(o.nguoiXL) + ' · ' + e(o.lucXL) + '</div>' : '')) +
       '<div class="hang"><button class="nut vang nho" data-copy="' + i + '">COPY</button><button class="nut phu nho" data-xem="' + i + '">Xem phiếu</button>' +
+      (o.trangThai !== 'Đã huỷ' ? '<button class="nut phu nho" data-hd="' + i + '">🧾 Hóa đơn</button>' : '') +
       (r.quanLy && o.trangThai === 'Chờ soạn' ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã gửi soạn">Đã gửi soạn</button>' : '') +
       (r.quanLy && o.trangThai === 'Đã gửi soạn' ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã giao">Đã giao</button>' : '') +
       (!r.quanLy && o.giaoDuoc ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã giao">✓ Đã giao</button>' : '') +
@@ -1058,6 +1130,16 @@ function bamDon(b) {
     o = DS_DON[b.dataset.xem];
     moHop('<h3 style="margin:0;color:var(--xanh)">' + e(o.ma) + '</h3><pre>' + e(o.phieu) + '</pre><div class="hang"><button class="nut vang" id="xCopy">COPY</button><button class="nut phu" id="xDong">Đóng</button></div>');
     $('xCopy').onclick = function () { copyChu(o.phieu); }; $('xDong').onclick = dongHop;
+  }
+  else if (b.dataset.hd != null) { o = DS_DON[b.dataset.hd]; moHoaDon(o, o.phieu); }
+  else if (b.dataset.lsua != null) {
+    o = DS_DON[b.dataset.lsua];
+    moHop('<h3 style="margin:0;color:var(--xanh)">Lịch sử sửa đơn ' + e(o.ma) + '</h3><p class="muted">Chỉ Admin và kế toán thấy mục này.</p>' +
+      o.lichSua.split('\n').reverse().map(function (l) {
+        var p = l.split(' · '), luc = p.shift(), ai = p.shift();
+        return '<div class="the" style="margin:8px 0;padding:10px 12px"><b>' + e(luc) + '</b> · ' + e(ai) + '<div style="margin-top:4px;line-height:1.5">' + p.join(' · ').split(' | ').map(function (x) { return e(x); }).join('<br>') + '</div></div>';
+      }).join('') + '<button class="nut phu" id="lsDong">Đóng</button>');
+    $('lsDong').onclick = dongHop;
   }
   else if (b.dataset.tt != null) {
     o = DS_DON[b.dataset.tt];
@@ -3102,7 +3184,7 @@ document.addEventListener('change', function (ev) {
 });
 document.addEventListener('input', function (ev) {
   var t = ev.target;
-  if (t.dataset.f === 'sl' || t.dataset.f === 'gia' || t.id === 'fGiam') tinhTong();
+  if (t.dataset.f === 'sl' || t.dataset.f === 'gia' || t.id === 'fGiam' || t.id === 'fShip') tinhTong();
   if (t.id === 'fSdt') timKhach();
   if (t.dataset.khsl) { KF.draft[t.dataset.khsl] = t.value; lechKho(t.dataset.khsl); demKho(); }
   if (t.dataset.khgv) KF.cost[t.dataset.khgv] = t.value;
