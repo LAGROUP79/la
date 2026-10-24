@@ -392,6 +392,7 @@ function vaoApp(home) {
   H = home; luuH(); $('dangNhap').classList.add('an'); $('app').classList.remove('an');
   $('hdTen').textContent = H.me.ten + (H.me.admin ? ' · Admin' : H.me.vaiPhong.length ? ' · ' + H.me.vaiPhong.map(function (v) { return v.vai; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ') : '');
   PHONG_HT = ''; chuyenTab('home');
+  if (/[?&]mo=chot/.test(location.search) && (H.me.admin || H.me.phongVao.indexOf('KHO') >= 0 || H.me.phongVao.indexOf('TCKT') >= 0)) { PHONG_HT = H.me.phongVao.indexOf('KHO') >= 0 ? 'KHO' : ''; chuyenTab('chot'); }
 }
 function veNav() {
   var t = [['home', '⌂', 'Trang chủ'], ['cc', '◷', 'Chấm công'], ['cv', '✓', 'Công việc'], ['np', '✉', 'Xin nghỉ']];
@@ -477,7 +478,9 @@ function veHome() {
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo báo cáo 21:00 trên điện thoại</b>' +
       '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00 hiện trên màn hình khoá: số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, tình hình kiểm kho trong ngày. Bật trên từng máy muốn nhận.</p>' +
       '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><button class="nut rong" id="tbThu" style="width:auto">Gửi thử ngay</button></div>' +
-      '<small class="muted" id="tbTT"></small></div>' : '');
+      '<small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('KHO') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn mới cần soạn</b>' +
+      '<p class="muted" style="margin:4px 0 8px">Khi kế toán duyệt đơn sang <b>Đơn mới</b>, điện thoại hiện thông báo: mã đơn, khách, hàng, số lượng. Mỗi bạn kho bật trên điện thoại của mình (bật 1 lần).</p>' +
+      '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : '');
   if ($('tbBat')) tbGanNut();
 }
 var TB_KHOA = 'BNvCUndYQ2vsqjRGtB1d3V3WLunBg1Ma4q3zIUb29Ihycw6mno1K5lThNItSrcGdv433H77d7HF-6jROnggN938';
@@ -493,10 +496,10 @@ function tbGanNut() {
       if (p !== 'granted') throw new Error('Chưa cho phép thông báo — vào cài đặt trình duyệt / điện thoại, cho phép thông báo của app LA rồi bấm lại.');
       return navigator.serviceWorker.ready;
     }).then(function (r) { return r.pushManager.getSubscription().then(function (s) { return s || r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: tbKhoa() }); }); })
-      .then(function (s) { goi('tbDangKy', [TK, s.toJSON(), navigator.userAgent], function () { tt('Đã bật. 21:00 mỗi ngày máy này sẽ nhận báo cáo.'); bao('Đã bật thông báo báo cáo 21:00.'); }); })
+      .then(function (s) { goi('tbDangKy', [TK, s.toJSON(), navigator.userAgent], function () { var kho = !H.me.admin; tt(kho ? 'Đã bật. Có đơn mới cần soạn, máy này sẽ nhận thông báo.' : 'Đã bật. 21:00 mỗi ngày máy này sẽ nhận báo cáo.'); bao(kho ? 'Đã bật thông báo đơn mới.' : 'Đã bật thông báo báo cáo 21:00.'); }); })
       .catch(function (x) { tt(x.message || 'Không bật được thông báo.'); });
   };
-  $('tbThu').onclick = function () { goi('tbGuiThu', [TK], function (r) { bao(r.daGui ? 'Đã gửi thử tới ' + r.daGui + ' máy — xem màn hình điện thoại.' : 'Chưa gửi được (' + (r.loiGui || []).join(', ') + ').', !r.daGui); }); };
+  if ($('tbThu')) $('tbThu').onclick = function () { goi('tbGuiThu', [TK], function (r) { bao(r.daGui ? 'Đã gửi thử tới ' + r.daGui + ' máy — xem màn hình điện thoại.' : 'Chưa gửi được (' + (r.loiGui || []).join(', ') + ').', !r.daGui); }); };
 }
 var IC_O = (function () {
   function s(p) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; }
