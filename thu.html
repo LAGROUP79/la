@@ -349,6 +349,10 @@ function goi(ham, args, ok, imLang, loi) {
     });
   r[ham].apply(r, args);
 }
+function goiTrung(ham, taoArgs, ok) {
+  var chay = function (bo) { goi(ham, taoArgs(bo), ok, false, function (m) { if (m.indexOf('TRUNG|') === 0) { if (confirm('⚠ Có thể TRÙNG đơn: khách này cùng ngày đã có đơn ' + m.slice(6) + '.\n\nNếu đó chính là đơn này thì bấm Huỷ để khỏi nhập 2 lần (kho bị trừ 2 lần, công nợ cộng 2 lần).\nBấm OK nếu đây là đơn KHÁC, vẫn lưu.')) chay(true); } else bao(m, true); }); };
+  chay(false);
+}
 function moHop(html) {
   $('lop').innerHTML = '<div class="moi" id="moi"><div class="hop">' + html + '</div></div>';
   $('moi').addEventListener('click', function (ev) { if (ev.target.id === 'moi') dongHop(); });
@@ -406,7 +410,7 @@ function veNav() {
     var dem = sl[x[0]] ? '<span class="dem">' + sl[x[0]] + '</span>' : '';
     return '<button data-tab="' + x[0] + '" class="' + (TAB === x[0] && !PHONG_HT ? 'on' : '') + '"><b>' + x[1] + '</b>' + x[2] + dem + '</button>';
   }).join('') +
-    '<div class="navPhong"><small>PHÒNG BAN</small>' + (H.phongBan || []).map(function (p) {
+    '<div class="navPhong"><small>PHÒNG BAN</small>' + (H.phongBan || []).filter(function (p) { return H.me.phongVao.indexOf(p.ma) >= 0; }).map(function (p) {
       var vao = H.me.phongVao.indexOf(p.ma) >= 0, m = MAU_P[p.ma] || ['#eee', '#888', '#555'];
       return '<button data-tab="p_' + p.ma + '" class="' + (PHONG_HT === p.ma ? 'on' : '') + (vao ? '' : ' khoa') + '" style="--dam:' + m[1] + '"><i></i>' + e(tenPhong(p.ma).replace(/^PHÒNG /, '')) + (vao ? '' : ' 🔒') + '</button>';
     }).join('') + '</div>' +
@@ -477,7 +481,7 @@ function veHome() {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
     }).join('') + '</div>') +
-    '<h3 class="nhom">PHÒNG BAN</h3><div class="pbLuoi">' + H.phongBan.map(function (p) { return thePhong(p.ma); }).join('') + '</div>' +
+    '<h3 class="nhom">PHÒNG BAN</h3><div class="pbLuoi">' + H.phongBan.filter(function (p) { return H.me.phongVao.indexOf(p.ma) >= 0; }).map(function (p) { return thePhong(p.ma); }).join('') + '</div>' +
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
     '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button></div>' +
@@ -606,7 +610,7 @@ function napCongViec() { goi('congViec', [TK], veCongViec); }
 function veCongViec(r) {
   CV = r;
   function o(t, ten) { return '<div><small>' + ten + '</small><b>' + (t.pt == null ? '—' : t.pt + '%') + '</b><span class="muted"> ' + t.xong + '/' + t.tong + ' xong' + (t.tre ? ' · ' + t.tre + ' trễ' : '') + '</span>' + thanh(t.pt) + '</div>'; }
-  var h = quayLai() + '<h2 class="tieude">Công việc</h2>' + (PHONG_HT === 'KHO' ? '<div id="cvChot"><p class="muted">Đang tải bảng đơn của kho…</p></div><div id="cvKho"></div><h3 class="nhom" style="margin:14px 0 8px">VIỆC ĐƯỢC GIAO</h3>' : '') + '<div class="o">' + o(r.cuaToi, 'Việc của tôi') + (H.me.quanLy ? o(r.tp, 'Việc trưởng phòng') + o(r.nv, 'Việc nhân viên') : '') + '</div>';
+  var h = quayLai() + '<h2 class="tieude">Công việc</h2>' + (PHONG_HT === 'KHO' ? '<div id="cvKho"><p class="muted">Đang tải thống kê công việc kho…</p></div><h3 class="nhom" style="margin:14px 0 8px">VIỆC ĐƯỢC GIAO</h3>' : '') + '<div class="o">' + o(r.cuaToi, 'Việc của tôi') + (H.me.quanLy ? o(r.tp, 'Việc trưởng phòng') + o(r.nv, 'Việc nhân viên') : '') + '</div>';
   if (r.giaoDuoc.length) h += '<button class="nut vang rong" id="cvGiao" style="margin-bottom:12px">＋ Giao việc</button>';
   var loc = [['toi', 'Việc của tôi'], ['duyet', 'Cần tôi duyệt'], ['giao', 'Tôi đã giao'], ['het', 'Tất cả']];
   if (!r.giaoDuoc.length && !H.me.quanLy) loc = loc.filter(function (x) { return x[0] === 'toi' || x[0] === 'het'; });
@@ -634,7 +638,7 @@ function veCongViec(r) {
   }).join('') + '</table></div></div>';
   $('noiDung').innerHTML = '<style>.cv-gy{background:#faf8f2;border-radius:6px;padding:6px 10px;margin:6px 0 2px;font-size:13.5px;white-space:pre-wrap}</style>' + h;
   if ($('cvGiao')) $('cvGiao').onclick = function () { moGiaoViec(null); };
-  if ($('cvChot')) { if (CHOT) veChot(); napChot(true); napKhoTK(); }
+  if ($('cvKho')) napKhoTK();
 }
 function cvOGopY(c) {
   return '<label for="gyKK">1. Khó khăn gặp phải</label><textarea id="gyKK" rows="3" placeholder="VD: thiếu ảnh sản phẩm mới, khách chưa phản hồi…">' + e(c.khoKhan || '') + '</textarea>' +
@@ -1096,7 +1100,7 @@ function veDon(r) {
   var choDs = r.ds.filter(function (o) { return o.trangThai === 'Chờ soạn'; }), t = r.tong;
   var tenKy = LOC.trangThai === 'CHO_TAT_CA' ? 'tất cả đơn chờ soạn' : r.ky === 'ngay' ? 'ngày ' + ngVN(r.giaTri) + '/' + r.giaTri.slice(0, 4) : r.ky === 'nam' ? 'năm ' + r.giaTri : 'tháng ' + r.giaTri.slice(5) + '/' + r.giaTri.slice(0, 4);
   var h = '<h2 class="tieude">Quản lí đơn hàng</h2>';
-  if (r.quanLy) {
+  if (r.quanLy && H.homNay < '2026-10-25') {
     h += '<div class="the"><h3>Đơn chờ soạn: ' + H.choSoan + '</h3>' +
       '<div class="hang"><button class="nut vang" id="dCho">Xem tất cả đơn chờ soạn</button>' +
       (choDs.length ? '<button class="nut" id="dCopyHet">COPY ' + choDs.length + ' đơn chờ</button>' : '') + '</div>' +
@@ -1108,7 +1112,9 @@ function veDon(r) {
   if (r.xemSua && r.soDonSua) h += '<p class="muted" style="margin:6px 2px">✏️ <b>' + r.soDonSua + '</b> đơn trong kỳ đã được sửa sau khi gửi — bấm nhãn “Đã sửa” trên từng đơn để xem sửa gì, ai sửa, lúc nào.</p>';
   if (r.vuotGioiHan) h += '<p class="muted">Đang hiện 300 đơn mới nhất. Tổng doanh thu phía trên vẫn tính đủ cả kỳ.</p>';
   h += r.ds.map(function (o, i) {
-    return '<div class="don"><div class="dau"><span class="ma">' + e(o.ma) + '</span>' + (o.soSua ? '<button class="chip gui" data-lsua="' + i + '" style="cursor:pointer;margin-left:auto;margin-right:6px;border:0;font:inherit;font-size:12px" title="Xem lịch sử sửa">✏️ Đã sửa ' + o.soSua + ' lần</button>' : '') + '<span class="chip ' + (TTD[o.trangThai] || '') + '">' + e(o.trangThai) + '</span></div>' +
+    var moi = o.ngay >= '2026-10-25', mb = o.buoc && o.trangThai !== 'Đã huỷ' ? (CHOT_MAU[o.buoc] || ['#6B7280', '·']) : null;
+    var chipTT = mb ? '<span class="chip" style="background:#fff;border:1px solid ' + mb[0] + ';color:' + mb[0] + '">' + mb[1] + ' ' + e(o.buoc) + '</span>' : moi && o.trangThai !== 'Đã huỷ' ? '<span class="chip" style="background:#fff;border:1px solid #8a5f00;color:#8a5f00">⏳ Chờ duyệt</span>' : '<span class="chip ' + (TTD[o.trangThai] || '') + '">' + e(o.trangThai) + '</span>';
+    return '<div class="don"><div class="dau"><span class="ma">' + e(o.ma) + '</span>' + (o.soSua ? '<button class="chip gui" data-lsua="' + i + '" style="cursor:pointer;margin-left:auto;margin-right:6px;border:0;font:inherit;font-size:12px" title="Xem lịch sử sửa">✏️ Đã sửa ' + o.soSua + ' lần</button>' : '') + chipTT + '</div>' +
       '<div class="kh">' + e(o.khach) + (o.loai ? ' <span class="chip ' + (o.loai === 'Đại lý' ? 'giao' : 'gui') + '">' + e(o.loai) + '</span>' : '') + ' · ' + e(o.sdt) + '</div>' +
       '<div class="muted">' + ngVN(o.ngay) + ' ' + e(o.gio) + ' · ' + e(o.tenNV) + (o.team ? ' (' + e(o.team) + ')' : '') + ' · ' + e(o.tinh) + '</div>' +
       '<div class="muted">' + o.items.map(function (it) { return e(it.ten) + ' ×' + soSL(it.sl) + ' · ' + tien(it.tien) + 'đ'; }).join('<br>') + '</div>' +
@@ -1118,14 +1124,14 @@ function veDon(r) {
       (o.lyDoHuy ? '<div class="muted" style="color:var(--do)">Huỷ: ' + e(o.lyDoHuy) + ' (' + e(o.nguoiXL) + ')</div>' : (o.nguoiXL ? '<div class="muted">' + e(o.trangThai) + ': ' + e(o.nguoiXL) + ' · ' + e(o.lucXL) + '</div>' : '')) +
       '<div class="hang"><button class="nut vang nho" data-copy="' + i + '">COPY</button><button class="nut phu nho" data-xem="' + i + '">Xem phiếu</button>' +
       (o.trangThai !== 'Đã huỷ' ? '<button class="nut phu nho" data-hd="' + i + '">🧾 Hóa đơn</button>' : '') +
-      (r.quanLy && o.trangThai === 'Chờ soạn' ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã gửi soạn">Đã gửi soạn</button>' : '') +
-      (r.quanLy && o.trangThai === 'Đã gửi soạn' ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã giao">Đã giao</button>' : '') +
-      (!r.quanLy && o.giaoDuoc ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã giao">✓ Đã giao</button>' : '') +
+      (!moi && r.quanLy && o.trangThai === 'Chờ soạn' ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã gửi soạn">Đã gửi soạn</button>' : '') +
+      (!moi && r.quanLy && o.trangThai === 'Đã gửi soạn' ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã giao">Đã giao</button>' : '') +
+      (!moi && !r.quanLy && o.giaoDuoc ? '<button class="nut nho" data-tt="' + i + '" data-gt="Đã giao">✓ Đã giao</button>' : '') +
       (o.suaDuoc ? '<button class="nut phu nho" data-sua="' + i + '">Sửa</button>' : '') +
       (o.huyDuoc ? '<button class="nut do nho" data-huy="' + i + '">Huỷ</button>' : '') + '</div></div>';
   }).join('') || '<p class="muted">Chưa có đơn nào.</p>';
   $('noiDung').innerHTML = h;
-  if (r.quanLy) {
+  if ($('dCho')) {
     $('dCho').onclick = function () { napDon({ ky: LOC.ky, trangThai: 'CHO_TAT_CA' }); };
     if ($('dCopyHet')) $('dCopyHet').onclick = function () { copyChu(choDs.map(function (o) { return o.phieu; }).join('\n\n————————————\n\n')); };
     if ($('dDaGuiHet')) $('dDaGuiHet').onclick = function () {
@@ -1902,7 +1908,7 @@ function phongNhanh(ma) {
   var m = { VH: [['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký']],
     HCNS: [me.nsQL && ['ns_nv', 'Nhân viên'], me.xemLuong && ['ns_luong', 'Bảng lương'], me.duyetCC && ['np', 'Duyệt yêu cầu'], me.nsQL && ['ns_np', 'Nghỉ phép']],
     TCKT: [['sb', 'Sổ bán hàng'], ['chot', 'Chốt đơn'], ['bct', 'Báo cáo']],
-    KD: me.mk ? [['ton', 'Tồn kho']] : [['len', 'Bán hàng'], ['ds', 'Đơn hàng'], ['bc', 'Doanh thu']],
+    KD: me.mk ? [['ton', 'Tồn kho']] : [['len', 'Bán hàng'], ['ds', 'Đơn hàng'], ['bc', 'Doanh số KD']],
     KHO: kg ? [['chot', 'Chốt đơn'], ['kk', 'Kiểm kho'], ['ton', 'Tồn kho']] : [['chot', 'Chốt đơn'], ['cv', 'Công việc'], ['ton', 'Tồn kho']] }[ma] || [];
   return m.filter(Boolean).slice(0, 3);
 }
@@ -1929,11 +1935,10 @@ function vePhong(ma) {
     if (H.me.duyetCC) o.push(['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy']);
   }
   if (ma === 'TCKT') {
-    o = [['sb', 'SỔ BÁN HÀNG', 'Nhập đơn, thu tiền, đơn hàng, công nợ', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'],
-      ['ds', 'ĐƠN PHÒNG KD', 'Đơn phòng KD lên, trạng thái giao', 'ds'], ['sb:cp', 'CHI PHÍ', 'Nhập, xem khoản chi trong tháng theo hạng mục', 'th'], ['bct', 'BÁO CÁO', 'Tất cả báo cáo: doanh thu, lãi, công nợ, doanh số KD, thưởng, kho, Excel', 'bc']];
+    o = [['sb', 'SỔ BÁN HÀNG', 'Nhập đơn, thu tiền, đơn hàng, công nợ', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'], ['sb:cp', 'CHI PHÍ', 'Nhập, xem khoản chi trong tháng theo hạng mục', 'th'], ['bct', 'BÁO CÁO', 'Tất cả báo cáo: doanh thu, lãi, công nợ, doanh số KD, thưởng, kho, Excel', 'bc']];
   }
   if (ma === 'KD') {
-    o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH THU', 'Tổng phòng, ngành hàng, % target', 'bc'],
+    o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH SỐ KD', 'Theo đơn phòng KD lên: team, ngành hàng, % target, thưởng', 'bc'],
       ['th', 'THƯỞNG', 'Thưởng từng sản phẩm, từng NV', 'th'], ['kh', 'KHÁCH HÀNG', 'Khách chăm sóc, theo tỉnh', 'kh'], ['ton', 'TỒN KHO', 'Tồn tham khảo từ app Kho', 'ton']];
     if (H.me.mk) o = o.filter(function (x) { return x[0] === 'ton'; });
     if (H.me.admin) o.push(['cd:kpi', 'TARGET', 'Target cả phòng, giao trưởng phòng, chia thành viên', 'cd'], ['cd:gt', 'GIÁ & THƯỞNG', 'Giá niêm yết, mức thưởng từng sản phẩm', 'th'], ['cd:team', 'TEAM', 'Danh sách team kinh doanh', 'kh']);
@@ -1945,7 +1950,7 @@ function vePhong(ma) {
       ['knx', 'NHẬP · XUẤT KHO', 'Nhập hàng về · xuất bán, giao thợ, đi chưng', 'len'], ['kb', 'BÁO CÁO NGÀY', 'Hũ: nhập, xuất · Tinh thô: nhập, xuất, chênh lệch', 'bc'],
       ['kp', 'PHIẾU TRONG NGÀY', 'Xem lại, huỷ phiếu nhập sai', 'cv'], ['ton', 'TỒN KHO', 'Tồn theo nhóm hàng, sản phẩm', 'ton']];
     if (!ghi) o = o.filter(function (x) { return ['chot', 'kb', 'kp', 'ton'].indexOf(x[0]) >= 0; });
-    o.splice(1, 0, ['cv', 'CÔNG VIỆC', 'Đơn kho theo bước, công việc trong ngày, tra cứu đơn' + (H.me.giaoViec ? ', giao việc' : ''), 'cv']);
+    o.splice(1, 0, ['cv', 'CÔNG VIỆC', 'Thống kê công việc trong ngày, tra cứu đơn từng khâu' + (H.me.giaoViec ? ', giao việc' : ''), 'cv']);
     ghiChu = 'Phiếu kiểm, nhập, xuất ở đây ghi chung sổ với app Kho, nên 2 app chạy song song vẫn một số. Hàng hũ không ghi xuất từng đơn: kiểm kho cuối ngày, app tự tính xuất = kiểm lần trước + nhập − kiểm hôm nay.';
   }
   var m = MAU_P[ma];
@@ -1958,8 +1963,8 @@ function vePhong(ma) {
 function veBaoCaoTC() {
   var mm = MAU_O || {};
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo</h2><div class="oclon">' +
-    [['sb:bc', 'DOANH THU · LÃI GỘP', 'Báo cáo sổ bán hàng: theo ngày, nhóm hàng, khách, sản phẩm', 'bc'], ['sb:no', 'CÔNG NỢ KHÁCH', 'Nợ đầu kỳ, phát sinh, đã trả, còn nợ, hạn mức', 'kh'],
-      ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên: team, nhân viên, % target', 'bc'], ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu đơn kế toán', 'ton'],
+    [['sb:bc', 'DOANH THU CHÍNH THỨC · LÃI GỘP', 'Theo Sổ bán hàng kế toán: ngày, nhóm hàng, khách, sản phẩm', 'bc'], ['sb:no', 'CÔNG NỢ KHÁCH', 'Nợ đầu kỳ, phát sinh, đã trả, còn nợ, hạn mức', 'kh'],
+      ['bc', 'DOANH SỐ KD', 'Theo đơn phòng KD lên (tính target, thưởng) — không phải số chính thức', 'bc'], ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu đơn kế toán', 'ton'],
       ['xl', 'TẢI EXCEL', 'Tải các sổ ra file Excel', 'ds']].map(function (x) {
       var m = mm[x[3]] || ['#eee', '#888', '#555'];
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[3]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span></button>';
@@ -2103,7 +2108,7 @@ function moChotThe(x) {
   $('chDong').onclick = dongHop;
   document.querySelectorAll('[data-chden]').forEach(function (b) { b.onclick = function () { var m = $('chMa') && cho ? $('chMa').value.trim() : null; if (cho && !m && b.dataset.chden !== r.tt[0] && !(laKD && x.ngay >= '2026-10-26')) { bao('Nhập mã đơn trước khi duyệt.', true); return; }
     if (cho && laKD && b.dataset.chden !== r.tt[0]) { var v = $('chKH').value.trim(), kh = CHOT_DM.khach.filter(function (k) { return cnNhanKH(k) === v || k.ten === v; }); if (kh.length !== 1) { bao('Chọn đúng khách trong danh sách Sổ bán hàng.', true); $('chKH').focus(); return; }
-      goi('chotDuyetKD', [TK, x.khoa, m, kh[0].ma], function (r2) { chotNhan(r2); dongHop(); bao('Đã duyệt: tạo đơn Sổ bán hàng, chuyển sang Đơn mới.'); if (r2.canhBao) setTimeout(function () { bao('⚠ ' + r2.canhBao, true); }, 2800); }); return; }
+      goiTrung('chotDuyetKD', function (bo) { return [TK, x.khoa, m, kh[0].ma, bo]; }, function (r2) { chotNhan(r2); dongHop(); bao('Đã duyệt: tạo đơn Sổ bán hàng, chuyển sang Đơn mới.'); if (r2.canhBao) setTimeout(function () { bao('⚠ ' + r2.canhBao, true); }, 2800); }); return; }
     chotChuyen(x.khoa, b.dataset.chden, cho ? m : null); }; });
   if ($('chLuuMa')) $('chLuuMa').onclick = function () { var m = $('chMa').value.trim(); if (!m) { bao('Mã đơn không được để trống.', true); return; } goi('chotChuyen', [TK, x.khoa, x.tt, m], function (r2) { chotNhan(r2); dongHop(); bao('Đã lưu mã ' + m + '.'); }); };
   if ($('chLay')) $('chLay').onclick = function () { goi('chotChuyen', [TK, x.khoa, x.tt, null, true], function (r2) { chotNhan(r2); dongHop(); bao('Đã cập nhật theo đơn gốc.'); }); };
@@ -2407,8 +2412,9 @@ function cnLuu() {
   var canh = cnKiem().filter(function (c) { return !/^Chưa có mã đơn/.test(c); });
   if (canh.length && !confirm('Còn ' + canh.length + ' điểm cần xem:\n- ' + canh.join('\n- ') + '\n\nVẫn lưu?')) return;
   var sua = CN.sua;
-  goi('chotNhapDon', [TK, { maSo: sua || '', thuTien: sua ? 0 : (d.thuTien || 0), thuHT: d.thuHT || 'COD', ngay: d.ngay, maKH: d.maKH, maDon: d.maDon, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck,
-    dong: dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: Number(x.gia) || 0, ct: x.ct }; }) }], function (r) {
+  var gui = { maSo: sua || '', thuTien: sua ? 0 : (d.thuTien || 0), thuHT: d.thuHT || 'COD', ngay: d.ngay, maKH: d.maKH, maDon: d.maDon, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck,
+    dong: dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: Number(x.gia) || 0, ct: x.ct }; }) };
+  goiTrung('chotNhapDon', function (bo) { gui.boQuaTrung = bo; return [TK, gui]; }, function (r) {
     var v = r.vuaNhap || {}; CN = null; CHOT = { r: r, q: '' }; if (TAB === 'cv') napCongViec(); else veChot(); window.scrollTo(0, 0);
     bao(sua ? 'Đã lưu sửa đơn ' + (v.soDon || '') + '.' : 'Đã lưu đơn ' + (v.soDon || '') + ' vào Sổ bán hàng và cột Chờ duyệt.');
     if (v.canhBao) setTimeout(function () { bao('⚠ ' + v.canhBao, true); }, 2800);
@@ -3080,7 +3086,7 @@ function sbDonMoi() { return { ma: '', ngay: SB.homNay, maKH: '', nhan: '', ghiC
 function veSo() {
   var r = SB;
   var rieng = SB_TAB === 'bc' || SB_TAB === 'cp';
-  var h = quayLai() + '<h2 class="tieude">' + (SB_TAB === 'bc' ? 'Báo cáo doanh thu · lãi gộp' : SB_TAB === 'cp' ? 'Chi phí' : 'Sổ bán hàng') + '</h2><div class="the"><div class="hang" style="gap:10px;align-items:center;flex-wrap:wrap"><label for="sbThang" style="margin:0">Tháng</label>' +
+  var h = quayLai() + '<h2 class="tieude">' + (SB_TAB === 'bc' ? 'Doanh thu chính thức · lãi gộp' : SB_TAB === 'cp' ? 'Chi phí' : 'Sổ bán hàng') + '</h2><div class="the"><div class="hang" style="gap:10px;align-items:center;flex-wrap:wrap"><label for="sbThang" style="margin:0">Tháng</label>' +
     '<input type="month" id="sbThang" value="' + e(r.thang) + '" style="max-width:170px"><small class="muted">Nợ chốt hết 30/09/2026 mang sang, đơn và tiền thu tính từ 01/10/2026.</small></div></div>' +
     (rieng ? '' : '<div class="tab2">' + Object.keys(SB_TEN_TAB).filter(function (k) { return k !== 'bc' && k !== 'cp' && (r.ghi || (k !== 'nhap' && k !== 'thu')); }).map(function (k) { return '<button data-sbtab="' + k + '" class="' + (SB_TAB === k ? 'on' : '') + '">' + SB_TEN_TAB[k] + '</button>'; }).join('') + '</div>');
   if (!r.ghi && (SB_TAB === 'nhap' || SB_TAB === 'thu')) SB_TAB = 'no';
@@ -3178,7 +3184,7 @@ function sbVeNhap() {
       dong: d.dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: x.gia }; }) };
     if (Number(d.cnTien)) gui.dong.push({ sp: (d.cnNd || '').trim() || 'Gửi hàng hộ', nhom: 'Công nợ khác', sl: '', gia: Number(d.cnTien) });
     if (!gui.dong.some(function (x) { return x.sp && (x.sl || x.gia); }) && !Number(d.ship) && !Number(d.vat)) { bao('Đơn chưa có hàng, phí ship hay công nợ khác.', true); return; }
-    goi('ktLuuDon', [TK, gui, SB_THANG], function (x) {
+    goiTrung('ktLuuDon', function (bo) { gui.boQuaTrung = bo; return [TK, gui, SB_THANG]; }, function (x) {
       SB = x.so; var sua = !!d.ma; SB_DON = sbDonMoi(); SB_DON.ngay = gui.ngay; veSo();
       bao((sua ? 'Đã sửa đơn ' : 'Đã lưu đơn ') + (x.soDon || '(chưa có mã)') + '.'); if (x.canhBao) setTimeout(function () { bao('⚠ ' + x.canhBao, true); }, 2700);
     });
