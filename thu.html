@@ -2069,17 +2069,27 @@ function chotDoc(tin) {
     x.sl += sl; if (gia) x.gia = gia; if (ct) x.ct.push(ct); return x;
   }
   var dongs = String(tin || '').replace(/\r/g, '').split('\n').map(function (l) { return l.replace(/[​﻿]/g, '').trim(); }).filter(Boolean);
+  var dcI = -9, tongHu = 0;
   dongs.forEach(function (l, i) {
+    l = l.replace(/^[\-•+*–]\s{0,3}/, '').trim(); if (!l) return;
     var b = cnBo(l), m;
     if (!d.maDon && /^\d{6}$/.test(l.replace(/\s/g, ''))) { d.maDon = l.replace(/\s/g, ''); return; }
+    if ((m = /^(ma don|ma)\s{0,3}:\s{0,3}(\d{6})\b/.exec(b))) { d.maDon = m[2]; return; }
     if ((m = /^(nguoi gui|gui|khach hang|khach)\s{0,3}:\s{0,3}/.exec(b))) { d.tenKH = l.slice(m[0].length).trim(); return; }
+    if ((m = /^(dia chi nhan|dia chi|d\.c|dc)\s{0,3}:\s{0,3}/.exec(b))) { d.nhan.dc = l.slice(m[0].length).trim(); dcI = i; return; }
+    if ((m = /^(so dien thoai|dien thoai|sdt|dt|phone)\s{0,3}:?\s{0,3}/.exec(b)) && reSdt.test(l)) { var p0 = reSdt.exec(l); if (!d.nhan.sdt) d.nhan.sdt = p0[0].replace(/\D/g, '').replace(/^84/, '0'); return; }
+    if (dcI === i - 1 && !hang.test(b) && !/^\d/.test(l) && l.indexOf(':') < 0) { d.nhan.dc += ' ' + l; dcI = i; return; }
+    if ((m = /^([^\d:]{1,40}):\s{0,3}(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(l))) {
+      if (/^(tong|tong cong|tong so|so luong|sl|tong sl)$/.test(cnBo(m[1]).trim())) { tongHu = Number(m[2].replace(',', '.')) * (/^(t|th|thung)(\s|$)/.test(cnBo(m[3])) ? 105 : 1); return; }
+      l = m[2] + ' ' + m[1].trim() + (m[3] ? ' ' + m[3] : ''); b = cnBo(l);
+    }
     if ((m = /^(nguoi nhan|nhan)\s{0,3}:?\s{0,3}/.exec(b)) && /^(nguoi nhan|nhan)/.test(b)) {
       var r = l.slice(m[0].length), p = reSdt.exec(r); nhanI = i;
       if (p) { d.nhan.sdt = p[0].replace(/\D/g, '').replace(/^84/, '0'); r = r.replace(p[0], ' '); }
       d.nhan.ten = r.replace(/[\s\-–—,:|]+$/, '').replace(/^[\s\-–—,:|]+/, '').replace(/\s[\-–—]\s*$/, '').trim(); return;
     }
     var p2 = reSdt.exec(l);
-    if (p2 && nhanI >= 0 && !d.nhan.sdt && !hang.test(b.replace(reSdt, ''))) { d.nhan.sdt = p2[0].replace(/\D/g, '').replace(/^84/, '0'); var du = l.replace(p2[0], '').replace(/^[\s\-–—,:]+|[\s\-–—,:]+$/g, ''); if (du && !d.nhan.dc) d.nhan.dc = du; return; }
+    if (p2 && nhanI >= 0 && !d.nhan.sdt && !hang.test(b.replace(reSdt, ''))) { d.nhan.sdt = p2[0].replace(/\D/g, '').replace(/^84/, '0'); var du = l.replace(p2[0], '').replace(/^[\s\-–—,:]+|[\s\-–—,:]+$/g, '').replace(/^(số điện thoại|điện thoại|sđt|sdt|đt|phone)\s{0,3}:?/i, '').trim(); if (du.replace(/[^A-Za-zÀ-ỹ]/g, '').length > 3 && !d.nhan.dc) { d.nhan.dc = du; dcI = i; } return; }
     if (nhanI >= 0 && !d.nhan.dc && i <= nhanI + 2 && !hang.test(b) && !/^\(/.test(l) && (!/^\d/.test(l) || /(duong|pho|xa|phuong|huyen|tinh|quan|tp|thon|ngo|hem|so nha)/.test(b))) { d.nhan.dc = l; return; }
     if (!d.tenKH && nhanI < 0 && !/^\(?\d/.test(l) && !hang.test(b)) { d.tenKH = l; return; }
     if (!/^\(?\d/.test(l) && !hang.test(b)) { ghi.push(l); return; }
@@ -2106,16 +2116,18 @@ function chotDoc(tin) {
       if (/^tui( xach)? do/.test(cb)) { them(CN_PK.tuiDo, n, gia || 8000, ''); return; }
       if (/^(hop|set) (qua )?(nau|trang|kem)/.test(cb)) { them(CN_PK.setNau, n, gia || 25000, khay ? n + ' khay ' + khay : ''); return; }
       if (/^hop (qua )?xanh/.test(cb)) { them(CN_PK.xanh, n, gia || 15000, khay ? n + ' khay ' + khay : ''); return; }
-      if (/^hu\b|^hu$|^hu /.test(cb) || /(duong phen|hat sen|dong trung|gung|sen|dp)\b/.test(cb)) {
+      if (/^hu\b|^hu$|^hu /.test(cb) || /(duong phen|hat sen|dong trung|gung|sen|dp)\b/.test(cb) || ((huCuoi || tongHu) && !/(hop|set|tui|khay|thung|lang|kg|chai|lo|goi)\b/.test(cb))) {
         var loai = /khong tem/.test(cb) ? CN_HU.ktem : /(100|nguyen chat)/.test(cb) ? CN_HU.nc : /loi/.test(cb) ? CN_HU.loi : CN_HU.tem;
-        var vi2 = cnVi(con.replace(/\([^)]*\)/g, '').replace(/^hũ\s{0,3}/i, '').replace(/(không tem|nguyên chất|100\s*%|hàng lỗi|lỗi|7g|7 g|lanest)/gi, '').trim());
-        huCuoi = them(loai, n, gia, (/^hũ/i.test(con.trim()) ? (vi2 ? n + ' ' + vi2 : '') : n + ' ' + (vi2 || con)) + (thung ? (vi2 ? ' (' + thung + ')' : thung) : ''));
+        var vi2 = cnVi(con.replace(/\([^)]*\)/g, '').replace(/^h[ũủu]\s{0,3}/i, '').replace(/(không tem|nguyên chất|100\s*%|hàng lỗi|lỗi|7g|7 g|lanest)/gi, '').trim());
+        huCuoi = them(loai, n, gia, (/^h[ũủu](\s|$)/i.test(con.trim()) ? (vi2 ? n + ' ' + vi2 : '') : n + ' ' + (vi2 || con)) + (thung ? (vi2 ? ' (' + thung + ')' : thung) : ''));
         if (ctTrong) huCuoi.ct.push(cnVi(ctTrong));
         return;
       }
       var gan = cnSpGan(con); them(gan || con, n, gia, gan ? '' : '');
     });
   });
+  if (tongHu && !thuTu.some(function (k) { return gom[k].nhom === 'YẾN HŨ'; })) them(CN_HU.tem, tongHu, 0, '');
+  d.tongHu = tongHu;
   d.dong = thuTu.map(function (k) { var x = gom[k]; return { sp: x.sp, nhom: x.nhom || cnNhom(x.sp), sl: x.sl, gia: x.gia, ct: x.ct.filter(Boolean).join(', ') }; });
   d.ghiChu = ghi.join(' · ');
   return d;
@@ -2131,6 +2143,7 @@ function cnKiem() {
     if (x.sp === CN_PK.roi) cho += Number(x.sl) || 0;
     if (!x.gia && x.gia !== 0 && x.sp) canh.push(x.sp + ': chưa có đơn giá.');
   });
+  if (d.tongHu && hu !== d.tongHu) canh.push('Tin nhắn ghi tổng ' + d.tongHu + ' hũ, các dòng hũ cộng ra ' + hu + ' hũ.');
   if (hu && cho && hu !== cho) canh.push('Đơn có ' + hu + ' hũ nhưng hộp / set / khay chứa được ' + cho + ' hũ — kiểm lại với khách hoặc người lên đơn.');
   if (!d.maKH) canh.push('Chưa chọn khách (người gửi) trong danh sách Sổ bán hàng.');
   if (!d.maDon) canh.push('Chưa có mã đơn 6 số (có thể nhập sau ở bước Chờ duyệt).');
@@ -2213,6 +2226,7 @@ function cnNhanDien(tin) {
   if (r.tenKH) { var k = cnTimKH(r.tenKH); d.tenKH = k && !k.nhieu ? cnNhanKH(k) : r.tenKH; d.maKH = k && !k.nhieu ? k.ma : ''; }
   if (r.dong.length) d.dong = r.dong.map(function (x) { if (x.gia === '' || x.gia == null || x.gia === 0) { var g = cnGiaKH(x.sp); x.gia = g === '' ? '' : g; } return x; });
   if (r.ghiChu) d.ghiChu = r.ghiChu;
+  d.tongHu = r.tongHu || 0;
   CN.tin = tin; veNhapChot();
   var k2 = r.tenKH ? cnTimKH(r.tenKH) : null;
   bao(k2 && k2.nhieu ? 'Có ' + k2.nhieu.length + ' khách trùng tên "' + r.tenKH + '" — chọn đúng khách trong danh sách.' : 'Đã nhận diện — xem lại từng ô rồi bấm Lưu.', !!(k2 && k2.nhieu));
