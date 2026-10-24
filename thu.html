@@ -428,7 +428,7 @@ function baoKhongQuyen(mas) {
 var MAU_O = null;
 function chuyenTab(t) {
   if (t.indexOf('cd:') === 0) { CD_MO = t.slice(3); t = 'cd'; } else if (t === 'cd') CD_MO = '';
-  if (t.indexOf('sb:') === 0) { SB_TAB = t.slice(3); t = 'sb'; }
+  if (t.indexOf('sb:') === 0) { SB_TAB = t.slice(3); t = 'sb'; } else if (t === 'sb' && (SB_TAB === 'bc' || SB_TAB === 'cp')) SB_TAB = 'nhap';
   var can = TAB_PHONG[t];
   if (t === 'cd' && !H.me.chiaKpi && !H.me.admin) can = ['VH'];
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
@@ -1925,8 +1925,8 @@ function vePhong(ma) {
     if (H.me.duyetCC) o.push(['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy']);
   }
   if (ma === 'TCKT') {
-    o = [['sb', 'SỔ BÁN HÀNG', 'Nhập đơn, thu tiền, công nợ, chi phí', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'],
-      ['ds', 'ĐƠN PHÒNG KD', 'Đơn phòng KD lên, trạng thái giao', 'ds'], ['bct', 'BÁO CÁO', 'Tất cả báo cáo: doanh thu, lãi, công nợ, chi phí, doanh số KD, thưởng, kho, Excel', 'bc']];
+    o = [['sb', 'SỔ BÁN HÀNG', 'Nhập đơn, thu tiền, đơn hàng, công nợ', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'],
+      ['ds', 'ĐƠN PHÒNG KD', 'Đơn phòng KD lên, trạng thái giao', 'ds'], ['sb:cp', 'CHI PHÍ', 'Nhập, xem khoản chi trong tháng theo hạng mục', 'th'], ['bct', 'BÁO CÁO', 'Tất cả báo cáo: doanh thu, lãi, công nợ, doanh số KD, thưởng, kho, Excel', 'bc']];
   }
   if (ma === 'KD') {
     o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH THU', 'Tổng phòng, ngành hàng, % target', 'bc'],
@@ -1954,7 +1954,7 @@ function vePhong(ma) {
 function veBaoCaoTC() {
   var mm = MAU_O || {};
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo</h2><div class="oclon">' +
-    [['sb:bc', 'DOANH THU · LÃI GỘP', 'Báo cáo sổ bán hàng: theo ngày, nhóm hàng, khách, sản phẩm', 'bc'], ['sb:no', 'CÔNG NỢ KHÁCH', 'Nợ đầu kỳ, phát sinh, đã trả, còn nợ, hạn mức', 'kh'], ['sb:cp', 'CHI PHÍ', 'Khoản chi trong tháng theo hạng mục', 'th'],
+    [['sb:bc', 'DOANH THU · LÃI GỘP', 'Báo cáo sổ bán hàng: theo ngày, nhóm hàng, khách, sản phẩm', 'bc'], ['sb:no', 'CÔNG NỢ KHÁCH', 'Nợ đầu kỳ, phát sinh, đã trả, còn nợ, hạn mức', 'kh'],
       ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên: team, nhân viên, % target', 'bc'], ['th', 'THƯỞNG NHÂN VIÊN', 'Thưởng tạm tính từng nhân viên KD', 'th'], ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu đơn kế toán', 'ton'],
       ['xl', 'TẢI EXCEL', 'Tải các sổ ra file Excel', 'ds']].map(function (x) {
       var m = mm[x[3]] || ['#eee', '#888', '#555'];
@@ -3075,9 +3075,10 @@ function sbGhiChuThu(g) { var m = /^Thu kèm đơn (\S+)$/.exec(g || ''); if (!m
 function sbDonMoi() { return { ma: '', ngay: SB.homNay, maKH: '', nhan: '', ghiChu: '', ghiChuTT: '', ship: '', ck: '', vat: '', thuTien: '', thuHT: 'COD', dong: [{ sp: '', nhom: '', sl: '', gia: '' }] }; }
 function veSo() {
   var r = SB;
-  var h = quayLai() + '<h2 class="tieude">Sổ bán hàng</h2><div class="the"><div class="hang" style="gap:10px;align-items:center;flex-wrap:wrap"><label for="sbThang" style="margin:0">Tháng</label>' +
+  var rieng = SB_TAB === 'bc' || SB_TAB === 'cp';
+  var h = quayLai() + '<h2 class="tieude">' + (SB_TAB === 'bc' ? 'Báo cáo doanh thu · lãi gộp' : SB_TAB === 'cp' ? 'Chi phí' : 'Sổ bán hàng') + '</h2><div class="the"><div class="hang" style="gap:10px;align-items:center;flex-wrap:wrap"><label for="sbThang" style="margin:0">Tháng</label>' +
     '<input type="month" id="sbThang" value="' + e(r.thang) + '" style="max-width:170px"><small class="muted">Nợ chốt hết 30/09/2026 mang sang, đơn và tiền thu tính từ 01/10/2026.</small></div></div>' +
-    '<div class="tab2">' + Object.keys(SB_TEN_TAB).filter(function (k) { return r.ghi || (k !== 'nhap' && k !== 'thu'); }).map(function (k) { return '<button data-sbtab="' + k + '" class="' + (SB_TAB === k ? 'on' : '') + '">' + SB_TEN_TAB[k] + '</button>'; }).join('') + '</div>';
+    (rieng ? '' : '<div class="tab2">' + Object.keys(SB_TEN_TAB).filter(function (k) { return k !== 'bc' && k !== 'cp' && (r.ghi || (k !== 'nhap' && k !== 'thu')); }).map(function (k) { return '<button data-sbtab="' + k + '" class="' + (SB_TAB === k ? 'on' : '') + '">' + SB_TEN_TAB[k] + '</button>'; }).join('') + '</div>');
   if (!r.ghi && (SB_TAB === 'nhap' || SB_TAB === 'thu')) SB_TAB = 'no';
   h += '<div id="sbNoi"></div>';
   $('noiDung').innerHTML = h;
