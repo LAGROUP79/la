@@ -1886,7 +1886,7 @@ var IC_P = (function () {
     KHO: s('<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>'),
   };
 })();
-var MO_TA_P = { VH: 'Phân quyền, cài đặt chung, Target, giá & thưởng, nhật ký', HCNS: 'Hồ sơ nhân viên, văn bản, công, lương, duyệt yêu cầu', TCKT: 'Doanh thu, thưởng, đơn hàng, khách', KD: 'Bán hàng, đơn hàng, doanh thu, Target', KHO: 'Chốt đơn, kiểm kho, nhập, xuất, báo cáo ngày' };
+var MO_TA_P = { VH: 'Phân quyền, nhật ký hệ thống', HCNS: 'Hồ sơ nhân viên, văn bản, công, lương, duyệt yêu cầu', TCKT: 'Sổ bán hàng, công nợ, doanh thu, thưởng, đối chiếu kho', KD: 'Bán hàng, đơn hàng, doanh thu, Target, giá & thưởng', KHO: 'Chốt đơn, kiểm kho, nhập, xuất, báo cáo ngày' };
 function oPhong(ma) {
   var m = MAU_P[ma], vao = H.me.phongVao.indexOf(ma) >= 0, vp = H.me.vaiPhong.filter(function (v) { return v.ma === ma; })[0];
   var nhan = vao ? (H.me.admin ? 'Admin' : vp ? vp.vai + (vp.team ? ' · ' + vp.team : '') : '') : 'Chưa có quyền';
@@ -1894,9 +1894,7 @@ function oPhong(ma) {
 }
 function vePhong(ma) {
   var o = [], ghi = H.me.phongGhi.indexOf(ma) >= 0, ghiChu = '';
-  if (ma === 'VH') o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['cd:kpi', 'TARGET', 'Target cả phòng, giao cho trưởng phòng', 'bc'], ['cd:gt', 'GIÁ & THƯỞNG', 'Giá niêm yết, mức thưởng từng sản phẩm', 'th'],
-    ['cd:team', 'TEAM', 'Danh sách team kinh doanh', 'kh'], ['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy'], ['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc toàn công ty', 'cv'],
-    ['sb', 'SỔ BÁN HÀNG', 'Số liệu chính thức công ty (kế toán nhập)', 'len'], ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên — theo dõi target, thưởng', 'bc'], ['kb', 'BÁO CÁO KHO NGÀY', 'Hũ, tinh, thô: nhập, xuất, lợi nhuận, chênh lệch', 'ton'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, theo dõi kho soạn, xuất', 'ds'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']];
+  if (ma === 'VH') o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']];
   if (ma === 'HCNS') {
     if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds']);
     if (H.me.xemLuong) o.push(['ns_luong', 'BẢNG LƯƠNG', 'Phiếu lương, tổng lương, chốt & gửi', 'th']);
@@ -1905,16 +1903,17 @@ function vePhong(ma) {
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
   }
   if (ma === 'TCKT') {
-    o = [['sb', 'SỔ BÁN HÀNG', 'Số liệu chính thức công ty: nhập đơn, thu tiền, công nợ, báo cáo', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'],['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD tự lên — chỉ theo dõi target, thưởng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên KD', 'th'], ['ds', 'ĐƠN PHÒNG KD', 'Đơn phòng KD lên (theo dõi, không trừ kho)', 'ds'], ['kh', 'KHÁCH PHÒNG KD', 'Khách do phòng KD chăm sóc', 'kh'],
-      ['kb', 'ĐỐI CHIẾU XUẤT KHO', 'Kế toán nhập số xuất, so với kiểm kho cuối ngày', 'ton'], ['xl', 'TẢI EXCEL', 'Tất cả sổ: đơn, kho, công, lương', 'ds']];
+    o = [['sb', 'SỔ BÁN HÀNG', 'Số liệu chính thức công ty: nhập đơn, thu tiền, công nợ, báo cáo', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'],
+      ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên — target, thưởng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên KD', 'th'], ['ds', 'ĐƠN PHÒNG KD', 'Đơn phòng KD lên, trạng thái giao', 'ds'],
+      ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu với đơn kế toán', 'ton'], ['xl', 'TẢI EXCEL', 'Tất cả sổ: đơn, kho, công, lương', 'ds']];
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
-    ghiChu = 'Giá vốn, lãi gộp, báo cáo tuần/tháng của kho sẽ chuyển vào phòng này ở <b>Đợt 4</b>.';
   }
   if (ma === 'KD') {
     o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH THU', 'Tổng phòng, ngành hàng, % target', 'bc'],
       ['th', 'THƯỞNG', 'Thưởng từng sản phẩm, từng NV', 'th'], ['kh', 'KHÁCH HÀNG', 'Khách chăm sóc, theo tỉnh', 'kh'], ['ton', 'TỒN KHO', 'Tồn tham khảo từ app Kho', 'ton']];
     if (H.me.mk) o = o.filter(function (x) { return x[0] === 'ton'; });
-    if (H.me.chiaKpi) o.push(['cd:kpi', 'CHIA TARGET', 'Target team và từng thành viên', 'cd']);
+    if (H.me.admin) o.push(['cd:kpi', 'TARGET', 'Target cả phòng, giao trưởng phòng, chia thành viên', 'cd'], ['cd:gt', 'GIÁ & THƯỞNG', 'Giá niêm yết, mức thưởng từng sản phẩm', 'th'], ['cd:team', 'TEAM', 'Danh sách team kinh doanh', 'kh']);
+    else if (H.me.chiaKpi) o.push(['cd:kpi', 'CHIA TARGET', 'Target team và từng thành viên', 'cd']);
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao việc cho team', 'cv']);
   }
   if (ma === 'KHO') {
