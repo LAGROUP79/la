@@ -3521,13 +3521,7 @@ function sbDash(b) {
     o(DB_MAU[2], 'Đã thu', dbTr(b.daThu), b.doanhThu ? 'bằng ' + Math.round(b.daThu / b.doanhThu * 100) + '% doanh thu' : '', t && dbDelta(b.daThu, t.daThu)) +
     o(DB_MAU[3], 'Số đơn', b.soDon, b.soDon ? 'TB ' + dbTr(b.doanhThu / b.soDon) + '/đơn' : '', t && dbDelta(b.soDon, t.soDon)) + '</div>';
   h += '<div class="db-the"><h4>Doanh thu và lãi gộp theo ngày</h4><div class="db-chu"><span><i style="background:' + DB_MAU[0] + '"></i>Doanh thu</span><span><i class="duong" style="background:' + DB_MAU[1] + '"></i>Lãi gộp</span><span class="db-sub">chạm / rê chuột vào cột để xem số</span></div>' + dbChuNgay(b.theoNgay) + '</div>';
-  var buoc = [['Tiền hàng', b.tienCoVon, DB_MAU[0], 'tong'], ['Giá vốn', -b.giaVon, DB_MAU[7], 'tru'], ['Chiết khấu', -b.ck, DB_MAU[7], 'tru'], ['Lãi gộp', b.lnGop, DB_MAU[5], 'tong'], ['Chi phí', -(b.chiPhi || 0), DB_MAU[7], 'tru'], ['Lãi sau chi phí', ln2, DB_MAU[5], 'tong']].filter(function (x) { return x[3] === 'tong' || x[1]; });
-  var maxW = Math.max(b.tienCoVon, 1), chay = 0;
-  h += '<div class="db-doi"><div class="db-the"><h4>Từ tiền hàng tới lợi nhuận</h4><p class="db-sub" style="margin:-6px 0 6px">Tiền hàng = phần hàng đã có giá vốn</p>' + buoc.map(function (x) {
-    var trai, rong;
-    if (x[3] === 'tong') { trai = Math.min(0, x[1]); rong = Math.abs(x[1]); chay = x[1]; } else { trai = chay + x[1]; rong = -x[1]; chay = chay + x[1]; }
-    return '<div class="db-hang"' + dbTip(x[0] + ': ' + tien(x[1]) + 'đ') + '><div class="db-ten">' + x[0] + '</div><div class="db-ray" style="background:transparent;position:relative"><i style="position:absolute;left:' + Math.max(0, trai / maxW * 100) + '%;width:' + Math.max(0.8, rong / maxW * 100) + '%;background:' + x[2] + ';border-radius:4px"></i></div><div class="db-so">' + (x[3] === 'tru' && x[1] ? '−' + dbTr(-x[1]) : dbTr(x[1])) + '</div></div>';
-  }).join('') + '<p class="db-sub" style="margin:8px 0 0">Doanh thu tổng ' + dbTr(b.doanhThu) + ' gồm cả ship ' + dbTr(b.ship) + ', VAT ' + dbTr(b.vat) + (b.chuaVon ? ', hàng chưa có giá vốn ' + dbTr(b.chuaVon) : '') + (b.cnKhac ? ', công nợ khác ' + dbTr(b.cnKhac) : '') + ' — những phần này không tính lãi.</p></div>';
+  h += '<div>';
   var conThu = Math.max(0, b.doanhThu - b.daThu);
   h += '<div class="db-the"><h4>Doanh thu và tiền đã thu</h4>' + dbThanh([{ ten: 'Doanh thu', v: b.doanhThu, tip: 'Doanh thu: ' + tien(b.doanhThu) + 'đ' }, { ten: 'Đã thu', v: b.daThu, tip: 'Đã thu: ' + tien(b.daThu) + 'đ' }, { ten: 'Chưa thu', v: conThu, tip: 'Chưa thu: ' + tien(conThu) + 'đ' }],
     function (x, i) { return [DB_MAU[0], DB_MAU[2], DB_MAU[3]][i]; });
