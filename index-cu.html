@@ -2238,6 +2238,7 @@ function veNhapChot() {
         '<div class="tt" data-cntt="' + i + '"></div></div>';
     }).join('') + '</div><button class="nut phu nho" id="cnThem">＋ Thêm dòng</button>' +
     '<div class="luoi2" style="margin-top:10px"><div><label>Phí ship</label><input id="cnShip" inputmode="numeric" value="' + e(d.ship) + '"></div><div><label>Chiết khấu</label><input id="cnCk" inputmode="numeric" value="' + e(d.ck) + '"></div></div>' +
+    (CN.sua ? '' : '<div class="luoi2"><div><label>Thu tiền ngay (nếu có)</label><input id="cnThu" inputmode="numeric" value="' + e(d.thuTien ? tien(d.thuTien) : '') + '" placeholder="Trừ thẳng vào công nợ khách"></div><div><label>Hình thức</label><select id="cnThuHT">' + (dm.hinhThuc || ['COD', 'Chuyển khoản', 'Tiền mặt']).map(function (x) { return opt(x, d.thuHT || 'COD'); }).join('') + '</select></div></div>') +
     '<label>Ghi chú thanh toán <small class="muted">(kho không thấy)</small></label><textarea id="cnGCTT" rows="2" placeholder="Đã cọc, thu COD, chuyển khoản, công nợ…">' + e(d.ghiChuTT || '') + '</textarea>' +
     '<label>Ghi chú khác <small class="muted">(kho thấy khi soạn đơn)</small></label><textarea id="cnGC" rows="2">' + e(d.ghiChu) + '</textarea>' +
     '<div class="tong"><span>Tổng đơn</span><span id="cnTong">0đ</span></div><div id="cnCanh"></div>' +
@@ -2264,7 +2265,7 @@ function cnDocForm() {
   CN.tin = $('cnTin').value; d.ngay = $('cnNgay').value; d.maDon = $('cnMa').value.trim(); d.tenKH = $('cnKH').value.trim();
   var k = CN.dm.khach.filter(function (x) { return cnNhanKH(x) === d.tenKH || x.ten === d.tenKH; }); d.maKH = k.length === 1 ? k[0].ma : '';
   d.nhan = { ten: $('cnNTen').value.trim(), sdt: $('cnNSdt').value.trim(), dc: $('cnNDc').value.trim() };
-  d.ship = $('cnShip').value; d.ck = $('cnCk').value; d.ghiChu = $('cnGC').value; d.ghiChuTT = $('cnGCTT').value;
+  d.ship = $('cnShip').value; d.ck = $('cnCk').value; if ($('cnThu')) { d.thuTien = docTien($('cnThu').value); d.thuHT = $('cnThuHT').value; } d.ghiChu = $('cnGC').value; d.ghiChuTT = $('cnGCTT').value;
   d.dong = [].map.call(document.querySelectorAll('[data-cndong]'), function (b) {
     var v = function (f) { return b.querySelector('[data-cn=' + f + ']').value; }, g = v('gia').trim();
     return { sp: v('sp').trim(), nhom: v('nhom'), sl: v('sl').trim(), gia: g === '' ? '' : docTien(g), ct: v('ct').trim() };
@@ -2335,7 +2336,7 @@ function cnLuu() {
   var canh = cnKiem().filter(function (c) { return !/^Chưa có mã đơn/.test(c); });
   if (canh.length && !confirm('Còn ' + canh.length + ' điểm cần xem:\n- ' + canh.join('\n- ') + '\n\nVẫn lưu?')) return;
   var sua = CN.sua;
-  goi('chotNhapDon', [TK, { maSo: sua || '', ngay: d.ngay, maKH: d.maKH, maDon: d.maDon, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck,
+  goi('chotNhapDon', [TK, { maSo: sua || '', thuTien: sua ? 0 : (d.thuTien || 0), thuHT: d.thuHT || 'COD', ngay: d.ngay, maKH: d.maKH, maDon: d.maDon, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck,
     dong: dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: Number(x.gia) || 0, ct: x.ct }; }) }], function (r) {
     var v = r.vuaNhap || {}; CN = null; CHOT = { r: r, q: '' }; if (TAB === 'cv') napCongViec(); else veChot(); window.scrollTo(0, 0);
     bao(sua ? 'Đã lưu sửa đơn ' + (v.soDon || '') + '.' : 'Đã lưu đơn ' + (v.soDon || '') + ' vào Sổ bán hàng và cột Chờ duyệt.');
