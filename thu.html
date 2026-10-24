@@ -2034,6 +2034,7 @@ function chotChuyen(k, tt, maDon) {
   var x = chotTim(k), r = CHOT.r; if (!x || (x.tt === tt && maDon == null)) return;
   var vao = r.tt.indexOf(tt), tu = r.tt.indexOf(x.tt);
   if ((vao === 0 || tu === 0) && !r.ghiDuyet) { bao('Bước Chờ duyệt do kế toán hoặc Admin xử lý.', true); return; }
+  if (tu === 0 && vao > 0 && x.khoa.indexOf('KD:') === 0) { moChotThe(x); bao('Đơn phòng KD: chọn khách trong Sổ bán hàng rồi bấm Duyệt.'); return; }
   if (tu === 0 && vao > 0 && maDon == null) {
     var o = document.querySelector('[data-chma="' + k + '"]'); maDon = o ? o.value.trim() : (x.ma || x.goiY || '');
     if (!maDon) { maDon = prompt('Nhập mã đơn cho đơn của ' + x.khach + ':', x.goiY || ''); if (maDon == null) return; maDon = maDon.trim(); }
@@ -2042,14 +2043,18 @@ function chotChuyen(k, tt, maDon) {
   if (x.huyGoc && vao > tu && !confirm('Đơn gốc đã HUỶ. Vẫn chuyển bước?')) return;
   goi('chotChuyen', [TK, k, tt, maDon == null ? null : maDon], function (r2) { chotNhan(r2); dongHop(); bao((maDon || x.ma || x.khach) + ' → ' + tt); });
 }
+var CHOT_DM = null;
 function moChotThe(x) {
-  var r = CHOT.r, i = r.tt.indexOf(x.tt), cho = i === 0;
+  var r = CHOT.r, i = r.tt.indexOf(x.tt), cho = i === 0, laKD = x.khoa.indexOf('KD:') === 0;
+  if (cho && laKD && r.ghiDuyet && !CHOT_DM) { goi('chotDmNhap', [TK], function (dm) { CHOT_DM = dm; moChotThe(x); }); return; }
   moHop('<h3 style="margin:0;color:var(--xanh)">' + (x.ma ? 'Đơn ' + e(x.ma) : 'Đơn chưa có mã') + ' <span class="ch-tag' + (x.nguon !== 'Phòng KD' ? ' kt' : '') + '" style="vertical-align:middle">' + e(x.nguon) + '</span></h3>' +
     (x.huyGoc ? '<p class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán.</p>' : x.doiGoc ? '<p class="ch-canh doi">⚠ Đơn gốc đã sửa sau khi duyệt. Hàng / khách trên thẻ đang là bản cũ.</p>' : '') +
     '<p style="margin:8px 0 4px"><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' · ***' + e(x.sdt4) : '') + '</p><div style="line-height:1.55">' + chotSp(x) + '</div>' +
     (cho && x.ghiChuTT ? '<p style="margin:6px 0;color:#8a5f00"><b>💳 Ghi chú thanh toán:</b> ' + e(x.ghiChuTT) + ' <i class="muted">(kho không thấy)</i></p>' : '') +
     (x.ghiChu ? '<p style="margin:6px 0"><b>Ghi chú:</b> ' + e(x.ghiChu) + '</p>' : '') +
     (r.duyet && (x.nguoiLen || x.nhan) ? '<p class="muted" style="margin:6px 0">' + (x.nguoiLen ? 'Người lên đơn: ' + e(x.nguoiLen) : '') + (x.nhan ? ' · Giao hộ: ' + e(x.nhan) : '') + ' <i>(chỉ kế toán + Admin thấy)</i></p>' : '') +
+    (cho && laKD && r.ghiDuyet ? '<label>Khách trong Sổ bán hàng (người gửi / đại lý)</label><input id="chKH" list="chDsKH" value="' + e(x.goiYKH ? cnNhanKHds(x.goiYKH.ma) : '') + '" placeholder="Gõ tên hoặc SĐT để chọn">' +
+      '<datalist id="chDsKH">' + CHOT_DM.khach.map(function (k) { return '<option value="' + e(cnNhanKH(k)) + '">'; }).join('') + '</datalist><small class="muted">Duyệt xong app tự tạo đơn trong Sổ bán hàng (doanh thu, công nợ, trừ kho khi xuất). Khách mới thì tạo ở Sổ bán hàng trước.</small>' : '') +
     (cho && r.ghiDuyet ? '<label>Mã đơn</label><input id="chMa" value="' + e(x.ma || x.goiY || '') + '" placeholder="Nhập mã đơn">' : (!cho && r.ghiDuyet ? '<label>Mã đơn</label><div class="hang"><input id="chMa" value="' + e(x.ma) + '"><button class="nut phu" id="chLuuMa" style="flex:0 0 auto;width:auto">Lưu mã</button></div>' : '')) +
     (r.ghi ? '<label>Chuyển sang bước</label><div style="display:flex;gap:6px;flex-wrap:wrap">' + r.tt.map(function (t, j) {
       var duoc = t !== x.tt && (r.ghiDuyet || (j > 0 && !cho));
@@ -2060,7 +2065,10 @@ function moChotThe(x) {
     (x.ls ? '<details style="margin-top:10px"><summary class="muted">Lịch sử chuyển bước</summary><div class="muted" style="font-size:12.5px;line-height:1.6;margin-top:4px">' + x.ls.split('\n').reverse().map(function (l) { return e(l); }).join('<br>') + '</div></details>' : '') +
     '<button class="nut phu" id="chDong" style="margin-top:12px">Đóng</button>');
   $('chDong').onclick = dongHop;
-  document.querySelectorAll('[data-chden]').forEach(function (b) { b.onclick = function () { var m = $('chMa') && cho ? $('chMa').value.trim() : null; if (cho && !m && b.dataset.chden !== r.tt[0]) { bao('Nhập mã đơn trước khi duyệt.', true); return; } chotChuyen(x.khoa, b.dataset.chden, cho ? m : null); }; });
+  document.querySelectorAll('[data-chden]').forEach(function (b) { b.onclick = function () { var m = $('chMa') && cho ? $('chMa').value.trim() : null; if (cho && !m && b.dataset.chden !== r.tt[0]) { bao('Nhập mã đơn trước khi duyệt.', true); return; }
+    if (cho && laKD && b.dataset.chden !== r.tt[0]) { var v = $('chKH').value.trim(), kh = CHOT_DM.khach.filter(function (k) { return cnNhanKH(k) === v || k.ten === v; }); if (kh.length !== 1) { bao('Chọn đúng khách trong danh sách Sổ bán hàng.', true); $('chKH').focus(); return; }
+      goi('chotDuyetKD', [TK, x.khoa, m, kh[0].ma], function (r2) { chotNhan(r2); dongHop(); bao('Đã duyệt ' + m + ': tạo đơn Sổ bán hàng, chuyển sang Đơn mới.'); if (r2.canhBao) setTimeout(function () { bao('⚠ ' + r2.canhBao, true); }, 2800); }); return; }
+    chotChuyen(x.khoa, b.dataset.chden, cho ? m : null); }; });
   if ($('chLuuMa')) $('chLuuMa').onclick = function () { var m = $('chMa').value.trim(); if (!m) { bao('Mã đơn không được để trống.', true); return; } goi('chotChuyen', [TK, x.khoa, x.tt, m], function (r2) { chotNhan(r2); dongHop(); bao('Đã lưu mã ' + m + '.'); }); };
   if ($('chLay')) $('chLay').onclick = function () { goi('chotChuyen', [TK, x.khoa, x.tt, null, true], function (r2) { chotNhan(r2); dongHop(); bao('Đã cập nhật theo đơn gốc.'); }); };
   if ($('chBo')) $('chBo').onclick = function () { chotBo(x); };
@@ -2193,6 +2201,7 @@ function moNhapChot() {
     veNhapChot();
   });
 }
+function cnNhanKHds(ma) { var k = (CHOT_DM || CN && CN.dm || { khach: [] }).khach.filter(function (y) { return y.ma === ma; })[0]; return k ? cnNhanKH(k) : ''; }
 function cnNhanKH(k) { return k.ten + (k.sdt ? ' · ' + k.sdt : '') + (k.khuVuc ? ' · ' + k.khuVuc : ''); }
 function veNhapChot() {
   var d = CN.d, dm = CN.dm;
