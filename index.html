@@ -472,10 +472,10 @@ function veHome() {
     (k.kpi ? '<div class="phong"><small>Tháng ' + H.homNay.slice(5, 7) + ' của bạn: ' + tien(k.dat) + ' / ' + tien(k.kpi) + 'đ · ' + (k.pt || 0) + '%</small>' + thanh(k.pt) + '</div>' : '') +
     (ph ? '<div class="phong"><small>Doanh thu ' + e(ph.ten) + ' tháng ' + H.homNay.slice(5, 7) + '</small><br><b class="vang" style="font-size:20px">' + tien(ph.dt) + 'đ</b>' +
       '<small> · ' + ph.soDon + ' đơn · hôm nay ' + tien(ph.homNay) + 'đ</small>' + (ph.kpi ? '<br><small>Target ' + tien(ph.kpi) + 'đ · đạt ' + ph.pt + '%</small>' + thanh(ph.pt) : '') + '</div>' : '') + '</div>' +
-    '<h3 class="nhom">CỦA TÔI</h3><div class="oclon bon">' + o.filter(function (x) { return ['cc', 'np', 'cv', 'hs'].indexOf(x[0]) >= 0; }).map(function (x) {
+    (H.me.admin ? '' : '<h3 class="nhom">CỦA TÔI</h3><div class="oclon bon">' + o.filter(function (x) { return ['cc', 'np', 'cv', 'hs'].indexOf(x[0]) >= 0; }).map(function (x) {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
-    }).join('') + '</div>' +
+    }).join('') + '</div>') +
     '<h3 class="nhom">PHÒNG BAN</h3><div class="pbLuoi">' + H.phongBan.map(function (p) { return thePhong(p.ma); }).join('') + '</div>' +
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
@@ -915,7 +915,9 @@ function tinhTong() {
   if (giam > tong) loiG = 'Giảm giá lớn hơn giá trị đơn';
   $('fTam').textContent = tien(tong) + 'đ';
   $('fGiamTien').innerHTML = loiG ? '<span class="am">' + loiG + '</span>' : giam ? '−' + tien(giam) + 'đ' : '0đ';
-  $('fTong').textContent = tien(Math.max(0, tong - giam) + docTien($('fShip').value)) + 'đ';
+  var nhanTra = (document.querySelector('[name=fTraShip]:checked') || {}).value === 'nhan', khachTra = Math.max(0, tong - giam) + (nhanTra ? 0 : docTien($('fShip').value)), thu = $('fThu') ? docTien($('fThu').value) : 0;
+  $('fTong').textContent = tien(khachTra) + 'đ';
+  if ($('fConThu')) $('fConThu').textContent = thu ? 'Đã thu ' + tien(thu) + 'đ · còn phải thu ' + tien(Math.max(0, khachTra - thu)) + 'đ' : (nhanTra ? 'Phí ship người nhận trả, không cộng vào đơn' : '');
   $('fThuong').textContent = th ? 'Thưởng dự kiến của đơn: ' + tien(th) + 'đ' : '';
 }
 function veLenDon() {
@@ -939,8 +941,10 @@ function veLenDon() {
     '<button class="nut phu nho" id="fThem">＋ Thêm sản phẩm</button>' +
     '<div class="hang" style="justify-content:space-between;margin-top:10px"><span>Tạm tính</span><b id="fTam">0đ</b></div>' +
     '<label for="fGiam">Chiết khấu / giảm giá cho khách</label><div class="hang" style="flex-wrap:nowrap"><input id="fGiam" inputmode="decimal" value="' + e(d.giamGhi || '') + '" placeholder="VD: 50.000 hoặc 5%"><b id="fGiamTien" style="flex:0 0 auto;white-space:nowrap">0đ</b></div>' +
-    '<label for="fShip">Phí ship thu của khách (để trống nếu miễn phí ship)</label><input id="fShip" inputmode="numeric" value="' + (d.ship ? tien(d.ship) : '') + '" placeholder="VD: 30.000">' +
-    '<div class="tong"><span>Khách thanh toán</span><span id="fTong">0đ</span></div><div class="muted" id="fThuong" style="text-align:right"></div></div>' +
+    '<label for="fShip">Phí ship (để trống nếu miễn phí ship)</label><input id="fShip" inputmode="numeric" value="' + (d.ship ? tien(d.ship) : '') + '" placeholder="VD: 30.000">' +
+    '<div class="hang" style="gap:16px;margin-top:6px;flex-wrap:wrap">' + [['gui', 'Người gửi trả ship'], ['nhan', 'Người nhận trả ship']].map(function (x) { return '<label style="display:flex;align-items:center;gap:6px;margin:0;font-weight:600"><input type="radio" name="fTraShip" value="' + x[0] + '"' + ((d.traShip || 'gui') === x[0] ? ' checked' : '') + ' style="width:auto;min-height:0">' + x[1] + '</label>'; }).join('') + '</div>' +
+    '<div class="luoi2" style="margin-top:6px"><div><label for="fThu">Thu tiền ngay (nếu có)</label><input id="fThu" inputmode="numeric" value="' + (d.thuTien ? tien(d.thuTien) : '') + '" placeholder="Khách trả trước / cọc"></div><div><label for="fThuHT">Hình thức</label><select id="fThuHT">' + ['COD', 'Chuyển khoản', 'Tiền mặt', 'Khác'].map(function (x) { return opt(x, d.thuHT || 'COD'); }).join('') + '</select></div></div>' +
+    '<div class="tong"><span>Khách thanh toán</span><span id="fTong">0đ</span></div><div class="muted" id="fConThu" style="text-align:right"></div><div class="muted" id="fThuong" style="text-align:right"></div></div>' +
     '<div class="the"><label for="fGCTT" style="margin-top:0">Ghi chú thanh toán <small class="muted">(kho không thấy)</small></label><textarea id="fGCTT" rows="2" placeholder="Đã cọc bao nhiêu, thu COD bao nhiêu, chuyển khoản, công nợ…">' + e(d.ghiChuTT) + '</textarea>' +
     '<label for="fGC">Ghi chú khác <small class="muted">(kho thấy khi soạn đơn)</small></label><textarea id="fGC" rows="2" placeholder="Giờ giao, quà tặng kèm, dặn đóng gói…">' + e(d.ghiChu) + '</textarea>' +
     '<label><input type="checkbox" id="fCoHD" style="width:auto;min-height:0;margin-right:6px"' + (d.hd ? ' checked' : '') + '>Khách lấy hoá đơn (xuất HĐ)</label>' +
@@ -957,7 +961,7 @@ function docForm() {
       sl: docSo(b.querySelector('[data-f=sl]').value), gia: docTien(b.querySelector('[data-f=gia]').value) });
   });
   return { ma: SUA ? SUA.ma : '', sdt: $('fSdt').value, ten: $('fTen').value, diaChi: $('fDC').value, tinh: $('fTinh').value, ghiChu: $('fGC').value, ghiChuTT: $('fGCTT').value,
-    hd: $('fCoHD').checked ? $('fHD').value : '', giam: $('fGiam').value.trim(), ship: docTien($('fShip').value), items: items, loai: fLoai() };
+    hd: $('fCoHD').checked ? $('fHD').value : '', giam: $('fGiam').value.trim(), ship: docTien($('fShip').value), traShip: (document.querySelector('[name=fTraShip]:checked') || {}).value || 'gui', thuTien: docTien($('fThu').value), thuHT: $('fThuHT').value, items: items, loai: fLoai() };
 }
 function fLoai() { var b = document.querySelector('[data-floai]:not(.phu)'); return b ? b.dataset.floai : ''; }
 function datLoai(l) { document.querySelectorAll('[data-floai]').forEach(function (b) { b.classList.toggle('phu', b.dataset.floai !== l); }); }
@@ -976,7 +980,7 @@ function guiDon() {
 }
 var CTY = { ten: 'CÔNG TY TNHH YẾN SÀO LANEST', mst: '4201991164', dc: 'Kios 2 N3A, KĐT Căn Cứ Cam Ranh, P. Bắc Cam Ranh, Khánh Hòa', tel: '025.8627.8627', web: 'www.lanest.com.vn', stk: '997979369', nh: 'MB Bank' };
 function hoaDonHtml(o) {
-  var tam = o.tong + (o.giam || 0), tra = o.tong + (o.ship || 0), xanh = '#1F5A4C', vang = '#C9A227';
+  var tam = o.tong + (o.giam || 0), tra = o.tong + (o.traShip === 'nhan' ? 0 : (o.ship || 0)), xanh = '#1F5A4C', vang = '#C9A227';
   var dong = function (a, b, dam) { return '<tr><td style="padding:3px 0;color:' + (dam ? xanh : '#555') + (dam ? ';font-weight:700;font-size:17px' : '') + '">' + a + '</td><td style="padding:3px 0;text-align:right;' + (dam ? 'font-weight:700;font-size:19px;color:' + xanh : 'font-weight:600') + '">' + b + '</td></tr>'; };
   var tt = function (k, v) { return v ? '<div style="margin:2px 0"><span style="color:#777;display:inline-block;min-width:92px">' + k + '</span><b style="font-weight:600">' + e(v) + '</b></div>' : ''; };
   var sp = (o.items || []).map(function (it, i) {
@@ -1001,8 +1005,8 @@ function hoaDonHtml(o) {
     '<div style="padding:10px 24px 4px;display:flex;justify-content:flex-end"><table style="width:62%;border-collapse:collapse;font-size:14px">' +
       dong('Tổng tiền hàng', tien(tam) + 'đ') +
       (o.giam ? dong('Chiết khấu' + (/%$/.test(o.giamGhi || '') ? ' (' + e(o.giamGhi) + ')' : ''), '−' + tien(o.giam) + 'đ') : '') +
-      dong('Phí vận chuyển', o.ship ? tien(o.ship) + 'đ' : 'Miễn phí') +
-      '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' + dong('KHÁCH THANH TOÁN', tien(tra) + 'đ', 1) + '</table></div>' +
+      dong('Phí vận chuyển', o.traShip === 'nhan' ? 'Người nhận trả' + (o.ship ? ' (' + tien(o.ship) + 'đ)' : '') : o.ship ? tien(o.ship) + 'đ' : 'Miễn phí') +
+      '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' + dong('KHÁCH THANH TOÁN', tien(tra) + 'đ', 1) + (o.thuTien ? dong('Đã thanh toán (' + e(o.thuHT || 'COD') + ')', '−' + tien(o.thuTien) + 'đ') + dong('CÒN PHẢI THU', tien(Math.max(0, tra - o.thuTien)) + 'đ', 1) : '') + '</table></div>' +
     '<div style="padding:8px 24px 0;font-size:13px">' +
       (o.ghiChuTT ? '<div style="margin:3px 0"><b style="color:' + xanh + '">Thanh toán:</b> ' + e(o.ghiChuTT) + '</div>' : '') +
       (o.ghiChu ? '<div style="margin:3px 0"><b style="color:' + xanh + '">Ghi chú:</b> ' + e(o.ghiChu) + '</div>' : '') +
@@ -3709,11 +3713,12 @@ document.addEventListener('change', function (ev) {
     tinhTong();
   }
   if (t.id === 'fCoHD') $('fHD').classList.toggle('an', !t.checked);
+  if (t.name === 'fTraShip') tinhTong();
   if (t.id === 'khLyDo') { KF.reason = t.value; veKho(); }
 });
 document.addEventListener('input', function (ev) {
   var t = ev.target;
-  if (t.dataset.f === 'sl' || t.dataset.f === 'gia' || t.id === 'fGiam' || t.id === 'fShip') tinhTong();
+  if (t.dataset.f === 'sl' || t.dataset.f === 'gia' || t.id === 'fGiam' || t.id === 'fShip' || t.id === 'fThu') tinhTong();
   if (t.id === 'fSdt') timKhach();
   if (t.dataset.khsl) { KF.draft[t.dataset.khsl] = t.value; lechKho(t.dataset.khsl); demKho(); }
   if (t.dataset.khgv) KF.cost[t.dataset.khgv] = t.value;
