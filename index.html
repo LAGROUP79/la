@@ -1959,7 +1959,7 @@ function veChot() {
     '<div class="the"><div class="hang" style="gap:8px;flex-wrap:wrap;align-items:end"><div style="flex:1;min-width:200px"><label for="chQ" style="margin-top:0">Tìm đơn</label><input id="chQ" value="' + e(CHOT.q) + '" placeholder="Mã đơn, tên khách, 4 số cuối SĐT, sản phẩm…"></div>' +
     (r.ghiDuyet ? '<button class="nut vang" id="chNhap" style="width:auto;padding:10px 16px">＋ Nhập đơn</button>' : '') +
     '<button class="nut phu" id="chTai" style="width:auto;padding:10px 16px">↻ Tải lại</button></div>' +
-    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' + cot.map(function (t) { return '<span class="ch-tag" style="background:#fff;border:1px solid ' + CHOT_MAU[t][0] + ';color:' + CHOT_MAU[t][0] + ';font-size:12.5px;padding:2px 9px">' + CHOT_MAU[t][1] + ' ' + e(t) + ' · <b>' + (dem[t] || 0) + '</b></span>'; }).join('') + '</div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' + cot.map(function (t) { return '<button class="ch-tag" data-chtong="' + e(t) + '" title="Xem tổng hợp đơn ' + e(t) + '" style="background:#fff;border:1px solid ' + CHOT_MAU[t][0] + ';color:' + CHOT_MAU[t][0] + ';font-size:12.5px;padding:3px 10px;cursor:pointer;font-family:inherit">' + CHOT_MAU[t][1] + ' ' + e(t) + ' · <b>' + (dem[t] || 0) + '</b> ›</button>'; }).join('') + '</div>' +
     '<p class="muted" style="margin:8px 0 0">' + (r.duyet ? '<b>Chờ duyệt</b> chỉ kế toán + Admin thấy: bấm vào thẻ để nhập mã đơn rồi chọn <b>Đơn mới</b>, đơn trùng thì bấm <b>Bỏ đơn</b>. ' : '') +
     '<b>Bấm vào thẻ</b> để xem đơn và chuyển bước, hoặc kéo thẻ sang cột khác. Bảng không hiện giá tiền, thông tin xuất HĐ. Cột Đã xuất kho chỉ giữ đơn xuất hôm nay' + (r.xuatCu ? ' (' + r.xuatCu + ' đơn xuất các ngày trước đã ẩn)' : '') + '.</p></div><div id="chDs"></div>';
   (nhung || $('noiDung')).innerHTML = h;
@@ -2298,8 +2298,33 @@ function cnLuu() {
     if (v.canhBao) setTimeout(function () { bao('⚠ ' + v.canhBao, true); }, 2800);
   });
 }
+function chotTongHop(tt) {
+  var ds = CHOT.r.ds.filter(function (x) { return x.tt === tt; }), sp = {}, thu = [];
+  ds.forEach(function (x) { x.sp.forEach(function (s) {
+    var k = s.t + '|' + (s.dv || ''), a = sp[k]; if (!a) { a = sp[k] = { t: s.t, dv: s.dv || '', sl: 0, ct: {}, ctThu: [] }; thu.push(k); }
+    a.sl += Number(s.sl) || 0;
+    String(s.ct || '').split(',').forEach(function (p) { var m = /^\s*(\d+(?:[.,]\d+)?)\s+(.+?)\s*$/.exec(p); if (!m) return; var v = m[2].replace(/\s*\(\d+\s*thùng\)$/i, ''); if (!(v in a.ct)) a.ctThu.push(v); a.ct[v] = (a.ct[v] || 0) + Number(m[1].replace(',', '.')); });
+  }); });
+  return { ds: ds, sp: thu.map(function (k) { var a = sp[k]; return { t: a.t, dv: a.dv, sl: a.sl, ct: a.ctThu.map(function (v) { return a.ct[v] + ' ' + v; }).join(', ') }; }) };
+}
+function moTongHopChot(tt) {
+  var th = chotTongHop(tt), c = CHOT_MAU[tt];
+  var chu = c[1] + ' ' + tt.toUpperCase() + ' · ' + th.ds.length + ' đơn\n\nTỔNG HÀNG:\n' + th.sp.map(function (s) { return '• ' + s.t + ': ' + soSL(s.sl) + (s.dv ? ' ' + s.dv : '') + (s.ct ? '\n   ↳ ' + s.ct : ''); }).join('\n') +
+    '\n\nĐƠN:\n' + th.ds.map(function (x, i) { return (i + 1) + '. ' + (x.ma || '(chưa mã)') + ' · ' + x.khach + (x.sdt4 ? ' ' + x.sdt4 : ''); }).join('\n');
+  moHop('<h3 style="margin:0;color:' + c[0] + '">' + c[1] + ' ' + e(tt) + ' · ' + th.ds.length + ' đơn</h3>' +
+    (th.ds.length ? '<h4 style="margin:12px 0 6px">Tổng hàng cần chuẩn bị</h4><div class="cuon"><table><tr><th>Sản phẩm</th><th class="s">Tổng SL</th><th>Chi tiết (vị / khay)</th></tr>' +
+      th.sp.map(function (s) { return '<tr><td>' + e(s.t) + '</td><td class="s"><b>' + soSL(s.sl) + '</b>' + (s.dv ? ' ' + e(s.dv) : '') + '</td><td style="color:#8a5f00">' + e(s.ct) + '</td></tr>'; }).join('') + '</table></div>' +
+      '<h4 style="margin:12px 0 6px">Danh sách đơn</h4>' + th.ds.map(function (x) {
+        return '<div class="don" data-chthe="' + e(x.khoa) + '" style="cursor:pointer;margin:6px 0;padding:8px 10px"><b>' + (x.ma ? e(x.ma) : '<span style="color:#b42318">Chưa có mã</span>') + '</b> · ' + e(x.khach) + (x.sdt4 ? ' ' + e(x.sdt4) : '') +
+          '<div class="muted" style="font-size:12.5px">' + x.sp.map(function (s) { return e(s.t) + ' ×' + soSL(s.sl) + (s.ct ? ' (' + e(s.ct) + ')' : ''); }).join(' · ') + '</div></div>';
+      }).join('') : '<p class="muted">Bước này chưa có đơn nào.</p>') +
+    '<div class="hang" style="margin-top:12px">' + (th.ds.length ? '<button class="nut vang" id="thCopy">COPY tổng hợp</button>' : '') + '<button class="nut phu" id="thDong">Đóng</button></div>');
+  if ($('thCopy')) $('thCopy').onclick = function () { copyChu(chu); };
+  $('thDong').onclick = dongHop;
+}
 function bamChot(b) {
   var x, r = CHOT.r, i;
+  if (b.dataset.chtong) { moTongHopChot(b.dataset.chtong); return; }
   if (b.dataset.chduyet) chotChuyen(b.dataset.chduyet, r.tt[1]);
   else if (b.dataset.chbo && (x = chotTim(b.dataset.chbo))) chotBo(x);
   else if (b.dataset.chtoi && (x = chotTim(b.dataset.chtoi))) { i = r.tt.indexOf(x.tt); if (r.tt[i + 1]) chotChuyen(x.khoa, r.tt[i + 1]); }
