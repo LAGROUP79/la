@@ -93,6 +93,11 @@ input:disabled{background:#F4F0E4;color:var(--nhat)}
 .oclon button i{font-style:normal;font-size:13px;font-weight:700;color:var(--dam2);background:rgba(255,255,255,.75);border-radius:20px;padding:3px 9px;align-self:flex-start;margin-top:auto}
 .oclon button.noibat{border:2px solid var(--dam)}
 .oclon button.khoa{filter:grayscale(.75);opacity:.6}
+.pbLuoi{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px}@media(min-width:620px){.pbLuoi{grid-template-columns:repeat(2,1fr)}}@media(min-width:1100px){.pbLuoi{grid-template-columns:repeat(3,1fr);gap:16px}}
+.pb-the{position:relative;overflow:hidden;background:var(--nen);border:1px solid rgba(0,0,0,.04);border-radius:18px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 16px rgba(27,77,64,.08)}.pb-the::after{content:'';position:absolute;right:-28px;top:-28px;width:96px;height:96px;border-radius:50%;background:var(--dam);opacity:.10;pointer-events:none}.pb-the.khoa{filter:grayscale(.75);opacity:.6}
+.pb-dau{display:flex;gap:12px;align-items:center;background:none;border:0;padding:0;text-align:left;cursor:pointer;width:100%;font:inherit;position:relative;z-index:1}.pb-dau .ico{width:46px;height:46px;border-radius:14px;background:var(--dam);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 4px 10px rgba(0,0,0,.12)}.pb-dau .ico svg{width:23px;height:23px}
+.pb-dau .ten{flex:1;min-width:0}.pb-dau b{display:block;font-size:15px;color:var(--dam2);letter-spacing:.3px}.pb-dau small{display:block;font-size:12.5px;color:#4E5B56;line-height:1.35;margin-top:2px}.pb-dau .vai{font-size:11px;font-weight:700;color:var(--dam2);background:rgba(255,255,255,.8);border-radius:20px;padding:2px 8px;white-space:nowrap;align-self:flex-start}.pb-dau .mui{color:var(--dam2);font-size:20px;opacity:.6}
+.pb-nhanh{display:flex;gap:6px;flex-wrap:wrap;position:relative;z-index:1}.pb-nhanh button{border:0;background:rgba(255,255,255,.85);color:var(--dam2);font:inherit;font-size:12.5px;font-weight:600;border-radius:20px;padding:6px 12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06)}.pb-nhanh button:hover{background:#fff}
 h3.nhom{font-size:13px;letter-spacing:1.5px;color:var(--nhat);margin:6px 2px 8px}
 .chao{background:linear-gradient(135deg,#1B4D40 0%,#2C6B5A 60%,#3F7F5F 100%);color:#fff;border-radius:18px;padding:16px 16px 14px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(27,77,64,.22)}
 .chao::after{content:'';position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:#C9A24A;opacity:.18}
@@ -411,7 +416,7 @@ var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
   p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'],
-  kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], knx: ['KHO'], chot: ['KHO', 'TCKT', 'VH'],kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'], xl: ['TCKT'], sb: ['TCKT', 'VH'] };
+  kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], knx: ['KHO'], chot: ['KHO', 'TCKT', 'VH'],kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'], xl: ['TCKT'], sb: ['TCKT', 'VH'], bct: ['TCKT', 'VH'] };
 function tenPhong(ma) { return ((H.phongBan || []).filter(function (p) { return p.ma === ma; })[0] || {}).ten || ma; }
 function baoKhongQuyen(mas) {
   moHop('<div style="text-align:center"><div style="font-size:42px">🔒</div><h3 style="margin:6px 0;color:var(--xanh)">Chưa có quyền truy cập</h3>' +
@@ -422,6 +427,7 @@ function baoKhongQuyen(mas) {
 var MAU_O = null;
 function chuyenTab(t) {
   if (t.indexOf('cd:') === 0) { CD_MO = t.slice(3); t = 'cd'; } else if (t === 'cd') CD_MO = '';
+  if (t.indexOf('sb:') === 0) { SB_TAB = t.slice(3); t = 'sb'; }
   var can = TAB_PHONG[t];
   if (t === 'cd' && !H.me.chiaKpi && !H.me.admin) can = ['VH'];
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
@@ -435,7 +441,7 @@ function veTab() {
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
     th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); },
-    kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, knx: veKnx, chot: function () { napChot(); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
+    kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, knx: veKnx, bct: veBaoCaoTC, chot: function () { napChot(); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
   (m[TAB] || veHome)();
 }
 function quayLai() { return PHONG_HT ? '<button class="quaylai" data-tab="p_' + PHONG_HT + '">‹ ' + e(tenPhong(PHONG_HT)) + '</button>' : '<button class="quaylai" data-tab="home">‹ Trang chủ</button>'; }
@@ -470,7 +476,7 @@ function veHome() {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
     }).join('') + '</div>' +
-    '<h3 class="nhom">PHÒNG BAN</h3><div class="oclon nam">' + H.phongBan.map(function (p) { return oPhong(p.ma); }).join('') + '</div>' +
+    '<h3 class="nhom">PHÒNG BAN</h3><div class="pbLuoi">' + H.phongBan.map(function (p) { return thePhong(p.ma); }).join('') + '</div>' +
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
     '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button></div>' +
@@ -1886,6 +1892,23 @@ var IC_P = (function () {
   };
 })();
 var MO_TA_P = { VH: 'Phân quyền, nhật ký hệ thống', HCNS: 'Hồ sơ nhân viên, văn bản, công, lương, duyệt yêu cầu', TCKT: 'Sổ bán hàng, công nợ, doanh thu, thưởng, đối chiếu kho', KD: 'Bán hàng, đơn hàng, doanh thu, Target, giá & thưởng', KHO: 'Chốt đơn, kiểm kho, nhập, xuất, báo cáo ngày' };
+function phongNhanh(ma) {
+  var me = H.me, kg = me.phongGhi.indexOf('KHO') >= 0;
+  var m = { VH: [['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký']],
+    HCNS: [me.nsQL && ['ns_nv', 'Nhân viên'], me.xemLuong && ['ns_luong', 'Bảng lương'], me.duyetCC && ['np', 'Duyệt yêu cầu'], me.nsQL && ['ns_np', 'Nghỉ phép']],
+    TCKT: [['sb', 'Sổ bán hàng'], ['chot', 'Chốt đơn'], ['bct', 'Báo cáo']],
+    KD: me.mk ? [['ton', 'Tồn kho']] : [['len', 'Bán hàng'], ['ds', 'Đơn hàng'], ['bc', 'Doanh thu']],
+    KHO: kg ? [['chot', 'Chốt đơn'], ['kk', 'Kiểm kho'], ['ton', 'Tồn kho']] : [['chot', 'Chốt đơn'], ['cv', 'Công việc'], ['ton', 'Tồn kho']] }[ma] || [];
+  return m.filter(Boolean).slice(0, 3);
+}
+function thePhong(ma) {
+  var m = MAU_P[ma], vao = H.me.phongVao.indexOf(ma) >= 0, vp = H.me.vaiPhong.filter(function (v) { return v.ma === ma; })[0];
+  var nhan = vao ? (H.me.admin ? '' : vp ? vp.vai + (vp.team ? ' · ' + vp.team : '') : '') : '🔒 Chưa có quyền';
+  return '<div class="pb-the' + (vao ? '' : ' khoa') + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '">' +
+    '<button class="pb-dau" data-tab="p_' + ma + '"><span class="ico">' + IC_P[ma] + '</span><span class="ten"><b>' + e(tenPhong(ma).replace(/^PHÒNG\s+/, '')) + '</b><small>' + e(MO_TA_P[ma]) + '</small></span>' +
+    (nhan ? '<span class="vai">' + e(nhan) + '</span>' : '') + '<span class="mui">›</span></button>' +
+    (vao ? '<div class="pb-nhanh">' + phongNhanh(ma).map(function (x) { return '<button data-tab="' + x[0] + '" data-pb="' + ma + '">' + e(x[1]) + '</button>'; }).join('') + '</div>' : '') + '</div>';
+}
 function oPhong(ma) {
   var m = MAU_P[ma], vao = H.me.phongVao.indexOf(ma) >= 0, vp = H.me.vaiPhong.filter(function (v) { return v.ma === ma; })[0];
   var nhan = vao ? (H.me.admin ? 'Admin' : vp ? vp.vai + (vp.team ? ' · ' + vp.team : '') : '') : 'Chưa có quyền';
@@ -1899,13 +1922,10 @@ function vePhong(ma) {
     if (H.me.xemLuong) o.push(['ns_luong', 'BẢNG LƯƠNG', 'Phiếu lương, tổng lương, chốt & gửi', 'th']);
     if (H.me.nsQL) o.push(['ns_np', 'NGHỈ PHÉP · NGHỈ VIỆC', 'Đơn nghỉ trong tháng, đơn nghỉ việc', 'np']);
     if (H.me.duyetCC) o.push(['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy']);
-    if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
   }
   if (ma === 'TCKT') {
-    o = [['sb', 'SỔ BÁN HÀNG', 'Số liệu chính thức công ty: nhập đơn, thu tiền, công nợ, báo cáo', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'],
-      ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên — target, thưởng', 'bc'], ['th', 'THƯỞNG', 'Thưởng tạm tính từng nhân viên KD', 'th'], ['ds', 'ĐƠN PHÒNG KD', 'Đơn phòng KD lên, trạng thái giao', 'ds'],
-      ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu với đơn kế toán', 'ton'], ['xl', 'TẢI EXCEL', 'Tất cả sổ: đơn, kho, công, lương', 'ds']];
-    if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao, theo dõi, duyệt việc', 'cv']);
+    o = [['sb', 'SỔ BÁN HÀNG', 'Nhập đơn, thu tiền, công nợ, chi phí', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'],
+      ['ds', 'ĐƠN PHÒNG KD', 'Đơn phòng KD lên, trạng thái giao', 'ds'], ['bct', 'BÁO CÁO', 'Tất cả báo cáo: doanh thu, lãi, công nợ, chi phí, doanh số KD, thưởng, kho, Excel', 'bc']];
   }
   if (ma === 'KD') {
     o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH THU', 'Tổng phòng, ngành hàng, % target', 'bc'],
@@ -1929,6 +1949,16 @@ function vePhong(ma) {
       var mm = (window.MAU_O || {})[x[3]] || m;
       return '<button data-tab="' + x[0] + '" style="--nen:' + mm[0] + ';--dam:' + mm[1] + ';--dam2:' + mm[2] + '"><span class="ico">' + (IC_O[x[3]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span></button>';
     }).join('') + '</div>' + (ghiChu ? '<div class="the"><p class="muted" style="margin:0">' + ghiChu + '</p></div>' : '');
+}
+function veBaoCaoTC() {
+  var mm = MAU_O || {};
+  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo</h2><div class="oclon">' +
+    [['sb:bc', 'DOANH THU · LÃI GỘP', 'Báo cáo sổ bán hàng: theo ngày, nhóm hàng, khách, sản phẩm', 'bc'], ['sb:no', 'CÔNG NỢ KHÁCH', 'Nợ đầu kỳ, phát sinh, đã trả, còn nợ, hạn mức', 'kh'], ['sb:cp', 'CHI PHÍ', 'Khoản chi trong tháng theo hạng mục', 'th'],
+      ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên: team, nhân viên, % target', 'bc'], ['th', 'THƯỞNG NHÂN VIÊN', 'Thưởng tạm tính từng nhân viên KD', 'th'], ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu đơn kế toán', 'ton'],
+      ['xl', 'TẢI EXCEL', 'Tải các sổ ra file Excel', 'ds']].map(function (x) {
+      var m = mm[x[3]] || ['#eee', '#888', '#555'];
+      return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[3]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span></button>';
+    }).join('') + '</div>';
 }
 function veKnx() {
   var mm = MAU_O || {};
@@ -3648,7 +3678,7 @@ function bamKho(b) {
 
 document.addEventListener('click', function (ev) {
   var b = ev.target.closest('button'); if (!b) return;
-  if (b.dataset.tab) { chuyenTab(b.dataset.tab); return; }
+  if (b.dataset.tab) { if (b.dataset.pb) PHONG_HT = b.dataset.pb; chuyenTab(b.dataset.tab); return; }
   if (b.dataset.cc) { moChamCong(b.dataset.cc); return; }
   if (b.id === 'nutThoat') { if (confirm('Thoát khỏi app?')) thoat(); return; }
   if (b.dataset.floai) { datLoai(b.dataset.floai); return; }
