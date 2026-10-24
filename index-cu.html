@@ -2294,17 +2294,37 @@ function cnNhanDien(tin) {
   bao(k2 && k2.nhieu ? 'Có ' + k2.nhieu.length + ' khách trùng tên "' + r.tenKH + '" — chọn đúng khách trong danh sách.' : 'Đã nhận diện — xem lại từng ô rồi bấm Lưu.', !!(k2 && k2.nhieu));
 }
 function cnOcr(tep) {
-  $('cnTT').textContent = 'Đang đọc chữ trong ảnh… (lần đầu tải bộ đọc tiếng Việt, mất 10–30 giây)';
+  docAnh(tep, 'cnTT', function (text) { if (!$('cnTin')) return; $('cnTin').value = text; cnDocForm(); cnNhanDien(text); });
+}
+function docAnh(tep, ttId, xong) {
+  var tt = function (s) { if ($(ttId)) $(ttId).textContent = s; };
+  tt('Đang đọc chữ trong ảnh… (lần đầu tải bộ đọc tiếng Việt, mất 10–30 giây)');
   napThuVien('Tesseract', 'tesseract.js/5.1.1/tesseract.min.js', function () {
-    Tesseract.createWorker('vie').then(function (w) {
-      return w.recognize(tep).then(function (kq) { w.terminate(); return kq.data.text; });
-    }).then(function (text) {
+    Tesseract.createWorker('vie').then(function (w) { return w.recognize(tep).then(function (kq) { w.terminate(); return kq.data.text; }); }).then(function (text) {
       text = String(text || '').split('\n').map(function (l) { return l.replace(/\s+/g, ' ').trim(); }).filter(function (l) { return !cnGio(l) && ((l.match(/[A-Za-zÀ-ỹ]/g) || []).length >= 2 || /^\d{6}$/.test(l)); }).join('\n');
-      if (!$('cnTin')) return;
-      $('cnTT').textContent = 'Đã đọc ảnh — kiểm lại chữ trong ô rồi xem kết quả bên dưới.';
-      $('cnTin').value = text; cnDocForm(); cnNhanDien(text);
-    }, function () { if ($('cnTT')) $('cnTT').textContent = ''; bao('Không đọc được ảnh, thử ảnh rõ hơn hoặc dán chữ.', true); });
-  }, function () { $('cnTT').textContent = ''; bao('Không tải được bộ đọc ảnh, kiểm tra mạng.', true); });
+      tt('Đã đọc ảnh — kiểm lại kết quả bên dưới.'); xong(text);
+    }, function () { tt(''); bao('Không đọc được ảnh, thử ảnh rõ hơn hoặc dán chữ.', true); });
+  }, function () { tt(''); bao('Không tải được bộ đọc ảnh, kiểm tra mạng.', true); });
+}
+function sbNhanDien(tin) {
+  if (!String(tin || '').trim()) { bao('Dán tin nhắn hoặc chọn ảnh trước.', true); return; }
+  if (!CHOT_DM) { goi('chotDmNhap', [TK], function (dm) { CHOT_DM = dm; sbNhanDien(tin); }); return; }
+  var cu = CN, d = SB_DON; CN = { dm: CHOT_DM, d: { maKH: d.maKH || '' } };
+  var r = chotDoc(tin), k = r.tenKH ? cnTimKH(r.tenKH) : null;
+  if (k && !k.nhieu) CN.d.maKH = k.ma;
+  var dong = r.dong.map(function (x) { var g = x.gia === '' || x.gia == null || x.gia === 0 ? cnGiaKH(x.sp) : x.gia; return { sp: x.sp, nhom: x.nhom, sl: x.sl, gia: g === '' ? '' : g, ct: x.ct }; });
+  CN = cu;
+  d.tin = tin;
+  if (k && !k.nhieu) d.maKH = k.ma;
+  if (r.maDon && (d.ngay || SB.homNay) < '2026-10-26') d.soDon = r.maDon;
+  var nh = [r.nhan.ten, r.nhan.sdt, r.nhan.dc].filter(Boolean).join(' - '); if (nh) d.nguoiNhan = nh;
+  if (dong.length) d.dong = dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: x.sl, gia: x.gia }; });
+  var ct = dong.filter(function (x) { return x.ct; }).map(function (x) { return x.sp.replace(/\s*\(LANEST[^)]*\)/i, '') + ': ' + x.ct; }).join('; ');
+  d.ghiChu = [r.ghiChu, ct ? 'Chi tiết: ' + ct : ''].filter(Boolean).join(' · ');
+  if (r.ghiChuTT) d.ghiChuTT = r.ghiChuTT;
+  d.nhan = ((d.soDon || '') + ' ' + (d.nguoiNhan || '')).trim();
+  sbVeNhap();
+  bao(k && k.nhieu ? 'Có ' + k.nhieu.length + ' khách trùng tên "' + r.tenKH + '" — chọn đúng khách.' : !d.maKH && r.tenKH ? 'Chưa thấy khách "' + r.tenKH + '" trong sổ — chọn khách hoặc bấm + Khách mới.' : 'Đã nhận diện — xem lại từng ô rồi bấm Lưu đơn.', !!((k && k.nhieu) || (!d.maKH && r.tenKH)));
 }
 function cnLuu() {
   cnDocForm(); var d = CN.d;
@@ -3012,7 +3032,10 @@ function sbVeNhap() {
     d.cnNd = cn.length ? cn[0].sp : ''; d.cnTien = cn.reduce(function (a, x) { return a + Math.round((docSo(x.sl) || 1) * (Number(x.gia) || 0)); }, 0) || '';
     d.dong = d.dong.filter(function (x) { return x.nhom !== 'Công nợ khác'; }); if (!d.dong.length) d.dong.push({ sp: '', nhom: '', sl: '', gia: '' });
   }
-  var h = '<div class="the">' + (d.ma ? '<p style="margin-top:0"><b>Đang sửa đơn ' + e(d.soDon || '(chưa có mã)') + '</b> · <button class="nut rong" id="sbBoSua" style="width:auto;padding:4px 10px">Bỏ sửa, nhập đơn mới</button></p>' : '') +
+  var h = (d.ma ? '' : '<div class="the"><h3 style="margin-top:0">📋 Dán tin nhắn đơn — app tự điền</h3><textarea id="sbTin" rows="4" placeholder="Dán tin nhắn chốt đơn (Zalo) hoặc dán / chọn ẢNH chụp tin nhắn.">' + e(d.tin || '') + '</textarea>' +
+    '<div class="hang" style="margin-top:8px;gap:8px;flex-wrap:wrap"><button class="nut vang" id="sbDoc" style="width:auto;padding:8px 14px">✨ Nhận diện</button><label class="nut phu" style="width:auto;padding:8px 14px;margin:0;cursor:pointer">📷 Ảnh tin nhắn<input type="file" id="sbAnh" accept="image/png,image/jpeg,image/webp,image/heic" style="display:none"></label><span class="muted" id="sbTT"></span></div>' +
+    '<small class="muted">Đơn lưu ở Sổ bán hàng ghi công nợ và trừ tồn kho ngay, không lên bảng Chốt đơn. Đơn cần kho soạn thì nhập ở Kho vận → Chốt đơn → Nhập đơn.</small></div>') +
+    '<div class="the">' + (d.ma ? '<p style="margin-top:0"><b>Đang sửa đơn ' + e(d.soDon || '(chưa có mã)') + '</b> · <button class="nut rong" id="sbBoSua" style="width:auto;padding:4px 10px">Bỏ sửa, nhập đơn mới</button></p>' : '') +
     '<label for="sbNgay">Ngày</label><input type="date" id="sbNgay" value="' + e(d.ngay) + '" max="' + e(SB.homNay) + '" min="2026-10-01">' +
     '<label for="sbKh">Khách hàng</label><input id="sbKh" list="dsKhSB" placeholder="Gõ tên khách…" value="' + e(k ? k.ten : '') + '">' + sbDsKhach() +
     '<div id="sbKhNo">' + sbNoKhach(k) + '</div><button class="nut rong" id="sbKhMoi" style="margin-top:6px;width:auto;padding:4px 10px">+ Khách mới</button>' +
@@ -3036,7 +3059,7 @@ function sbVeNhap() {
     '<div style="flex:1"><label for="sbCk">Chiết khấu</label><input id="sbCk" inputmode="numeric" value="' + e(d.ck === '' ? '' : tien(d.ck)) + '"></div>' +
     '<div style="flex:1"><label for="sbVat">VAT</label><input id="sbVat" inputmode="numeric" value="' + e(d.vat === '' ? '' : tien(d.vat)) + '"></div></div>' +
     '<label for="sbGhiTT">Ghi chú thanh toán <small class="muted">(kho không thấy)</small></label><input id="sbGhiTT" value="' + e(d.ghiChuTT || '') + '" placeholder="Đã cọc, thu COD, chuyển khoản, công nợ…">' +
-    '<label for="sbGhi">Ghi chú khác <small class="muted">(kho thấy khi soạn đơn)</small></label><input id="sbGhi" value="' + e(d.ghiChu) + '">' +
+    '<label for="sbGhi">Ghi chú khác</label><input id="sbGhi" value="' + e(d.ghiChu) + '">' +
     (d.ma ? '' : '<div class="hang" style="gap:8px"><div style="flex:1"><label for="sbThu">Thu tiền ngay (nếu có)</label><input id="sbThu" inputmode="numeric" value="' + e(d.thuTien === '' ? '' : tien(d.thuTien)) + '"></div>' +
       '<div style="flex:1"><label for="sbThuHT">Hình thức</label><select id="sbThuHT">' + SB.hinhThuc.map(function (x) { return opt(x, d.thuHT); }).join('') + '</select></div></div>') +
     '<p style="margin:12px 0 8px;font-size:18px">Tổng đơn: <b id="sbTong"></b></p><button class="nut" id="sbLuu">' + (d.ma ? 'Lưu sửa đơn ' + e(d.soDon) : 'Lưu đơn') + '</button></div>';
@@ -3071,10 +3094,12 @@ function sbVeNhap() {
   document.querySelectorAll('[data-sbxoa]').forEach(function (el) { el.onclick = function () { d.dong.splice(+el.dataset.sbxoa, 1); if (!d.dong.length) d.dong.push({ sp: '', nhom: '', sl: '', gia: '' }); sbVeNhap(); }; });
   $('sbThemDong').onclick = function () { d.dong.push({ sp: '', nhom: '', sl: '', gia: '' }); sbVeNhap(); };
   if ($('sbBoSua')) $('sbBoSua').onclick = function () { SB_DON = sbDonMoi(); sbVeNhap(); };
+  if ($('sbDoc')) { $('sbDoc').onclick = function () { sbNhanDien($('sbTin').value); }; $('sbAnh').onchange = function () { if (this.files[0]) docAnh(this.files[0], 'sbTT', function (s) { $('sbTin').value = s; sbNhanDien(s); }); };
+    $('sbTin').onpaste = function (ev) { var it = [].filter.call((ev.clipboardData || {}).items || [], function (x) { return x.type.indexOf('image') === 0; })[0]; if (it) { ev.preventDefault(); docAnh(it.getAsFile(), 'sbTT', function (s) { $('sbTin').value = s; sbNhanDien(s); }); } }; }
   $('sbLuu').onclick = function () {
     if (!d.maKH) { bao('Chọn khách hàng (khách mới thì bấm "+ Khách mới").', true); return; }
     if (d.soDon && d.soDon.length !== 6) { bao('Mã đơn cần đủ 6 số (VD 010710).', true); return; }
-    if (!d.soDon && !confirm('Đơn chưa có mã đơn. Vẫn lưu?')) return;
+    if (!d.soDon && (d.ngay || SB.homNay) < '2026-10-26' && !confirm('Đơn chưa có mã đơn. Vẫn lưu?')) return;
     ghepNhan();
     var gui = { ma: d.ma, ngay: d.ngay, maKH: d.maKH, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck, vat: d.vat, thuTien: d.thuTien, thuHT: d.thuHT,
       dong: d.dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: x.gia }; }) };
