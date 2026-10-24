@@ -599,7 +599,7 @@ function napCongViec() { goi('congViec', [TK], veCongViec); }
 function veCongViec(r) {
   CV = r;
   function o(t, ten) { return '<div><small>' + ten + '</small><b>' + (t.pt == null ? '—' : t.pt + '%') + '</b><span class="muted"> ' + t.xong + '/' + t.tong + ' xong' + (t.tre ? ' · ' + t.tre + ' trễ' : '') + '</span>' + thanh(t.pt) + '</div>'; }
-  var h = quayLai() + '<h2 class="tieude">Công việc</h2>' + (PHONG_HT === 'KHO' ? '<div id="cvChot"><p class="muted">Đang tải bảng đơn của kho…</p></div><h3 class="nhom" style="margin:14px 0 8px">VIỆC ĐƯỢC GIAO</h3>' : '') + '<div class="o">' + o(r.cuaToi, 'Việc của tôi') + (H.me.quanLy ? o(r.tp, 'Việc trưởng phòng') + o(r.nv, 'Việc nhân viên') : '') + '</div>';
+  var h = quayLai() + '<h2 class="tieude">Công việc</h2>' + (PHONG_HT === 'KHO' ? '<div id="cvChot"><p class="muted">Đang tải bảng đơn của kho…</p></div><div id="cvKho"></div><h3 class="nhom" style="margin:14px 0 8px">VIỆC ĐƯỢC GIAO</h3>' : '') + '<div class="o">' + o(r.cuaToi, 'Việc của tôi') + (H.me.quanLy ? o(r.tp, 'Việc trưởng phòng') + o(r.nv, 'Việc nhân viên') : '') + '</div>';
   if (r.giaoDuoc.length) h += '<button class="nut vang rong" id="cvGiao" style="margin-bottom:12px">＋ Giao việc</button>';
   var loc = [['toi', 'Việc của tôi'], ['duyet', 'Cần tôi duyệt'], ['giao', 'Tôi đã giao'], ['het', 'Tất cả']];
   if (!r.giaoDuoc.length && !H.me.quanLy) loc = loc.filter(function (x) { return x[0] === 'toi' || x[0] === 'het'; });
@@ -627,7 +627,7 @@ function veCongViec(r) {
   }).join('') + '</table></div></div>';
   $('noiDung').innerHTML = '<style>.cv-gy{background:#faf8f2;border-radius:6px;padding:6px 10px;margin:6px 0 2px;font-size:13.5px;white-space:pre-wrap}</style>' + h;
   if ($('cvGiao')) $('cvGiao').onclick = function () { moGiaoViec(null); };
-  if ($('cvChot')) { if (CHOT) veChot(); napChot(true); }
+  if ($('cvChot')) { if (CHOT) veChot(); napChot(true); napKhoTK(); }
 }
 function cvOGopY(c) {
   return '<label for="gyKK">1. Khó khăn gặp phải</label><textarea id="gyKK" rows="3" placeholder="VD: thiếu ảnh sản phẩm mới, khách chưa phản hồi…">' + e(c.khoKhan || '') + '</textarea>' +
@@ -1941,7 +1941,7 @@ function veKnx() {
 }
 var CHOT = null, CHOT_MAU = { 'Chờ duyệt': ['#8a5f00', '⏳'], 'Đơn mới': ['#2a78d6', '🆕'], 'Ghi đơn': ['#4a3aa7', '✍️'], 'Soạn đơn': ['#eda100', '🧺'], 'Đóng đơn': ['#d24c7e', '📦'], 'Đã tạo mã': ['#1e9a8a', '🏷️'], 'Đã xuất kho': ['#1baf7a', '✅'] }, CHOT_HEN = null;
 function napChot(im) { if (!im) CN = null; goi('chotDuLieu', [TK], function (r) { CHOT = { r: r, q: CHOT ? CHOT.q : '' }; if (!CN) veChot(); }, im); }
-function chotNhan(r) { CHOT.r = r; veChot(); }
+function chotNhan(r) { CHOT.r = r; veChot(); if (TAB === 'cv' && $('cvKho')) napKhoTK(); }
 function chotCot() { var r = CHOT.r; return r.tt.filter(function (t, i) { return i > 0 || r.duyet; }); }
 function veChot() {
   var r = CHOT.r, cot = chotCot();
@@ -1993,6 +1993,40 @@ function veChotDs() {
     c.ondragleave = function () { c.classList.remove('keo'); };
     c.ondrop = function (ev) { ev.preventDefault(); c.classList.remove('keo'); chotChuyen(ev.dataTransfer.getData('text/plain'), c.dataset.chcot); };
   });
+}
+var KHO_TK = { ngay: '', q: '', kq: null };
+function napKhoTK(ngay) {
+  if (ngay) KHO_TK.ngay = ngay;
+  goi('chotThongKe', [TK, KHO_TK.ngay || H.homNay], function (r) { KHO_TK.r = r; KHO_TK.ngay = r.ngay; veKhoTK(); }, true);
+}
+function veKhoTK() {
+  var r = KHO_TK.r, o = $('cvKho'); if (!o || !r) return;
+  var pt = r.tongDon ? Math.round(r.daXuat / r.tongDon * 100) : null;
+  var h = '<div class="the" style="margin-top:4px"><div class="hang" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">📊 Công việc kho trong ngày</h3>' +
+    '<input type="date" id="tkNgay" value="' + e(r.ngay) + '" max="' + e(H.homNay) + '" style="width:auto"></div>' +
+    '<div class="o" style="margin-top:10px"><div><small>Đơn trong ngày</small><b>' + r.tongDon + '</b></div><div><small>Đã xuất kho</small><b>' + r.daXuat + '</b><span class="muted"> ' + (pt == null ? '' : pt + '%') + '</span>' + thanh(pt) + '</div>' +
+    '<div><small>Đang làm</small><b>' + Math.max(0, r.tongDon - r.daXuat) + '</b><span class="muted"> ' + r.buoc.slice(0, 5).filter(function (t) { return r.theoTT[t]; }).map(function (t) { return t + ' ' + r.theoTT[t]; }).join(' · ') + '</span></div></div>' +
+    (r.nguoi.length ? '<div class="cuon"><table><tr><th>Người</th>' + r.buoc.map(function (t) { return '<th class="s">' + CHOT_MAU[t][1] + ' ' + e(t) + '</th>'; }).join('') + '<th class="s">Tổng thao tác</th><th class="s">Số đơn</th></tr>' +
+      r.nguoi.map(function (n) { return '<tr><td>' + e(n.ten) + '</td>' + r.buoc.map(function (t) { return '<td class="s">' + (n.buoc[t] || '—') + '</td>'; }).join('') + '<td class="s"><b>' + n.tong + '</b></td><td class="s">' + n.soDon + '</td></tr>'; }).join('') + '</table></div>' :
+      '<p class="muted">Ngày này chưa có ai chuyển bước đơn nào.</p>') +
+    '<p class="muted" style="margin:6px 0 0;font-size:12.5px">Mỗi lần bạn kho kéo / chuyển đơn sang một bước là 1 thao tác, ghi tên người làm.</p></div>' +
+    '<div class="the"><h3 style="margin-top:0">🔎 Tra cứu đơn — xem từng khâu ai làm</h3><div class="hang" style="gap:8px"><input id="tkQ" value="' + e(KHO_TK.q) + '" placeholder="Mã đơn, tên khách hoặc 4 số cuối SĐT" style="flex:1"><button class="nut" id="tkTim" style="width:auto;padding:10px 16px">Tìm</button></div><div id="tkKq"></div></div>';
+  o.innerHTML = h;
+  $('tkNgay').onchange = function () { napKhoTK(this.value); };
+  $('tkTim').onclick = function () { KHO_TK.q = $('tkQ').value; goi('chotTraCuu', [TK, KHO_TK.q], function (kq) { KHO_TK.kq = kq; veKhoTraCuu(); }); };
+  $('tkQ').onkeydown = function (ev) { if (ev.key === 'Enter') $('tkTim').click(); };
+  veKhoTraCuu();
+}
+function veKhoTraCuu() {
+  var kq = KHO_TK.kq, o = $('tkKq'); if (!o || !kq) return;
+  o.innerHTML = kq.length ? kq.map(function (x) {
+    return '<div class="don" style="margin-top:10px"><div class="dau"><span class="ma">' + e(x.ma || '(chưa có mã)') + '</span><span class="chip" style="background:#fff;border:1px solid ' + ((CHOT_MAU[x.tt] || ['#888'])[0]) + ';color:' + ((CHOT_MAU[x.tt] || ['#888'])[0]) + '">' + e(x.tt) + '</span></div>' +
+      '<div><b>' + e(x.khach) + '</b> ' + e(x.sdt4) + ' <span class="muted">· đơn ngày ' + ngVN(x.ngay) + ' · ' + e(x.nguon) + '</span></div>' +
+      '<div class="muted" style="margin:4px 0">' + x.sp.map(function (s) { return e(s.t) + ' ×' + soSL(s.sl) + (s.ct ? ' (' + e(s.ct) + ')' : ''); }).join(' · ') + '</div>' +
+      '<table style="width:100%;font-size:13px;margin-top:4px">' + x.buoc.map(function (b) {
+        return '<tr><td style="white-space:nowrap;padding:3px 6px 3px 0;color:#777">' + ngVN(b.ngay) + ' ' + e(b.gio) + '</td><td style="padding:3px 6px">' + (b.den ? '<b style="color:' + CHOT_MAU[b.den][0] + '">' + CHOT_MAU[b.den][1] + ' ' + e(b.den) + '</b>' : e(b.viec)) + '</td><td style="padding:3px 0;text-align:right"><b>' + e(b.ai) + '</b></td></tr>';
+      }).join('') + '</table></div>';
+  }).join('') : '<p class="muted">Không tìm thấy đơn.</p>';
 }
 function chotTim(k) { return CHOT.r.ds.filter(function (x) { return x.khoa === k; })[0]; }
 function chotChuyen(k, tt, maDon) {
