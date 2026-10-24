@@ -1961,8 +1961,8 @@ function veChot() {
     (r.ghiDuyet ? '<button class="nut vang" id="chNhap" style="width:auto;padding:10px 16px">＋ Nhập đơn</button>' : '') +
     '<button class="nut phu" id="chTai" style="width:auto;padding:10px 16px">↻ Tải lại</button></div>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' + cot.map(function (t) { return '<span class="ch-tag" style="background:#fff;border:1px solid ' + CHOT_MAU[t][0] + ';color:' + CHOT_MAU[t][0] + ';font-size:12.5px;padding:2px 9px">' + CHOT_MAU[t][1] + ' ' + e(t) + ' · <b>' + (dem[t] || 0) + '</b></span>'; }).join('') + '</div>' +
-    '<p class="muted" style="margin:8px 0 0">' + (r.duyet ? '<b>Chờ duyệt</b> chỉ kế toán + Admin thấy: nhập mã đơn rồi bấm <b>Duyệt ▸</b>, đơn trùng (KD lên + kế toán nhập cùng 1 đơn) thì bấm <b>Bỏ</b>. ' : '') +
-    'Kéo thẻ sang cột khác hoặc bấm <b>▸</b> để chuyển bước. Bảng không hiện giá tiền, thông tin xuất HĐ. Cột Đã xuất kho chỉ giữ đơn xuất hôm nay' + (r.xuatCu ? ' (' + r.xuatCu + ' đơn xuất các ngày trước đã ẩn)' : '') + '.</p></div><div id="chDs"></div>';
+    '<p class="muted" style="margin:8px 0 0">' + (r.duyet ? '<b>Chờ duyệt</b> chỉ kế toán + Admin thấy: bấm vào thẻ để nhập mã đơn rồi chọn <b>Đơn mới</b>, đơn trùng thì bấm <b>Bỏ đơn</b>. ' : '') +
+    '<b>Bấm vào thẻ</b> để xem đơn và chuyển bước, hoặc kéo thẻ sang cột khác. Bảng không hiện giá tiền, thông tin xuất HĐ. Cột Đã xuất kho chỉ giữ đơn xuất hôm nay' + (r.xuatCu ? ' (' + r.xuatCu + ' đơn xuất các ngày trước đã ẩn)' : '') + '.</p></div><div id="chDs"></div>';
   (nhung || $('noiDung')).innerHTML = h;
   veChotDs();
   $('chQ').oninput = function () { CHOT.q = this.value; veChotDs(); };
@@ -1981,15 +1981,9 @@ function veChotDs() {
       (the.map(function (x) {
         var cho = i === 0, sau = r.tt[i + 1], keo = r.ghi && (cho ? r.ghiDuyet : true);
         return '<div class="ch-the" data-chthe="' + e(x.khoa) + '"' + (keo ? ' draggable="true"' : '') + ' style="border-left-color:' + c[0] + '">' +
-          (x.huyGoc ? '<div class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán</div>' : x.doiGoc ? '<div class="ch-canh doi">⚠ Đơn gốc vừa sửa' + (r.ghiDuyet ? ' — mở thẻ để cập nhật' : ' — chờ kế toán xác nhận') + '</div>' : '') +
-          '<div><span class="ma">' + (x.ma ? e(x.ma) : '<span style="color:#b42318">Chưa có mã đơn</span>') + '</span></div>' +
-          '<div><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' <span class="muted" style="font-size:12.5px">· ***' + e(x.sdt4) + '</span>' : '') + '</div>' +
-          '<div class="sp">' + chotSp(x) + '</div>' + (cho && x.ghiChuTT ? '<div class="muted" style="font-size:12px;color:#8a5f00">💳 ' + e(x.ghiChuTT) + '</div>' : '') + (x.ghiChu ? '<div class="muted" style="font-size:12px">📝 ' + e(x.ghiChu) + '</div>' : '') +
-          '<div class="muted"><span class="ch-tag' + (x.nguon !== 'Phòng KD' ? ' kt' : '') + '">' + e(x.nguon) + '</span>' + (x.luc ? e(x.nguoi) + ' · ' + e(x.luc.slice(11, 16)) : 'vào ' + e(String(x.vao).slice(11, 16))) + '</div>' +
-          (cho && r.ghiDuyet ? '<div class="ch-nut"><input data-chma="' + e(x.khoa) + '" value="' + e(x.ma || x.goiY || '') + '" placeholder="Mã đơn" style="flex:1.4;min-width:0;padding:5px 7px;font-size:13px;min-height:0"></div>' +
-            '<div class="ch-nut"><button class="nut nho" data-chduyet="' + e(x.khoa) + '">Duyệt ▸</button><button class="nut phu nho" data-chbo="' + e(x.khoa) + '" style="flex:0 0 auto">Bỏ</button></div>' :
-            (!cho && r.ghi ? '<div class="ch-nut">' + (i > 1 || (i === 1 && r.ghiDuyet) ? '<button class="nut phu nho" data-chlui="' + e(x.khoa) + '" style="flex:0 0 auto" title="Lùi về ' + e(r.tt[i - 1]) + '">◂</button>' : '') +
-              (sau ? '<button class="nut nho" data-chtoi="' + e(x.khoa) + '" style="background:' + CHOT_MAU[sau][0] + '">▸ ' + e(sau) + '</button>' : '') + '</div>' : '')) + '</div>';
+          '<div><span class="ma">' + (x.huyGoc || x.doiGoc ? '<span title="' + (x.huyGoc ? 'Đơn gốc đã huỷ' : 'Đơn gốc vừa sửa') + '" style="color:' + (x.huyGoc ? '#b42318' : '#8a5f00') + '">⚠ </span>' : '') +
+            (x.ma ? e(x.ma) : '<span style="color:#b42318">Chưa có mã đơn</span>') + '</span></div>' +
+          '<div><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' ' + e(x.sdt4) : '') + '</div></div>';
       }).join('') || '<div class="ch-rong">' + (q ? 'Không có đơn phù hợp' : 'Chưa có đơn') + '</div>') + '</div>';
   }).join('') + '</div>';
   document.querySelectorAll('[data-chthe][draggable]').forEach(function (el) {
