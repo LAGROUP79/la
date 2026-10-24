@@ -471,10 +471,10 @@ function veHome() {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
     }).join('') + '</div>' +
+    '<h3 class="nhom">PHÒNG BAN</h3><div class="oclon nam">' + H.phongBan.map(function (p) { return oPhong(p.ma); }).join('') + '</div>' +
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
     '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button></div>' +
-    '<h3 class="nhom">PHÒNG BAN</h3><div class="oclon nam">' + H.phongBan.map(function (p) { return oPhong(p.ma); }).join('') + '</div>' +
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo báo cáo 21:00 trên điện thoại</b>' +
       '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00 hiện trên màn hình khoá: số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, tình hình kiểm kho trong ngày. Bật trên từng máy muốn nhận.</p>' +
       '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><button class="nut rong" id="tbThu" style="width:auto">Gửi thử ngay</button></div>' +
