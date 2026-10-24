@@ -413,7 +413,7 @@ function veNav() {
     '<div class="navPhong"><small>CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button></div>';
 }
 var PHONG_HT = '';
-var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
+var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT', 'HCNS'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
   p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'],
   kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], knx: ['KHO'], chot: ['KHO', 'TCKT', 'VH'],kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'], xl: ['TCKT'], sb: ['TCKT', 'VH'], bct: ['TCKT', 'VH'] };
@@ -1923,7 +1923,7 @@ function vePhong(ma) {
   if (ma === 'VH') o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']];
   if (ma === 'HCNS') {
     if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds']);
-    if (H.me.xemLuong) o.push(['ns_luong', 'BẢNG LƯƠNG', 'Phiếu lương, tổng lương, chốt & gửi', 'th']);
+    if (H.me.xemLuong) o.push(['ns_luong', 'BẢNG LƯƠNG', 'Phiếu lương, tổng lương, chốt & gửi', 'th'], ['th', 'THƯỞNG NHÂN VIÊN', 'Thưởng tạm tính từng nhân viên KD theo sản phẩm', 'th']);
     if (H.me.nsQL) o.push(['ns_np', 'NGHỈ PHÉP · NGHỈ VIỆC', 'Đơn nghỉ trong tháng, đơn nghỉ việc', 'np']);
     if (H.me.duyetCC) o.push(['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy']);
   }
@@ -1958,7 +1958,7 @@ function veBaoCaoTC() {
   var mm = MAU_O || {};
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo</h2><div class="oclon">' +
     [['sb:bc', 'DOANH THU · LÃI GỘP', 'Báo cáo sổ bán hàng: theo ngày, nhóm hàng, khách, sản phẩm', 'bc'], ['sb:no', 'CÔNG NỢ KHÁCH', 'Nợ đầu kỳ, phát sinh, đã trả, còn nợ, hạn mức', 'kh'],
-      ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên: team, nhân viên, % target', 'bc'], ['th', 'THƯỞNG NHÂN VIÊN', 'Thưởng tạm tính từng nhân viên KD', 'th'], ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu đơn kế toán', 'ton'],
+      ['bc', 'DOANH SỐ PHÒNG KD', 'Theo đơn phòng KD lên: team, nhân viên, % target', 'bc'], ['kb', 'BÁO CÁO KHO · ĐỐI CHIẾU', 'Nhập, xuất, chênh lệch kho · đối chiếu đơn kế toán', 'ton'],
       ['xl', 'TẢI EXCEL', 'Tải các sổ ra file Excel', 'ds']].map(function (x) {
       var m = mm[x[3]] || ['#eee', '#888', '#555'];
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[3]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span></button>';
