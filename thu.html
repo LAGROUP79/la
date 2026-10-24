@@ -2109,15 +2109,29 @@ function cnSpGan(t) {
   return diem >= Math.max(2, Math.ceil(b.length * 0.6)) ? tot : '';
 }
 function cnGio(l) { var s = String(l || '').replace(/\s/g, '').replace(/^(hômnay|hômqua|homnay|homqua)/i, ''); return /^\d{1,2}([:.hT][0-9IlOo]{1,2}(AM|PM|SA|CH)?|[0-9IlOo]{1,2}(AM|PM|SA|CH))$/i.test(s); }
-function cnTach(s) { var out = [], sau = 0, cu = ''; for (var i = 0; i < s.length; i++) { var c = s.charAt(i); if (c === '(') sau++; if (c === ')') sau--; if (c === ',' && !sau) { out.push(cu); cu = ''; } else cu += c; } out.push(cu); return out.map(function (x) { return x.trim(); }).filter(Boolean); }
+function cnTach(s) { var out = [], sau = 0, cu = ''; for (var i = 0; i < s.length; i++) { var c = s.charAt(i); if (c === '(') sau++; if (c === ')') sau--; if ((c === ',' || c === '+' || c === ';' || c === '&') && !sau) { out.push(cu); cu = ''; } else cu += c; } out.push(cu); return out.map(function (x) { return x.trim(); }).filter(Boolean); }
+var CN_VI_RE = /(duong phen|phen|hat sen|sen|dong trung|gung|tre em|tu vi|saf+ron|tao do|hat chia|chia|nhan sam|sam|ky tu|la dua|ca cao|cha la|collagen|nha dam|dp|dt)(\s|$|\))/;
+function cnViChuan(s) {
+  s = cnVi(s).replace(/(^|\s)saf+ron(?=$|\s)/gi, '$1saffron').replace(/(^|\s)phèn(?=$|\s)/gi, function (m, a, o, x) { return /đường\s*$/i.test(x.slice(0, o + a.length)) ? m : a + 'đường phèn'; })
+    .replace(/(^|\s)chia(?=$|\s)/gi, function (m, a, o, x) { return /hạt\s*$/i.test(x.slice(0, o + a.length)) ? m : a + 'hạt chia'; });
+  return s.replace(/\s+/g, ' ').trim();
+}
 function chotDoc(tin) {
-  var d = { maDon: '', tenKH: '', maKH: '', nhan: { ten: '', sdt: '', dc: '' }, dong: [], ghiChu: '' }, gom = {}, thuTu = [], huCuoi = null, nhanI = -1, ghi = [], ghiTT = [], canh = [];
-  var reSdt = /(?:\+?84|0)(?:[\s.]?\d){9,10}/, hang = /(^|\s)(hu|hop|set|tui|khay|thung|lang|kg|chai|lo)(\s|$|\d)/;
-  function them(sp, sl, gia, ct) {
-    var x = gom[sp]; if (!x) { x = gom[sp] = { sp: sp, nhom: cnNhom(sp), sl: 0, gia: '', ct: [] }; thuTu.push(sp); }
+  var d = { maDon: '', tenKH: '', maKH: '', nhan: { ten: '', sdt: '', dc: '' }, dong: [], ghiChu: '' }, gom = {}, thuTu = [], huCuoi = null, nhanI = -1, ghi = [], ghiTT = [];
+  var reSdt = /(?:\+?84|0)(?:[\s.]?\d){9,10}/, hang = /(^|\s)(hu|hop|set|tui|khay|thung|lang|kg|chai|lo)(\s|$|\d)/, reTT = /(^|\s)(coc|cod|thu ho|chuyen khoan|thanh toan|cong no|tien mat|ck|stk|da tra|no lai|thu tien)(\s|:|$)/;
+  var reDc = /(,|(^|\s)(duong|pho|xa|phuong|huyen|tinh|quan|tp|thon|ngo|hem|so nha|ap|khu|kp|thi tran|thanh pho|ha noi|hcm|xom|kiot|cho)(\s|$))/;
+  function them(sp, sl, gia, ct, khoa) {
+    khoa = khoa || sp; var x = gom[khoa]; if (!x) { x = gom[khoa] = { sp: sp, nhom: cnNhom(sp), sl: 0, gia: '', ct: [], khoa: khoa }; thuTu.push(khoa); }
     x.sl += sl; if (gia) x.gia = gia; if (ct) x.ct.push(ct); return x;
   }
-  var dongs = String(tin || '').replace(/\r/g, '').split('\n').map(function (l) { return l.replace(/[​﻿]/g, '').trim(); }).filter(Boolean);
+  var dongs = String(tin || '').replace(/\r/g, '').split('\n').map(function (l) { return l.replace(/[\u200b\ufeff]/g, '').trim(); }).filter(Boolean);
+  var khongTem = dongs.some(function (l) { return /(^|\s)(ko|k|khong|kh|hong) tem(\s|$|\W)/.test(cnBo(l)); });
+  function huVao(n, con, cb, gia, ctTrong) {
+    var loai = /(^|\s)co tem/.test(cb) ? CN_HU.tem : (/(^|\s)(ko|k|khong|kh|hong) tem/.test(cb) || khongTem) ? CN_HU.ktem : /(100|nguyen chat)/.test(cb) ? CN_HU.nc : /(^|\s)(hang )?loi(\s|$)/.test(cb) ? CN_HU.loi : CN_HU.tem;
+    var vi = cnViChuan(con.replace(/\([^)]*\)/g, '').replace(/(có tem|không tem|ko tem|k tem|hong tem|nguyên chất|100\s*%|hàng lỗi|lỗi|7g|7 g|lanest|hũ|hủ|hu\b)/gi, ' ').replace(/^[\s:\-–]+|[\s:\-–]+$/g, ''));
+    huCuoi = them(loai, n, gia, vi, loai + '|' + vi.toLowerCase());
+    if (ctTrong) huCuoi.ct.push(cnViChuan(ctTrong));
+  }
   var dcI = -9, tongHu = 0;
   dongs.forEach(function (l, i) {
     l = l.replace(/^[\-•+*–]\s{0,3}/, '').trim(); if (!l) return;
@@ -2127,35 +2141,41 @@ function chotDoc(tin) {
     if (cnGio(l)) return;
     if ((m = /^(nguoi gui|gui|khach hang|khach)\s{0,3}:\s{0,3}/.exec(b))) { d.tenKH = l.slice(m[0].length).trim(); return; }
     if ((m = /^(dia chi nhan|dia chi|d\.c|dc)\s{0,3}:\s{0,3}/.exec(b))) { d.nhan.dc = l.slice(m[0].length).trim(); dcI = i; return; }
-    if ((m = /^(so dien thoai|dien thoai|sdt|dt|phone)\s{0,3}:?\s{0,3}/.exec(b)) && reSdt.test(l)) { var p0 = reSdt.exec(l); if (!d.nhan.sdt) d.nhan.sdt = p0[0].replace(/\D/g, '').replace(/^84/, '0'); return; }
-    if (dcI === i - 1 && !hang.test(b) && !/^\d/.test(l) && l.indexOf(':') < 0) { d.nhan.dc += ' ' + l; dcI = i; return; }
-    if (/(^|\s)(coc|cod|thu ho|chuyen khoan|thanh toan|cong no|tien mat|ck|stk|da tra|no lai|thu tien)(\s|:|$)/.test(b)) { ghiTT.push(l); return; }
-    if ((m = /^([^\d:]{1,40}):\s{0,3}(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(l))) {
-      if (/^(tong|tong cong|tong so|so luong|sl|tong sl)$/.test(cnBo(m[1]).trim())) { tongHu = Number(m[2].replace(',', '.')) * (/^(t|th|thung)(\s|$)/.test(cnBo(m[3])) ? 105 : 1); return; }
-      l = m[2] + ' ' + m[1].trim() + (m[3] ? ' ' + m[3] : ''); b = cnBo(l);
-    }
-    if ((m = /^(nguoi nhan|nhan)\s{0,3}:?\s{0,3}/.exec(b)) && /^(nguoi nhan|nhan)/.test(b)) {
+    if ((m = /^(nguoi nhan|nhan)\s{0,3}:?\s{0,3}/.exec(b)) && /^(nguoi nhan|nhan)(\s|:|$)/.test(b)) {
       var r = l.slice(m[0].length), p = reSdt.exec(r); nhanI = i;
       if (p) { d.nhan.sdt = p[0].replace(/\D/g, '').replace(/^84/, '0'); r = r.replace(p[0], ' '); }
       d.nhan.ten = r.replace(/[\s\-–—,:|]+$/, '').replace(/^[\s\-–—,:|]+/, '').replace(/\s[\-–—]\s*$/, '').trim(); return;
     }
-    var p2 = reSdt.exec(l);
-    if (p2 && nhanI >= 0 && !d.nhan.sdt && !hang.test(b.replace(reSdt, ''))) { d.nhan.sdt = p2[0].replace(/\D/g, '').replace(/^84/, '0'); var du = l.replace(p2[0], '').replace(/^[\s\-–—,:]+|[\s\-–—,:]+$/g, '').replace(/^(số điện thoại|điện thoại|sđt|sdt|đt|phone)\s{0,3}:?/i, '').trim(); if (du.replace(/[^A-Za-zÀ-ỹ]/g, '').length > 3 && !d.nhan.dc) { d.nhan.dc = du; dcI = i; } return; }
-    if (nhanI >= 0 && !d.nhan.dc && i <= nhanI + 2 && !hang.test(b) && !/^\(/.test(l) && (!/^\d/.test(l) || /(duong|pho|xa|phuong|huyen|tinh|quan|tp|thon|ngo|hem|so nha)/.test(b))) { d.nhan.dc = l; return; }
+    var ps = reSdt.exec(l);
+    if (ps) {
+      if (!d.nhan.sdt) {
+        d.nhan.sdt = ps[0].replace(/\D/g, '').replace(/^84/, '0');
+        var truoc = l.slice(0, ps.index).replace(/(số điện thoại|điện thoại|sđt|sdt|đt|phone)\s{0,3}:?/ig, '').replace(/^[\s\-–—,:|]+|[\s\-–—,:|]+$/g, '').trim();
+        var sau = l.slice(ps.index + ps[0].length).replace(/^[\s\-–—,:|]+|[\s\-–—,:|]+$/g, '').trim();
+        if (truoc && !d.nhan.ten) d.nhan.ten = truoc;
+        if (sau.replace(/[^A-Za-zÀ-ỹ]/g, '').length > 3 && !d.nhan.dc) { d.nhan.dc = sau; dcI = i; }
+        if (nhanI < 0) nhanI = i;
+      }
+      return;
+    }
+    if (dcI === i - 1 && !hang.test(b) && !/^\d/.test(l) && l.indexOf(':') < 0 && !reTT.test(b)) { d.nhan.dc += ' ' + l; dcI = i; return; }
+    if (reTT.test(b)) { ghiTT.push(l); return; }
+    if ((m = /^(tong cong|tong so|tong sl|tong|so luong|sl)\s{0,3}:?\s{0,3}(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(b))) { tongHu = Number(m[2].replace(',', '.')) * (/^(t|th|thung)(\s|$|\.)/.test(m[3]) ? 105 : 1); return; }
+    if ((m = /^([^\d:]{1,40}):\s{0,3}(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(l))) { l = m[2] + ' ' + m[1].trim() + (m[3] ? ' ' + m[3] : ''); b = cnBo(l); }
+    if (nhanI >= 0 && !d.nhan.dc && i <= nhanI + 2 && !hang.test(b) && !/^\(/.test(l) && reDc.test(b) && (!/^\d/.test(l) || /(duong|pho|xa|phuong|huyen|thon|ngo|hem|so nha)/.test(b))) { d.nhan.dc = l; dcI = i; return; }
     if (!d.tenKH && nhanI < 0 && !/^\(?\d/.test(l) && !hang.test(b)) { d.tenKH = l; return; }
-    if (/(^|\s)(coc|cod|thu ho|chuyen khoan|thanh toan|cong no|tien mat|ck|stk|da tra|no lai|thu tien)(\s|:|$)/.test(b)) { ghiTT.push(l); return; }
     if (!/^\(?\d/.test(l) && !hang.test(b)) { ghi.push(l); return; }
     var gia = 0; l = l.replace(/\s*[x×*@]\s*(\d[\d.,]*\s*k?)\s*(đ|d|vnd|\/\s*\S+)?\s*$/i, function (m0, g) { gia = cnSo(g); return ''; });
     cnTach(l).forEach(function (s) {
       s = s.replace(/[.;:!]+$/, '').trim(); if (!s) return;
-      var sb = cnBo(s), n, mm;
-      if (/^\(/.test(s)) { var ct = cnVi(s.replace(/^\(|\)$/g, '')); if (huCuoi) huCuoi.ct.push(ct); else ghi.push(s); return; }
-      mm = /^(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(s); if (!mm) { ghi.push(s); return; }
-      n = Number(mm[1].replace(',', '.')); var con = mm[2], cb = cnBo(con), thung = '';
-      if (/^(t|th|thung)(\s|$|\.)/.test(cb)) { thung = n + ' thùng'; n = n * 105; con = 'hũ ' + con.replace(/^(thùng|th|t)\.?\s{0,3}/i, ''); cb = cnBo(con); }
+      var n, mm;
+      if (/^\(/.test(s)) { var ct = cnViChuan(s.replace(/^\(|\)$/g, '')); if (huCuoi) huCuoi.ct.push(ct); else ghi.push(s); return; }
+      mm = /^(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(s); if (!mm) { if (huCuoi && CN_VI_RE.test(cnBo(s))) ghi.push(s); else ghi.push(s); return; }
+      n = Number(mm[1].replace(',', '.')); var con = mm[2], cb = cnBo(con);
+      if (/^(t|th|thung)(\s|$|\.)/.test(cb)) { n = n * 105; con = 'hũ ' + con.replace(/^(thùng|th|t)\.?\s{0,3}/i, ''); cb = cnBo(con); }
       var khay = (/(\d+)\s*(hu)?\s*$/.exec(cb) || [])[1] || '';
       var ctTrong = (/\(([^)]*)\)/.exec(con) || [])[1];
-      if (/^(set|sét)|^(set|set )/.test(cb) || /^set\b/.test(cb)) {
+      if (/^(set|sét)|^set\b/.test(cb)) {
         var mau = /do/.test(cb) ? 'do' : /(kem|trang|nau)/.test(cb) ? 'nau' : /xanh/.test(cb) ? 'xanh' : 'do';
         var ghiKhay = khay ? n + ' khay ' + khay : '';
         if (mau === 'do') { them(CN_PK.setDo, n, gia === 28000 || !gia ? 20000 : gia - 8000, ghiKhay); them(CN_PK.tuiDo, n, 8000, ''); }
@@ -2163,24 +2183,34 @@ function chotDoc(tin) {
         else them(CN_PK.xanh, n, gia || 15000, ghiKhay);
         return;
       }
-      if (/^hop\s*(1|mot)\s*hu|^hop\s*(roi|nho|le)/.test(cb)) { var vi = cnVi(con.replace(/^hộp\s*(1|một)\s*hũ|^hộp\s*(rời|nhỏ|lẻ)/i, '').trim()); them(CN_PK.roi, n, gia || 1500, vi ? n + ' ' + vi : ''); return; }
+      if (/^hop\s*(1|mot)\s*hu|^hop\s*(roi|nho|le)/.test(cb)) { var vi = cnViChuan(con.replace(/^hộp\s*(1|một)\s*hũ|^hộp\s*(rời|nhỏ|lẻ)/i, '').trim()); them(CN_PK.roi, n, gia || 1500, vi ? n + ' ' + vi : ''); return; }
       if (/^hop (qua )?do/.test(cb)) { them(CN_PK.setDo, n, gia || 20000, khay ? n + ' khay ' + khay : ''); return; }
       if (/^tui( xach)? do/.test(cb)) { them(CN_PK.tuiDo, n, gia || 8000, ''); return; }
       if (/^(hop|set) (qua )?(nau|trang|kem)/.test(cb)) { them(CN_PK.setNau, n, gia || 25000, khay ? n + ' khay ' + khay : ''); return; }
       if (/^hop (qua )?xanh/.test(cb)) { them(CN_PK.xanh, n, gia || 15000, khay ? n + ' khay ' + khay : ''); return; }
-      if (/^hu\b|^hu$|^hu /.test(cb) || /(duong phen|hat sen|dong trung|gung|sen|dp)\b/.test(cb) || ((huCuoi || tongHu) && !/(hop|set|tui|khay|thung|lang|kg|chai|lo|goi)\b/.test(cb))) {
-        var loai = /khong tem/.test(cb) ? CN_HU.ktem : /(100|nguyen chat)/.test(cb) ? CN_HU.nc : /loi/.test(cb) ? CN_HU.loi : CN_HU.tem;
-        var vi2 = cnVi(con.replace(/\([^)]*\)/g, '').replace(/^h[ũủu]\s{0,3}/i, '').replace(/(không tem|nguyên chất|100\s*%|hàng lỗi|lỗi|7g|7 g|lanest)/gi, '').trim());
-        huCuoi = them(loai, n, gia, (/^h[ũủu](\s|$)/i.test(con.trim()) ? (vi2 ? n + ' ' + vi2 : '') : n + ' ' + (vi2 || con)) + (thung ? (vi2 ? ' (' + thung + ')' : thung) : ''));
-        if (ctTrong) huCuoi.ct.push(cnVi(ctTrong));
-        return;
-      }
-      var gan = cnSpGan(con); them(gan || con, n, gia, gan ? '' : '');
+      var laPK = /(hop|set|tui|khay|goi)(\s|$)/.test(cb), laTT = /(lang|kg|tinh|tho|to yen|chan|vun|xo|soi|rut long)(\s|$)/.test(cb);
+      if (/^h[uủ](\s|$)/.test(cb) || CN_VI_RE.test(cb) || ((huCuoi || tongHu) && !laPK && !laTT)) { huVao(n, con, cb, gia, ctTrong); return; }
+      var gan = cnSpGan(con);
+      if (gan && cnNhom(gan) === 'Phụ kiện' && !laPK) gan = '';
+      if (!gan && !laPK && !laTT && /[a-zà-ỹ]/i.test(con)) { huVao(n, con, cb, gia, ctTrong); return; }
+      them(gan || con, n, gia, '');
     });
   });
-  if (tongHu && !thuTu.some(function (k) { return gom[k].nhom === 'YẾN HŨ'; })) them(CN_HU.tem, tongHu, 0, '');
+  thuTu.slice().forEach(function (k) {
+    var x = gom[k]; if (!x || x.nhom !== 'YẾN HŨ' || k.split('|')[1]) return;
+    var phan = []; x.ct.forEach(function (c) { String(c).split(',').forEach(function (p) { var q = /^\s*(\d+(?:[.,]\d+)?)\s+(.+?)\s*$/.exec(p); if (q && !/thùng|khay/i.test(q[2])) phan.push([Number(q[1].replace(',', '.')), cnViChuan(q[2])]); }); });
+    if (!phan.length) return;
+    var tong = phan.reduce(function (a, q) { return a + q[0]; }, 0);
+    if (!tongHu && x.sl && tong !== x.sl) tongHu = x.sl;
+    phan.forEach(function (q) { them(x.sp, q[0], x.gia, q[1], x.sp + '|' + q[1].toLowerCase()); });
+    x.sl = x.sl - tong; x.ct = [];
+    if (x.sl <= 0) { delete gom[k]; thuTu.splice(thuTu.indexOf(k), 1); }
+  });
+  if (tongHu && !thuTu.some(function (k) { return gom[k].nhom === 'YẾN HŨ'; })) them(khongTem ? CN_HU.ktem : CN_HU.tem, tongHu, 0, '');
+  if (khongTem && !ghi.some(function (g) { return /tem/i.test(g); })) ghi.push('Không tem');
   d.tongHu = tongHu;
-  d.dong = thuTu.map(function (k) { var x = gom[k]; return { sp: x.sp, nhom: x.nhom || cnNhom(x.sp), sl: x.sl, gia: x.gia, ct: x.ct.filter(Boolean).join(', ') }; });
+  d.dong = thuTu.map(function (k) { var x = gom[k], u = []; x.ct.forEach(function (c) { if (c && u.indexOf(c) < 0) u.push(c); }); return { sp: x.sp, nhom: x.nhom || cnNhom(x.sp), sl: x.sl, gia: x.gia, ct: u.join(', ') }; });
+  d.dong = d.dong.filter(function (x) { return x.nhom === 'YẾN HŨ'; }).concat(d.dong.filter(function (x) { return x.nhom !== 'YẾN HŨ'; }));
   d.ghiChu = ghi.join(' · '); d.ghiChuTT = ghiTT.join(' · ');
   return d;
 }
@@ -2314,7 +2344,14 @@ function sbNhanDien(tin) {
   var cu = CN, d = SB_DON; CN = { dm: CHOT_DM, d: { maKH: d.maKH || '' } };
   var r = chotDoc(tin), k = r.tenKH ? cnTimKH(r.tenKH) : null;
   if (k && !k.nhieu) CN.d.maKH = k.ma;
-  var dong = r.dong.map(function (x) { var g = x.gia === '' || x.gia == null || x.gia === 0 ? cnGiaKH(x.sp) : x.gia; return { sp: x.sp, nhom: x.nhom, sl: x.sl, gia: g === '' ? '' : g, ct: x.ct }; });
+  var dong1 = r.dong.map(function (x) { var g = x.gia === '' || x.gia == null || x.gia === 0 ? cnGiaKH(x.sp) : x.gia; return { sp: x.sp, nhom: x.nhom, sl: x.sl, gia: g === '' ? '' : g, ct: x.ct }; });
+  var gop = {}, dong = [];
+  dong1.forEach(function (x) {
+    if (x.nhom !== 'YẾN HŨ') { dong.push(x); return; }
+    var k = x.sp + '|' + x.gia, a = gop[k]; if (!a) { a = gop[k] = { sp: x.sp, nhom: x.nhom, sl: 0, gia: x.gia, ctA: [] }; dong.push(a); }
+    a.sl += Number(x.sl) || 0; if (x.ct) a.ctA.push(/^\d/.test(x.ct) ? x.ct : x.sl + ' ' + x.ct);
+  });
+  dong.forEach(function (x) { if (x.ctA) { x.ct = x.ctA.join(', '); delete x.ctA; } });
   CN = cu;
   d.tin = tin;
   if (k && !k.nhieu) d.maKH = k.ma;
