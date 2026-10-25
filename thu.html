@@ -3344,7 +3344,7 @@ function sbVeSaoKe(ma, thang, r) {
     (k.trangThai ? '<small style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + e(k.trangThai) + '</small>' : '') +
     '<input type="month" id="skThang" value="' + e(thang) + '" min="2026-10" style="max-width:160px;margin-left:auto"></div></div>' +
     '<div class="the"><div class="cuon">' + bang + '</div></div>' +
-    (SB.ghi ? '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skSuaBang" style="flex:1">✎ Sửa trực tiếp trên bảng</button><button class="nut" id="skTra" style="flex:1;background:#1D4ED8">💵 THANH TOÁN</button></div></div>' : '') + '<div class="the"><button class="nut" id="skHinh">🖼 Gửi khách bằng hình (Zalo)</button><button class="nut rong" id="skIn" style="margin-top:8px">In / lưu PDF</button><button class="nut rong" id="skXl" style="margin-top:8px">Lưu Excel</button>' +
+    (SB.ghi ? '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skSuaBang" style="flex:1">✎ Sửa trực tiếp trên bảng</button><button class="nut" id="skTra" style="flex:1;background:#1D4ED8">💵 THANH TOÁN</button></div></div>' : '') + '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skHinh" style="flex:1">🖼 Gửi khách bằng hình (Zalo)</button><button class="nut vang" id="skDep" style="flex:1">🧾 Gửi hình mẫu đẹp</button></div><button class="nut rong" id="skIn" style="margin-top:8px">In / lưu PDF</button><button class="nut rong" id="skXl" style="margin-top:8px">Lưu Excel</button>' +
     (SB.ghi ? '<button class="nut rong" id="skSua" style="margin-top:8px">Sửa thông tin khách</button>' : '') + '</div>';
   $('skVe').onclick = function () { veSo(); };
   $('skThang').onchange = function () { if (this.value) sbSaoKe(ma, this.value); };
@@ -3366,6 +3366,55 @@ function sbVeSaoKe(ma, thang, r) {
     };
   };
   var tenFile = 'Cong no ' + r.kh.ten + ' thang ' + +thang.slice(5);
+  var noDep = function () {
+    var xanh = '#1F5A4C', vang = '#C9A227', td = 'padding:6px 4px;';
+    var dong = function (a, b, dam, mau) { return '<tr><td style="padding:3px 0;color:' + (dam ? xanh : '#555') + (dam ? ';font-weight:700;font-size:17px' : '') + '">' + a + '</td><td style="padding:3px 0;text-align:right;' + (dam ? 'font-weight:700;font-size:19px;color:' + (mau || xanh) : 'font-weight:600' + (mau ? ';color:' + mau : '')) + '">' + b + '</td></tr>'; };
+    var tt = function (k, v) { return v ? '<div style="margin:2px 0"><span style="color:#777;display:inline-block;min-width:92px">' + k + '</span><b style="font-weight:600">' + e(v) + '</b></div>' : ''; };
+    var am = function (v) { return (v < 0 ? '−' : '') + tien(Math.abs(v)); };
+    var dsHang = hang.map(function (h) {
+      var nen = h.ky % 2 ? '#FBF6EA' : '#fff', laTra = h.sp === 'Thanh toán công nợ';
+      return '<tr style="background:' + nen + ';border-bottom:1px solid #EFE6CC"><td style="' + td + 'white-space:nowrap;color:#555">' + (h.ngay ? sbDMY(h.ngay).slice(0, -5) : '') + '</td>' +
+        '<td style="' + td + (laTra ? 'color:' + xanh + ';font-weight:600' : '') + '">' + e(h.sp) + (h.nhan ? '<div style="color:#888;font-size:11.5px">' + e(h.nhan) + '</div>' : '') + '</td>' +
+        '<td style="' + td + 'text-align:center;white-space:nowrap">' + (h.sl ? soSL(h.sl) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap">' + (h.gia ? tien(h.gia) : '') + '</td>' +
+        '<td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600">' + (h.tien ? am(h.tien) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600;color:' + xanh + '">' + (h.tt ? tien(h.tt) : '') + '</td></tr>';
+    }).join('');
+    return '<div style="width:640px;background:#fff;font-family:Be Vietnam Pro,Arial,sans-serif;color:#1d1d1b;font-size:14px;line-height:1.45;border:1px solid #E6DCC0">' +
+      '<div style="background:' + xanh + ';color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;border-bottom:4px solid ' + vang + '">' +
+        '<img src="logo-tron.png" style="width:64px;height:64px;border-radius:50%;background:#fff;flex:0 0 auto" crossorigin="anonymous">' +
+        '<div style="flex:1"><div style="font-size:19px;font-weight:700">' + CTY.ten + '</div>' +
+        '<div style="font-size:12.5px;color:#E8D48B;margin-top:3px">MST: ' + CTY.mst + ' · Hotline: ' + CTY.tel + ' · ' + CTY.web + '</div>' +
+        '<div style="font-size:12.5px;color:#DDE8E4">' + CTY.dc + '</div></div></div>' +
+      '<div style="padding:16px 24px 12px;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px dashed #D9CDA8">' +
+        '<div><div style="font-size:22px;font-weight:700;color:' + xanh + '">BẢNG ĐỐI CHIẾU CÔNG NỢ</div><div style="color:#777;font-size:12.5px">Tháng ' + +thang.slice(5) + '/' + thang.slice(0, 4) + ' · từ ' + sbDMY(r.tu) + ' đến ' + sbDMY(r.den) + '</div></div>' +
+        '<div style="text-align:right;font-size:13px"><div>Ngày lập: <b>' + sbDMY(SB.homNay) + '</b></div></div></div>' +
+      '<div style="padding:12px 24px;background:#FBF6EA"><div style="font-weight:700;color:' + xanh + ';margin-bottom:4px;font-size:13px">THÔNG TIN KHÁCH HÀNG</div>' +
+        tt('Khách hàng', r.kh.ten) + tt('Điện thoại', r.kh.sdt || k.sdt) + tt('Khu vực', r.kh.khuVuc || k.khuVuc) + '</div>' +
+      '<div style="padding:8px 24px 0"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:' + xanh + ';color:#fff">' +
+        '<th style="' + td + 'text-align:left">Ngày</th><th style="' + td + 'text-align:left">Sản phẩm / nội dung</th><th style="' + td + '">SL</th><th style="' + td + 'text-align:right">Đơn giá</th><th style="' + td + 'text-align:right">Thành tiền</th><th style="' + td + 'text-align:right">Đã trả</th></tr></thead><tbody>' +
+        '<tr style="border-bottom:1px solid #EFE6CC"><td style="' + td + '"></td><td colspan="3" style="' + td + 'font-weight:600;color:#555">Nợ chốt đến ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td style="' + td + 'text-align:right;font-weight:700">' + am(r.noDau) + '</td><td></td></tr>' +
+        (dsHang || '<tr><td colspan="6" style="' + td + 'color:#888;text-align:center">Chưa có phát sinh trong tháng</td></tr>') + '</tbody></table></div>' +
+      '<div style="padding:10px 24px 4px;display:flex;justify-content:flex-end"><table style="width:66%;border-collapse:collapse;font-size:14px">' +
+        dong('Nợ đầu kỳ (đến ' + sbDMY(sbNgayTruoc(r.tu)) + ')', am(r.noDau) + 'đ') + dong('Phát sinh trong tháng', am(ps) + 'đ') + dong('Đã thanh toán / COD', '−' + tien(tra) + 'đ', 0, xanh) +
+        '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' +
+        dong(chot < 0 ? 'KHÁCH ĐANG DƯ' : 'CÒN NỢ ĐẾN ' + sbDMY(r.den), tien(Math.abs(chot)) + 'đ', 1, chot > 0 ? '#B42318' : xanh) + '</table></div>' +
+      '<div style="margin:12px 24px 0;padding:12px 14px;border:1px solid ' + vang + ';border-radius:8px;background:#FFFCF2;font-size:13.5px;display:flex;align-items:center;gap:16px">' +
+        '<div style="flex:1;line-height:1.7"><div style="font-weight:700;color:' + xanh + ';font-size:14px">THÔNG TIN CHUYỂN KHOẢN</div>' +
+        '<div><span style="color:#777">Ngân hàng:</span> <b>' + CTY.nh + '</b></div><div><span style="color:#777">Số tài khoản:</span> <b style="font-size:16px;color:' + xanh + '">' + CTY.stk + '</b></div>' +
+        '<div><span style="color:#777">Chủ tài khoản:</span> <b>' + CTY.ten + '</b></div><div style="color:#777;font-size:12.5px;margin-top:2px">Quét mã QR bên cạnh để chuyển khoản nhanh</div></div>' +
+        '<img src="qr-mb.png" style="width:168px;height:auto;flex:0 0 auto;border-radius:6px" crossorigin="anonymous"></div>' +
+      '<div style="padding:10px 24px 0;font-size:12.5px;color:#777;text-align:center">Quý khách vui lòng kiểm tra, nếu có chênh lệch xin báo lại để Lanest đối chiếu.</div>' +
+      '<div style="text-align:center;padding:10px 24px 16px;color:' + xanh + '"><div style="font-weight:700;font-size:14.5px">Cảm ơn quý khách đã đồng hành cùng Yến Sào Lanest!</div><div style="font-style:italic;color:' + vang + ';font-size:13px">Trao sức khỏe – Trao yêu thương</div></div></div>';
+  };
+  $('skDep').onclick = function () {
+    moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">Công nợ tháng ' + +thang.slice(5) + ' · ' + e(r.kh.ten) + '</h3><p class="muted" style="margin:0 0 8px">Bấm <b>🖼 Gửi hình</b> để dán thẳng vào Zalo cho khách.</p>' +
+      '<div style="overflow:auto;max-height:58vh;border-radius:8px;background:#F3EEDF;padding:6px"><div id="skXem" style="transform-origin:0 0"></div></div>' +
+      '<div class="hang" style="margin-top:10px"><button class="nut vang" id="skGui">🖼 Gửi hình</button><button class="nut phu" id="skDong">Đóng</button></div>');
+    var xem = $('skXem'), w = xem.parentNode.clientWidth - 12;
+    xem.innerHTML = noDep();
+    if (w < 642) { var t = w / 642; xem.style.transform = 'scale(' + t + ')'; xem.style.height = Math.ceil(xem.firstChild.offsetHeight * t) + 'px'; }
+    $('skGui').onclick = function () { chupHinh(noDep(), tenFile, this); };
+    $('skDong').onclick = dongHop;
+  };
   $('skHinh').onclick = function () {
     var nut = this; nut.disabled = true; nut.textContent = 'Đang tạo hình…';
     var xong = function () { nut.disabled = false; nut.textContent = '🖼 Gửi khách bằng hình (Zalo)'; };
