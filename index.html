@@ -337,6 +337,7 @@ function cho(on) {
   if (!on && c) c.remove();
 }
 function goi(ham, args, ok, imLang, loi) {
+  if (!/^(chotDuLieu|khoDuLieu|ktSo|dsDon|baoCao|chotThongKe|chotTraCuu)$/.test(ham)) NHO = {};
   if (!imLang) cho(true);
   var r = google.script.run.withSuccessHandler(function (x) { cho(false); if (ok) ok(x); })
     .withFailureHandler(function (err) {
@@ -347,6 +348,17 @@ function goi(ham, args, ok, imLang, loi) {
       if (loi) loi(m); else bao(m, true);
     });
   r[ham].apply(r, args);
+}
+var NHO = {};
+function goiNho(khoa, ham, args, ok) {
+  var c = NHO[khoa], tab = TAB, phong = PHONG_HT;
+  if (c) { ok(c.r); if (Date.now() - c.t < 15000) return; }
+  goi(ham, args, function (r) {
+    var s = JSON.stringify(r); if (c && c.s === s) { c.t = Date.now(); return; }
+    NHO[khoa] = { r: r, s: s, t: Date.now() };
+    if (c && (TAB !== tab || PHONG_HT !== phong || $('lop').innerHTML || (document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)))) return;
+    ok(r);
+  }, !!c);
 }
 function goiTrung(ham, taoArgs, ok) {
   var chay = function (bo) { goi(ham, taoArgs(bo), ok, false, function (m) { if (m.indexOf('TRUNG|') === 0) { if (confirm('⚠ Có thể TRÙNG đơn: khách này cùng ngày đã có đơn ' + m.slice(6) + '.\n\nNếu đó chính là đơn này thì bấm Huỷ để khỏi nhập 2 lần (kho bị trừ 2 lần, công nợ cộng 2 lần).\nBấm OK nếu đây là đơn KHÁC, vẫn lưu.')) chay(true); } else bao(m, true); }); };
@@ -393,7 +405,7 @@ function dangNhap(ev) {
 }
 function thoat(imLang) {
   if (TK && !imLang) google.script.run.dangXuat(TK);
-  TK = ''; H = null; luu('kd_tk', null); luu('kd_h', null);
+  TK = ''; H = null; NHO = {}; luu('kd_tk', null); luu('kd_h', null);
   $('app').classList.add('an'); $('dangNhap').classList.remove('an'); dongHop(); napTen();
 }
 function vaoApp(home) {
@@ -1080,7 +1092,7 @@ function timKhach() {
 function napDon(f) {
   if (f) LOC = f;
   if (!LOC.ky) LOC.ky = 'thang';
-  goi('dsDon', [TK, LOC], veDon);
+  goiNho('don|' + JSON.stringify(LOC), 'dsDon', [TK, LOC], veDon);
 }
 function veLocDon(r) {
   var tt = ['', 'Chờ soạn', 'Đã gửi soạn', 'Đã giao', 'Đã huỷ'], ky = r.ky;
@@ -1785,7 +1797,7 @@ function bamCrm(b) {
   }
 }
 
-function napBaoCao(thang, xem) { BC_THANG = thang || BC_THANG || thangNay(); if (xem) BC_XEM = xem; goi('baoCao', [TK, BC_THANG], veBaoCao); }
+function napBaoCao(thang, xem) { BC_THANG = thang || BC_THANG || thangNay(); if (xem) BC_XEM = xem; goiNho('bc|' + BC_THANG, 'baoCao', [TK, BC_THANG], veBaoCao); }
 function bangKpi(t, tieuDe) {
   if (!t) return '';
   var h = '<h4>' + e(tieuDe) + '</h4>';
@@ -1924,7 +1936,13 @@ function oPhong(ma) {
   var nhan = vao ? (H.me.admin ? 'Admin' : vp ? vp.vai + (vp.team ? ' · ' + vp.team : '') : '') : 'Chưa có quyền';
   return '<button data-tab="p_' + ma + '" class="' + (vao ? '' : 'khoa') + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + IC_P[ma] + '</span><b>' + e(tenPhong(ma)) + '</b><span>' + e(MO_TA_P[ma]) + '</span><i>' + (vao ? '' : '🔒 ') + e(nhan) + '</i></button>';
 }
+function goiNen(khoa, ham, args) { if (!NHO[khoa] && TK) goi(ham, args, function (r) { if (!NHO[khoa]) NHO[khoa] = { r: r, s: JSON.stringify(r), t: Date.now() }; }, true, function () {}); }
 function vePhong(ma) {
+  setTimeout(function () {
+    if (ma === 'KHO') { goiNen('chot', 'chotDuLieu', [TK]); goiNen('kho', 'khoDuLieu', [TK]); }
+    if (ma === 'TCKT') { goiNen('so|' + SB_THANG, 'ktSo', [TK, SB_THANG]); goiNen('chot', 'chotDuLieu', [TK]); }
+    if (ma === 'KD') { if (!LOC.ky) LOC.ky = 'thang'; goiNen('don|' + JSON.stringify(LOC), 'dsDon', [TK, LOC]); }
+  }, 300);
   var o = [], ghi = H.me.phongGhi.indexOf(ma) >= 0, ghiChu = '';
   if (ma === 'VH') o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']];
   if (ma === 'HCNS') {
@@ -1978,7 +1996,11 @@ function veKnx() {
     }).join('') + '</div>';
 }
 var CHOT = null, CHOT_MAU = { 'Chờ duyệt': ['#8a5f00', '⏳'], 'Đơn mới': ['#2a78d6', '🆕'], 'Ghi đơn': ['#4a3aa7', '✍️'], 'Soạn đơn': ['#eda100', '🧺'], 'Đóng đơn': ['#d24c7e', '📦'], 'Đã tạo mã': ['#1e9a8a', '🏷️'], 'Đã xuất kho': ['#1baf7a', '✅'] }, CHOT_HEN = null;
-function napChot(im) { if (!im) CN = null; goi('chotDuLieu', [TK], function (r) { CHOT = { r: r, q: CHOT ? CHOT.q : '' }; if (!CN) veChot(); }, im); }
+function napChot(im) {
+  if (!im) CN = null;
+  var xong = function (r) { CHOT = { r: r, q: CHOT ? CHOT.q : '' }; NHO.chot = { r: r, s: JSON.stringify(r), t: Date.now() }; if (!CN) veChot(); };
+  if (im) goi('chotDuLieu', [TK], xong, true); else goiNho('chot', 'chotDuLieu', [TK], xong);
+}
 function chotNhan(r) { CHOT.r = r; veChot(); if (TAB === 'cv' && $('cvKho')) napKhoTK(); }
 function chotCot() { var r = CHOT.r; return r.tt.filter(function (t, i) { return i > 0 || r.duyet; }); }
 function veChot() {
@@ -2848,7 +2870,7 @@ var KHO_CAT_MO = '';
 function napKho(type) {
   var catMo = KHO_CAT_MO; KHO_CAT_MO = '';
   KF = { type: type, cat: catMo || (type === 'xuat' ? 'tinh' : 'hu'), reason: type === 'xuat' ? 'Bán hàng' : '', draft: {}, cost: {}, price: {}, note: '', tim: '' };
-  goi('khoDuLieu', [TK], function (r) { KHO = r; veKho(); });
+  goiNho('kho', 'khoDuLieu', [TK], function (r) { KHO = r; veKho(); });
 }
 function khBanMode() { return KF.type === 'xuat' && KF.reason === 'Bán hàng'; }
 function veKho() {
@@ -3075,7 +3097,7 @@ function sbVeCPNoi() {
   }; });
 }
 var SB_MAU_TT = { 'Vượt hạn mức': 'var(--do)', 'Sắp chạm': '#B7791F', 'Trong hạn mức': 'var(--xanh)', 'Không nợ': '#6B7280', 'Đang dư': '#2B8CC4' };
-function napSo(thang) { SB_THANG = thang || SB_THANG || ''; goi('ktSo', [TK, SB_THANG], function (r) { SB = r; SB_THANG = r.thang; veSo(); }); }
+function napSo(thang) { SB_THANG = thang || SB_THANG || ''; var k = 'so|' + SB_THANG; goiNho(k, 'ktSo', [TK, SB_THANG], function (r) { if (NHO[k]) NHO['so|' + r.thang] = NHO[k]; SB = r; SB_THANG = r.thang; veSo(); }); }
 function sbKhach(ma) { return (SB.khach || []).filter(function (k) { return k.ma === ma; })[0]; }
 function sbKhachTheoTen(t) { t = String(t || '').trim().toLowerCase(); return (SB.khach || []).filter(function (k) { return k.ten.toLowerCase() === t; })[0]; }
 function sbTien(n) { return (n < 0 ? '−' : '') + tien(Math.abs(n)) + 'đ'; }
