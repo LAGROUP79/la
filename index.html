@@ -2168,13 +2168,22 @@ function chotHoiShip(x, ok) {
   setTimeout(function () { $('shTien').focus(); }, 50);
 }
 var CHOT_DM = null;
+function chotTienHtml(x) {
+  var m = x.tien; if (!m) return '';
+  var cod = m.thu.filter(function (t) { return t.ht === 'COD'; }).reduce(function (a, t) { return a + t.tien; }, 0), khac = m.thu.filter(function (t) { return t.ht !== 'COD'; });
+  return '<div style="margin:8px 0;padding:10px 12px;border-radius:10px;background:#FFF8E6;border:1px solid #E8D48B">' +
+    '<div style="font-size:16px;font-weight:800;color:' + (cod ? '#B42318' : '#1F5A4C') + '">' + (cod ? '💵 COD cần thu: ' + tien(cod) + 'đ' : '💵 Không thu COD') + '</div>' +
+    (khac.length ? '<div style="font-size:13px;margin-top:2px">Đã thu trước: ' + khac.map(function (t) { return tien(t.tien) + 'đ (' + e(t.ht) + ')'; }).join(' + ') + '</div>' : '') +
+    '<div class="muted" style="font-size:12.5px;margin-top:2px">Phí ship: ' + (m.ship ? tien(m.ship) + 'đ' : 'chưa nhập') + ' · Tổng đơn: ' + tien(m.tong) + 'đ · <i>chỉ kế toán + Admin thấy</i></div></div>';
+}
 function moChotThe(x) {
   var r = CHOT.r, i = r.tt.indexOf(x.tt), cho = i === 0, laKD = x.khoa.indexOf('KD:') === 0;
   if (cho && laKD && r.ghiDuyet && !CHOT_DM) { goi('chotDmNhap', [TK], function (dm) { CHOT_DM = dm; moChotThe(x); }); return; }
   moHop('<h3 style="margin:0;color:var(--xanh)">' + (x.ma ? 'Đơn ' + e(x.ma) : 'Đơn chưa có mã') + ' <span class="ch-tag' + (x.nguon !== 'Phòng KD' ? ' kt' : '') + '" style="vertical-align:middle">' + e(x.nguon) + '</span></h3>' +
     (x.huyGoc ? '<p class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán.</p>' : x.doiGoc ? '<p class="ch-canh doi">⚠ Đơn gốc đã sửa sau khi duyệt. Hàng / khách trên thẻ đang là bản cũ.</p>' : '') +
     '<p style="margin:8px 0 4px"><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' · ***' + e(x.sdt4) : '') + '</p><div style="line-height:1.55">' + chotSp(x) + '</div>' +
-    (cho && x.ghiChuTT ? '<p style="margin:6px 0;color:#8a5f00"><b>💳 Ghi chú thanh toán:</b> ' + e(x.ghiChuTT) + ' <i class="muted">(kho không thấy)</i></p>' : '') +
+    (r.duyet ? chotTienHtml(x) : '') +
+    (r.duyet && x.ghiChuTT ? '<p style="margin:6px 0;color:#8a5f00"><b>💳 Ghi chú thanh toán:</b> ' + e(x.ghiChuTT) + ' <i class="muted">(kho không thấy)</i></p>' : '') +
     (x.ghiChu ? '<p style="margin:6px 0"><b>Ghi chú:</b> ' + e(x.ghiChu) + '</p>' : '') +
     (r.duyet && (x.nguoiLen || x.nhan) ? '<p class="muted" style="margin:6px 0">' + (x.nguoiLen ? 'Người lên đơn: ' + e(x.nguoiLen) : '') + (x.nhan ? ' · Giao hộ: ' + e(x.nhan) : '') + ' <i>(chỉ kế toán + Admin thấy)</i></p>' : '') +
     (cho && laKD && r.ghiDuyet ? '<label>Khách trong Sổ bán hàng (người gửi / đại lý)</label><input id="chKH" list="chDsKH" value="' + e(x.goiYKH ? cnNhanKHds(x.goiYKH.ma) : '') + '" placeholder="Gõ tên hoặc SĐT để chọn">' +
