@@ -424,8 +424,23 @@ function vaoApp(home) {
   H = home; luuH(); $('dangNhap').classList.add('an'); $('app').classList.remove('an');
   $('hdTen').textContent = H.me.ten + (H.me.admin ? ' · Admin' : H.me.vaiPhong.length ? ' · ' + H.me.vaiPhong.map(function (v) { return v.vai; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ') : '');
   PHONG_HT = ''; chuyenTab('home'); setTimeout(taiSan, 800);
-  if (/[?&]mo=chot/.test(location.search) && (H.me.admin || H.me.phongVao.indexOf('KHO') >= 0 || H.me.phongVao.indexOf('TCKT') >= 0)) { PHONG_HT = H.me.phongVao.indexOf('KHO') >= 0 ? 'KHO' : ''; chuyenTab('chot'); }
+  if (/[?&]mo=chot/.test(location.search)) { moTuThongBao(location.search); try { history.replaceState(null, '', location.pathname); } catch (x) {} }
 }
+var CHOT_MO = null;
+function moTuThongBao(url) {
+  if (!H || !H.me || !(H.me.admin || H.me.phongVao.indexOf('KHO') >= 0 || H.me.phongVao.indexOf('TCKT') >= 0)) return;
+  var q = String(url || '').split('?')[1] || '', p = {}; q.split('&').forEach(function (s) { var i = s.indexOf('='); if (i > 0) p[s.slice(0, i)] = decodeURIComponent(s.slice(i + 1)); });
+  CHOT_MO = { buoc: p.buoc === 'cho' ? 'Chờ duyệt' : 'Đơn mới', khoa: p.khoa || '', lan: 0 };
+  dongHop(); CN = null; PHONG_HT = H.me.phongVao.indexOf('KHO') >= 0 && !H.me.admin && H.me.phongVao.indexOf('TCKT') < 0 ? 'KHO' : ''; delete NHO.chot; chuyenTab('chot');
+}
+function chotMoDich() {
+  if (!CHOT_MO || TAB !== 'chot') return; var m = CHOT_MO; m.lan++;
+  var cot = document.querySelector('[data-chcot="' + m.buoc + '"]'); if (cot) cot.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  var x = m.khoa ? chotTim(m.khoa) : null;
+  if (x) { CHOT_MO = null; if (x.tt !== m.buoc) { cot = document.querySelector('[data-chcot="' + x.tt + '"]'); if (cot) cot.scrollIntoView({ block: 'start' }); } moChotThe(x); return; }
+  CHOT_MO = null;
+}
+if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (ev) { if (ev.data && ev.data.moUrl && /mo=chot/.test(ev.data.moUrl)) moTuThongBao(ev.data.moUrl); });
 function veNav() {
   var t = [['home', '⌂', 'Trang chủ'], ['cc', '◷', 'Chấm công'], ['cv', '✓', 'Công việc'], ['np', '✉', 'Xin nghỉ']];
   var sl = { cv: ((H.viec || {}).chuaXong || 0) + ((H.viec || {}).canDuyet || 0) + ((H.viec || {}).chot || 0), np: H.choDuyet };
@@ -508,10 +523,12 @@ function veHome() {
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
     '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button></div>' +
-    (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo báo cáo 21:00 trên điện thoại</b>' +
-      '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00 hiện trên màn hình khoá: số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, tình hình kiểm kho trong ngày. Bật trên từng máy muốn nhận.</p>' +
+    (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +
+      '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00: báo cáo ngày (số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, kiểm kho). Trong ngày: <b>Đơn chờ duyệt</b> khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn. Bật trên từng máy muốn nhận.</p>' +
       '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><button class="nut rong" id="tbThu" style="width:auto">Gửi thử ngay</button></div>' +
-      '<small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('KHO') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn mới cần soạn</b>' +
+      '<small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('TCKT') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn chờ duyệt</b>' +
+      '<p class="muted" style="margin:4px 0 8px">Khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn, điện thoại hiện thông báo <b>Đơn chờ duyệt</b>: khách, hàng, tổng số hũ. Bật trên điện thoại của mình (bật 1 lần).</p>' +
+      '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('KHO') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn mới cần soạn</b>' +
       '<p class="muted" style="margin:4px 0 8px">Khi kế toán duyệt đơn sang <b>Đơn mới</b>, điện thoại hiện thông báo: mã đơn, khách, hàng, số lượng. Mỗi bạn kho bật trên điện thoại của mình (bật 1 lần).</p>' +
       '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : '');
   if ($('tbBat')) tbGanNut();
@@ -2057,7 +2074,7 @@ function veChot() {
     '<p class="muted" style="margin:8px 0 0">' + (r.duyet ? '<b>Chờ duyệt</b> chỉ kế toán + Admin thấy: bấm vào thẻ để nhập mã đơn rồi chọn <b>Đơn mới</b>, đơn trùng thì bấm <b>Bỏ đơn</b>. ' : '') +
     '<b>Bấm vào thẻ</b> để xem đơn và chuyển bước, hoặc kéo thẻ sang cột khác. Bảng không hiện giá tiền, thông tin xuất HĐ. Cột Đã xuất kho chỉ giữ đơn xuất hôm nay' + (r.xuatCu ? ' (' + r.xuatCu + ' đơn xuất các ngày trước đã ẩn)' : '') + '.</p></div><div id="chDs"></div>';
   (nhung || $('noiDung')).innerHTML = h;
-  veChotDs();
+  veChotDs(); setTimeout(chotMoDich, 50);
   $('chQ').oninput = function () { CHOT.q = this.value; veChotDs(); };
   $('chTai').onclick = function () { napChot(); };
   if ($('chNhap')) $('chNhap').onclick = moNhapChot;
