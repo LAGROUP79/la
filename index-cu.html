@@ -2231,9 +2231,14 @@ function chotDoc(tin) {
     }
     if (dcI === i - 1 && !hang.test(b) && !/^\d/.test(l) && l.indexOf(':') < 0 && !reTT.test(b)) { d.nhan.dc += ' ' + l; dcI = i; return; }
     if (reTT.test(b)) { ghiTT.push(l); return; }
-    if ((m = /^(tong cong|tong so|tong sl|tong|so luong|sl)\s{0,3}:?\s{0,3}(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(b))) { tongHu = Number(m[2].replace(',', '.')) * (/^(t|th|thung)(\s|$|\.)/.test(m[3]) ? 105 : 1); return; }
+    if (/^tong(\s|:|$)/.test(b)) {
+      if (/(tien|thanh toan|vnd|\d\s{0,2}(k|d|đ)(\s|$)|\d[.,]\d{3})/.test(b)) { ghiTT.push(l); return; }
+      if ((m = /(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(b))) tongHu = Number(m[1].replace(',', '.')) * (/^(t|th|thung)(\s|$|\.)/.test(m[2]) ? 105 : 1);
+      return;
+    }
+    if ((m = /^(so luong|sl)\s{0,3}:?\s{0,3}(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(b))) { tongHu = Number(m[2].replace(',', '.')) * (/^(t|th|thung)(\s|$|\.)/.test(m[3]) ? 105 : 1); return; }
     if ((m = /^([^\d:]{1,40}):\s{0,3}(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(l))) { l = m[2] + ' ' + m[1].trim() + (m[3] ? ' ' + m[3] : ''); b = cnBo(l); }
-    if (nhanI >= 0 && !d.nhan.dc && i <= nhanI + 2 && !hang.test(b) && !/^\(/.test(l) && reDc.test(b) && (!/^\d/.test(l) || /(duong|pho|xa|phuong|huyen|thon|ngo|hem|so nha)/.test(b))) { d.nhan.dc = l; dcI = i; return; }
+    if (nhanI >= 0 && !d.nhan.dc && i <= nhanI + 2 && !hang.test(b) && !/^\d+(?:[.,]\d+)?\s{0,2}(hu\s{0,2})?(duong phen|phen|hat sen|sen|dong trung|tao do|tre em|tu vi|gung|saf+ron|chia|nhan sam|ky tu|la dua|ca cao|collagen|nha dam|dp|dt)(\s|$|,)/.test(b) && !/^\(/.test(l) && reDc.test(b) && (!/^\d/.test(l) || /,/.test(l) || /(duong|pho|xa|phuong|huyen|thon|ngo|hem|so nha)/.test(b))) { d.nhan.dc = l; dcI = i; return; }
     if (!d.tenKH && nhanI < 0 && !/^\(?\d/.test(l) && !hang.test(b)) { d.tenKH = l; return; }
     if (!/^\(?\d/.test(l) && !hang.test(b)) { ghi.push(l); return; }
     var gia = 0; l = l.replace(/\s*[x×*@]\s*(\d[\d.,]*\s*k?)\s*(đ|d|vnd|\/\s*\S+)?\s*$/i, function (m0, g) { gia = cnSo(g); return ''; });
@@ -3310,6 +3315,12 @@ function sbSaoKe(ma, thang) {
   var tu = thang + '-01', den = sbCuoiThang(thang); if (den > SB.homNay) den = SB.homNay;
   goi('ktSaoKe', [TK, ma, tu, den], function (r) { sbVeSaoKe(ma, thang, r); });
 }
+function sbNhanGon(s) {
+  s = String(s || '').trim(); var p = s.split(/\s+[\-–]\s+/), i = -1;
+  p.forEach(function (x, j) { if (i < 0 && /(?:\+?84|0)(?:[\s.]?\d){9,10}/.test(x)) i = j; });
+  if (i >= 0) s = p.slice(0, i + 1).join(' - ');
+  var m = /^(.*?(?:\+?84|0)(?:[\s.]?\d){9,10})(?!\d)/.exec(s); return m ? m[1].replace(/[\s,\-–]+$/, '') : s;
+}
 function sbVeSaoKe(ma, thang, r) {
   var k = sbKhach(ma) || {}, ps = 0, tra = 0, hang = [], ky = 0;
   var thuKem = {}; r.dong.forEach(function (x) { var m = x.loai === 'thu' && /^Thu kèm đơn (\S+)/.exec(x.ghiChu || ''); if (m) (thuKem[m[1]] = thuKem[m[1]] || []).push(x); });
@@ -3319,7 +3330,7 @@ function sbVeSaoKe(ma, thang, r) {
     ps += x.tien; ky++;
     var kem = (thuKem[x.ma] || []).reduce(function (a, t) { return a + t.tien; }, 0); tra += kem;
     var ct = x.ct.length ? x.ct : [{ sp: '', sl: '', gia: '', tien: 0 }];
-    ct.forEach(function (c, i) { hang.push({ ky: ky, ngay: i ? '' : x.ngay, sp: c.sp, sl: c.sl, gia: c.gia, tien: c.tien, tt: i ? 0 : kem, nhan: i ? '' : (x.nhan || '').trim() }); });
+    ct.forEach(function (c, i) { hang.push({ ky: ky, ngay: i ? '' : x.ngay, sp: c.sp, sl: c.sl, gia: c.gia, tien: c.tien, tt: i ? 0 : kem, nhan: i ? '' : sbNhanGon(x.nhan) }); });
     if (x.ship) hang.push({ ky: ky, sp: 'Phí ship', tien: x.ship });
     if (x.ck) hang.push({ ky: ky, sp: 'Chiết khấu', tien: -x.ck });
     if (x.vat) hang.push({ ky: ky, sp: 'VAT', tien: x.vat });
