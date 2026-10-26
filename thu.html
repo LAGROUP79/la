@@ -3406,7 +3406,9 @@ function sbVeSaoKe(ma, thang, r) {
       hang.push({ ky: ky, ngay: x.ngay, sp: x.tien < 0 ? 'Chuyển trả khách' : 'Thanh toán công nợ', tt: x.tien, nhan: [x.ht, x.ghiChu].filter(Boolean).join(' · ') }); return; }
     ps += x.tien; ky++;
     var kem = (thuKem[x.ma] || []).reduce(function (a, t) { return a + t.tien; }, 0); tra += kem;
-    var ct = x.ct.length ? x.ct : [{ sp: '', sl: '', gia: '', tien: 0 }];
+    var gop = [], vt = {};
+    x.ct.forEach(function (c) { var k = c.sp + '|' + c.gia; if (k in vt) { var g = gop[vt[k]]; g.sl = (Number(g.sl) || 0) + (Number(c.sl) || 0); g.tien = (g.tien || 0) + (c.tien || 0); } else { vt[k] = gop.length; gop.push({ sp: c.sp, sl: c.sl, gia: c.gia, tien: c.tien }); } });
+    var ct = gop.length ? gop : [{ sp: '', sl: '', gia: '', tien: 0 }];
     ct.forEach(function (c, i) { hang.push({ ky: ky, ngay: i ? '' : x.ngay, sp: c.sp, sl: c.sl, gia: c.gia, tien: c.tien, tt: i ? 0 : kem, nhan: i ? '' : sbNhanGon(x.nhan) }); });
     if (x.ship) hang.push({ ky: ky, sp: 'Phí ship', tien: x.ship });
     if (x.ck) hang.push({ ky: ky, sp: 'Chiết khấu', tien: -x.ck });
