@@ -2171,11 +2171,9 @@ function chotHoiShip(x, ok) {
 var CHOT_DM = null;
 function chotTienHtml(x) {
   var m = x.tien; if (!m) return '';
-  var cod = m.thu.filter(function (t) { return t.ht === 'COD'; }).reduce(function (a, t) { return a + t.tien; }, 0), khac = m.thu.filter(function (t) { return t.ht !== 'COD'; });
-  return '<div style="margin:8px 0;padding:10px 12px;border-radius:10px;background:#FFF8E6;border:1px solid #E8D48B">' +
-    '<div style="font-size:16px;font-weight:800;color:' + (cod ? '#B42318' : '#1F5A4C') + '">' + (cod ? '💵 COD cần thu: ' + tien(cod) + 'đ' : '💵 Không thu COD') + '</div>' +
-    (khac.length ? '<div style="font-size:13px;margin-top:2px">Đã thu trước: ' + khac.map(function (t) { return tien(t.tien) + 'đ (' + e(t.ht) + ')'; }).join(' + ') + '</div>' : '') +
-    '<div class="muted" style="font-size:12.5px;margin-top:2px">Phí ship: ' + (m.ship ? tien(m.ship) + 'đ' : 'chưa nhập') + ' · Tổng đơn: ' + tien(m.tong) + 'đ · <i>chỉ kế toán + Admin thấy</i></div></div>';
+  var cod = m.thu.filter(function (t) { return t.ht === 'COD'; }).reduce(function (a, t) { return a + t.tien; }, 0);
+  return '<div style="margin:8px 0;padding:10px 12px;border-radius:10px;background:#FFF8E6;border:1px solid #E8D48B;font-size:16px;font-weight:800;color:' + (cod ? '#B42318' : '#1F5A4C') + '">' +
+    (cod ? '💵 COD cần thu: ' + tien(cod) + 'đ' : '💵 Không thu COD') + '</div>';
 }
 function moChotThe(x) {
   var r = CHOT.r, i = r.tt.indexOf(x.tt), cho = i === 0, laKD = x.khoa.indexOf('KD:') === 0;
