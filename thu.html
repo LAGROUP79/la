@@ -628,12 +628,24 @@ function moChamCong(loai) {
   };
 }
 
-var CV = null, CV_LOC = 'toi';
-function napCongViec() { goiDoc('congViec', [TK], veCongViec); }
+var CV = null, CV_LOC = 'toi', CV_MUC = 'chot';
+function napCongViec() { if (cvCoChot() && CV_MUC === 'chot') veCvChot(); goiDoc('congViec', [TK], veCongViec); }
+function cvCoChot() { return PHONG_HT !== 'KHO' && !!H && (H.me.admin || H.me.phongVao.indexOf('KHO') >= 0 || H.me.phongVao.indexOf('TCKT') >= 0); }
+function cvMuc() {
+  return '<div class="tab2" style="margin-bottom:12px">' + [['chot', '📦 Chốt đơn'], ['viec', '✓ Việc được giao']].map(function (x) { return '<button data-cvmuc="' + x[0] + '" class="' + (CV_MUC === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>';
+}
+function veCvChot() {
+  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Công việc</h2>' + cvMuc() + '<div id="cvChot"><p class="muted">Đang tải bảng chốt đơn…</p></div>';
+  if (!CHOT && NHO.chot) CHOT = { r: NHO.chot.r, q: '' };
+  if (CHOT) veChot();
+  napChot(true);
+}
 function veCongViec(r) {
   CV = r;
+  if (TAB !== 'cv') return;
+  if (cvCoChot() && CV_MUC === 'chot') { if (!$('cvChot')) veCvChot(); return; }
   function o(t, ten) { return '<div><small>' + ten + '</small><b>' + (t.pt == null ? '—' : t.pt + '%') + '</b><span class="muted"> ' + t.xong + '/' + t.tong + ' xong' + (t.tre ? ' · ' + t.tre + ' trễ' : '') + '</span>' + thanh(t.pt) + '</div>'; }
-  var h = quayLai() + '<h2 class="tieude">Công việc</h2>' + (PHONG_HT === 'KHO' ? '<div id="cvKho"><p class="muted">Đang tải thống kê công việc kho…</p></div><h3 class="nhom" style="margin:14px 0 8px">VIỆC ĐƯỢC GIAO</h3>' : '') + '<div class="o">' + o(r.cuaToi, 'Việc của tôi') + (H.me.quanLy ? o(r.tp, 'Việc trưởng phòng') + o(r.nv, 'Việc nhân viên') : '') + '</div>';
+  var h = quayLai() + '<h2 class="tieude">Công việc</h2>' + (cvCoChot() ? cvMuc() : '') + (PHONG_HT === 'KHO' ? '<div id="cvKho"><p class="muted">Đang tải thống kê công việc kho…</p></div><h3 class="nhom" style="margin:14px 0 8px">VIỆC ĐƯỢC GIAO</h3>' : '') + '<div class="o">' + o(r.cuaToi, 'Việc của tôi') + (H.me.quanLy ? o(r.tp, 'Việc trưởng phòng') + o(r.nv, 'Việc nhân viên') : '') + '</div>';
   if (r.giaoDuoc.length) h += '<button class="nut vang rong" id="cvGiao" style="margin-bottom:12px">＋ Giao việc</button>';
   var loc = [['toi', 'Việc của tôi'], ['duyet', 'Cần tôi duyệt'], ['giao', 'Tôi đã giao'], ['het', 'Tất cả']];
   if (!r.giaoDuoc.length && !H.me.quanLy) loc = loc.filter(function (x) { return x[0] === 'toi' || x[0] === 'het'; });
@@ -2018,10 +2030,11 @@ function napChot(im) {
 function chotNhan(r) { CHOT.r = r; veChot(); if (TAB === 'cv' && $('cvKho')) napKhoTK(); }
 function chotCot() { var r = CHOT.r; return r.tt.filter(function (t, i) { return i > 0 || r.duyet; }); }
 function veChot() {
+  if (TAB !== 'chot' && !(TAB === 'cv' && $('cvChot'))) return;
   var r = CHOT.r, cot = chotCot();
   var dem = {}; r.ds.forEach(function (x) { dem[x.tt] = (dem[x.tt] || 0) + 1; });
   var nhung = TAB === 'cv' && $('cvChot');
-  var h = (nhung ? '<h3 class="nhom" style="margin:6px 0 8px">ĐƠN HÀNG CỦA KHO — theo dõi tiến độ soạn, xuất</h3>' : quayLai() + '<h2 class="tieude">Chốt đơn</h2>') +
+  var h = (nhung ? '' : quayLai() + '<h2 class="tieude">Chốt đơn</h2>') +
     '<style>.ch-wrap{display:grid;grid-template-columns:repeat(' + cot.length + ',minmax(0,1fr));gap:8px;padding:2px 0 12px}' +
     '.ch-cot{min-width:0;background:#f4f1e8;border-radius:14px;padding:7px;min-height:240px;display:flex;flex-direction:column;gap:7px}.ch-cot.keo{outline:2px dashed var(--xanh);background:#eef5f1}' +
     '@media(max-width:1250px){.ch-wrap{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:760px){.ch-wrap{grid-template-columns:1fr}.ch-cot{min-height:0}}' +
@@ -3785,7 +3798,8 @@ function bamKho(b) {
 
 document.addEventListener('click', function (ev) {
   var b = ev.target.closest('button'); if (!b) return;
-  if (b.dataset.tab) { if (b.dataset.pb) PHONG_HT = b.dataset.pb; chuyenTab(b.dataset.tab); return; }
+  if (b.dataset.tab) { if (b.dataset.pb) PHONG_HT = b.dataset.pb; else if (b.closest('#thanhNav') && /^(home|cc|cv|np)$/.test(b.dataset.tab)) PHONG_HT = ''; chuyenTab(b.dataset.tab); return; }
+  if (b.dataset.cvmuc) { CV_MUC = b.dataset.cvmuc; if (CV) veCongViec(CV); return; }
   if (b.dataset.cc) { moChamCong(b.dataset.cc); return; }
   if (b.id === 'nutThoat') { if (confirm('Thoát khỏi app?')) thoat(); return; }
   if (b.dataset.floai) { datLoai(b.dataset.floai); return; }
