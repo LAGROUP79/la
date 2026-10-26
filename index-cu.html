@@ -2205,14 +2205,14 @@ function chotDoc(tin) {
   }
   var dcI = -9, tongHu = 0;
   dongs.forEach(function (l, i) {
-    l = l.replace(/^[\-•+*–]\s{0,3}/, '').trim(); if (!l) return;
+    l = l.replace(/^[^\p{L}\p{N}(]+/u, '').trim(); if (!l) return;
     var b = cnBo(l), m;
     if (!d.maDon && /^\d{6}$/.test(l.replace(/\s/g, ''))) { d.maDon = l.replace(/\s/g, ''); return; }
     if ((m = /^(ma don|ma)\s{0,3}:\s{0,3}(\d{6})\b/.exec(b))) { d.maDon = m[2]; return; }
     if (cnGio(l)) return;
-    if ((m = /^(nguoi gui|gui|khach hang|khach)\s{0,3}:\s{0,3}/.exec(b))) { d.tenKH = l.slice(m[0].length).trim(); return; }
-    if ((m = /^(dia chi nhan|dia chi|d\.c|dc)\s{0,3}:\s{0,3}/.exec(b))) { d.nhan.dc = l.slice(m[0].length).trim(); dcI = i; return; }
-    if ((m = /^(nguoi nhan|nhan)\s{0,3}:?\s{0,3}/.exec(b)) && /^(nguoi nhan|nhan)(\s|:|$)/.test(b)) {
+    if ((m = /^(ten nguoi gui|nguoi gui|ben gui|gui|khach hang|khach|dai ly)\s{0,3}:\s{0,3}/.exec(b))) { d.tenKH = l.slice(m[0].length).trim(); return; }
+    if ((m = /^(dia chi nguoi nhan|dia chi nhan hang|dia chi nhan|dia chi giao|dia chi|d\.c|d\/c|dc)\s{0,3}:\s{0,3}/.exec(b))) { d.nhan.dc = l.slice(m[0].length).trim(); dcI = i; return; }
+    if ((m = /^(ten nguoi nhan|nguoi nhan hang|nguoi nhan|nhan hang|nhan)\s{0,3}:?\s{0,3}/.exec(b)) && /^(ten nguoi nhan|nguoi nhan|nhan hang|nhan)(\s|:|$)/.test(b)) {
       var r = l.slice(m[0].length), p = reSdt.exec(r); nhanI = i;
       if (p) { d.nhan.sdt = p[0].replace(/\D/g, '').replace(/^84/, '0'); r = r.replace(p[0], ' '); }
       d.nhan.ten = r.replace(/[\s\-–—,:|]+$/, '').replace(/^[\s\-–—,:|]+/, '').replace(/\s[\-–—]\s*$/, '').trim(); return;
