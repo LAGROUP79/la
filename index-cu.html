@@ -2141,9 +2141,10 @@ function veKhoTraCuu() {
   }).join('') : '<p class="muted">Không tìm thấy đơn.</p>';
 }
 function chotTim(k) { return CHOT.r.ds.filter(function (x) { return x.khoa === k; })[0]; }
-function chotChuyen(k, tt, maDon) {
+function chotChuyen(k, tt, maDon, ship) {
   var x = chotTim(k), r = CHOT.r; if (!x || (x.tt === tt && maDon == null)) return;
   var vao = r.tt.indexOf(tt), tu = r.tt.indexOf(x.tt);
+  if (vao === 5 && tu < 5 && tu > 0 && r.ghiDuyet && ship == null && k.indexOf('KT:') === 0) { chotHoiShip(x, function (s) { chotChuyen(k, tt, maDon, s); }); return; }
   if ((vao === 0 || tu === 0) && !r.ghiDuyet) { bao('Bước Chờ duyệt do kế toán hoặc Admin xử lý.', true); return; }
   if (tu === 0 && vao > 0 && x.khoa.indexOf('KD:') === 0) { moChotThe(x); bao('Đơn phòng KD: chọn khách trong Sổ bán hàng rồi bấm Duyệt.'); return; }
   if (tu === 0 && vao > 0 && maDon == null) {
@@ -2152,7 +2153,19 @@ function chotChuyen(k, tt, maDon) {
     if (!maDon) { bao('Nhập mã đơn trước khi duyệt.', true); return; }
   }
   if (x.huyGoc && vao > tu && !confirm('Đơn gốc đã HUỶ. Vẫn chuyển bước?')) return;
-  goi('chotChuyen', [TK, k, tt, maDon == null ? null : maDon], function (r2) { chotNhan(r2); dongHop(); bao((maDon || x.ma || x.khach) + ' → ' + tt); });
+  goi('chotChuyen', [TK, k, tt, maDon == null ? null : maDon, null, null, ship == null ? null : ship], function (r2) { chotNhan(r2); dongHop(); bao((maDon || x.ma || x.khach) + ' → ' + tt + (ship != null ? ' · ship ' + (ship ? tien(ship) + 'đ' : '0đ') : '')); });
+}
+function chotHoiShip(x, ok) {
+  var s = x.ship || 0;
+  moHop('<h3 style="margin:0 0 6px;color:var(--xanh)">🏷️ Tạo mã · ' + e(x.ma || '') + '</h3><p style="margin:0 0 4px"><b>' + e(x.khach) + '</b></p>' +
+    '<p id="shHoi" style="font-size:16px;font-weight:700;margin:10px 0;color:' + (s ? 'var(--xanh)' : '#b42318') + '">' + (s ? 'Phí ship ' + tien(s) + 'đ, xác nhận tạo mã?' : 'Đơn chưa có phí ship, xác nhận tạo mã?') + '</p>' +
+    '<label for="shTien">Phí ship (nhập / sửa cho khớp ship thực tế)</label><input id="shTien" inputmode="numeric" value="' + (s ? tien(s) : '') + '" placeholder="0">' +
+    '<p class="muted" style="margin:6px 0 0">Số này ghi thẳng vào đơn trong Sổ bán hàng, công nợ khách tính lại theo.</p>' +
+    '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="shHuy" style="flex:1">Huỷ</button><button class="nut vang" id="shOk" style="flex:1">✓ Xác nhận tạo mã</button></div>');
+  $('shTien').oninput = function () { var v = docTien(this.value); $('shHoi').textContent = v ? 'Phí ship ' + tien(v) + 'đ, xác nhận tạo mã?' : 'Đơn chưa có phí ship, xác nhận tạo mã?'; $('shHoi').style.color = v ? 'var(--xanh)' : '#b42318'; };
+  $('shHuy').onclick = dongHop;
+  $('shOk').onclick = function () { var v = docTien($('shTien').value); dongHop(); ok(v); };
+  setTimeout(function () { $('shTien').focus(); }, 50);
 }
 var CHOT_DM = null;
 function moChotThe(x) {
