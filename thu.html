@@ -428,7 +428,7 @@ function vaoApp(home) {
 }
 function veNav() {
   var t = [['home', '⌂', 'Trang chủ'], ['cc', '◷', 'Chấm công'], ['cv', '✓', 'Công việc'], ['np', '✉', 'Xin nghỉ']];
-  var sl = { cv: (H.viec || {}).chuaXong + (H.viec || {}).canDuyet, np: H.choDuyet };
+  var sl = { cv: ((H.viec || {}).chuaXong || 0) + ((H.viec || {}).canDuyet || 0) + ((H.viec || {}).chot || 0), np: H.choDuyet };
   $('thanhNav').innerHTML = t.map(function (x) {
     var dem = sl[x[0]] ? '<span class="dem">' + sl[x[0]] + '</span>' : '';
     return '<button data-tab="' + x[0] + '" class="' + (TAB === x[0] && !PHONG_HT ? 'on' : '') + '"><b>' + x[1] + '</b>' + x[2] + dem + '</button>';
@@ -632,7 +632,8 @@ var CV = null, CV_LOC = 'toi', CV_MUC = 'chot';
 function napCongViec() { if (cvCoChot() && CV_MUC === 'chot') veCvChot(); goiDoc('congViec', [TK], veCongViec); }
 function cvCoChot() { return PHONG_HT !== 'KHO' && !!H && (H.me.admin || H.me.phongVao.indexOf('KHO') >= 0 || H.me.phongVao.indexOf('TCKT') >= 0); }
 function cvMuc() {
-  return '<div class="tab2" style="margin-bottom:12px">' + [['chot', '📦 Chốt đơn'], ['viec', '✓ Việc được giao']].map(function (x) { return '<button data-cvmuc="' + x[0] + '" class="' + (CV_MUC === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>';
+  var v = H.viec || {}, so = { chot: v.chot || 0, viec: (v.chuaXong || 0) + (v.canDuyet || 0) };
+  return '<div class="tab2" style="margin-bottom:12px">' + [['chot', '📦 Chốt đơn'], ['viec', '✓ Việc được giao']].map(function (x) { return '<button data-cvmuc="' + x[0] + '" class="' + (CV_MUC === x[0] ? 'on' : '') + '">' + x[1] + (so[x[0]] ? ' <b style="background:#d93025;color:#fff;border-radius:10px;padding:0 7px;font-size:12px">' + so[x[0]] + '</b>' : '') + '</button>'; }).join('') + '</div>';
 }
 function veCvChot() {
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Công việc</h2>' + cvMuc() + '<div id="cvChot"><p class="muted">Đang tải bảng chốt đơn…</p></div>';
@@ -2029,7 +2030,13 @@ function napChot(im) {
 }
 function chotNhan(r) { CHOT.r = r; veChot(); if (TAB === 'cv' && $('cvKho')) napKhoTK(); }
 function chotCot() { var r = CHOT.r; return r.tt.filter(function (t, i) { return i > 0 || r.duyet; }); }
+function chotDemSo() {
+  if (!CHOT || !H || !H.viec) return;
+  var r = CHOT.r, n = r.ds.filter(function (x) { return x.tt === (r.duyet ? r.tt[0] : r.tt[1]); }).length;
+  if (n !== (H.viec.chot || 0)) { H.viec.chot = n; luuH(); veNav(); var c = document.querySelector('[data-cvmuc]'); if (c && $('cvChot')) c.parentNode.outerHTML = cvMuc(); }
+}
 function veChot() {
+  chotDemSo();
   if (TAB !== 'chot' && !(TAB === 'cv' && $('cvChot'))) return;
   var r = CHOT.r, cot = chotCot();
   var dem = {}; r.ds.forEach(function (x) { dem[x.tt] = (dem[x.tt] || 0) + 1; });
