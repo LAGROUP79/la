@@ -2057,7 +2057,9 @@ function veChot() {
   clearInterval(CHOT_HEN);
   CHOT_HEN = setInterval(function () { if (TAB !== 'chot' && !(TAB === 'cv' && $('cvChot'))) { clearInterval(CHOT_HEN); return; } if (!CN && !$('lop').innerHTML && document.activeElement && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) napChot(true); }, 60000);
 }
-function chotSp(x) { return x.sp.map(function (s) { return '• ' + e(s.t) + ' × <b>' + soSL(s.sl) + '</b>' + (s.dv ? ' ' + e(s.dv) : '') + (s.ct ? '<div style="margin:1px 0 2px 10px;color:#8a5f00;font-weight:600">↳ ' + e(s.ct) + '</div>' : ''); }).join('<br>'); }
+function chotTongHu(sp) { return (sp || []).reduce(function (a, s) { return a + (s.dv === 'hũ' || /yến hũ|hũ yến|yến chưng/i.test(s.t) ? Number(s.sl) || 0 : 0); }, 0); }
+function chotSp(x) { var n = chotTongHu(x.sp); return chotSpDong(x) + (n ? '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #d6d3c8;font-weight:800;color:var(--xanh)">TỔNG: ' + soSL(n) + ' hũ</div>' : ''); }
+function chotSpDong(x) { return x.sp.map(function (s) { return '• ' + e(s.t) + ' × <b>' + soSL(s.sl) + '</b>' + (s.dv ? ' ' + e(s.dv) : '') + (s.ct ? '<div style="margin:1px 0 2px 10px;color:#8a5f00;font-weight:600">↳ ' + e(s.ct) + '</div>' : ''); }).join('<br>'); }
 function veChotDs() {
   var r = CHOT.r, cot = chotCot(), q = CHOT.q.toLowerCase().trim();
   var ds = r.ds.filter(function (x) { return !q || (x.ma + ' ' + x.khach + ' ' + x.sdt4 + ' ' + x.sp.map(function (s) { return s.t; }).join(' ') + ' ' + (x.goiY || '')).toLowerCase().indexOf(q) >= 0; });
@@ -2483,15 +2485,18 @@ function chotTongHop(tt) {
   return { ds: ds, sp: thu.map(function (k) { var a = sp[k]; return { t: a.t, dv: a.dv, sl: a.sl, ct: a.ctThu.map(function (v) { return a.ct[v] + ' ' + v; }).join(', ') }; }) };
 }
 function moTongHopChot(tt) {
-  var th = chotTongHop(tt), c = CHOT_MAU[tt];
+  var th = chotTongHop(tt), c = CHOT_MAU[tt], tongHu = th.ds.reduce(function (a, x) { return a + chotTongHu(x.sp); }, 0);
   var chu = c[1] + ' ' + tt.toUpperCase() + ' · ' + th.ds.length + ' đơn\n\nTỔNG HÀNG:\n' + th.sp.map(function (s) { return '• ' + s.t + ': ' + soSL(s.sl) + (s.dv ? ' ' + s.dv : '') + (s.ct ? '\n   ↳ ' + s.ct : ''); }).join('\n') +
-    '\n\nĐƠN:\n' + th.ds.map(function (x, i) { return (i + 1) + '. ' + (x.ma || '(chưa mã)') + ' · ' + x.khach + (x.sdt4 ? ' ' + x.sdt4 : ''); }).join('\n');
+    (tongHu ? '\nTỔNG: ' + soSL(tongHu) + ' hũ' : '') +
+    '\n\nĐƠN:\n' + th.ds.map(function (x, i) { var n = chotTongHu(x.sp); return (i + 1) + '. ' + (x.ma || '(chưa mã)') + ' · ' + x.khach + (x.sdt4 ? ' ' + x.sdt4 : '') + (n ? ' · TỔNG: ' + soSL(n) + ' hũ' : ''); }).join('\n');
   moHop('<h3 style="margin:0;color:' + c[0] + '">' + c[1] + ' ' + e(tt) + ' · ' + th.ds.length + ' đơn</h3>' +
     (th.ds.length ? '<h4 style="margin:12px 0 6px">Tổng hàng cần chuẩn bị</h4><div class="cuon"><table><tr><th>Sản phẩm</th><th class="s">Tổng SL</th><th>Chi tiết (vị / khay)</th></tr>' +
-      th.sp.map(function (s) { return '<tr><td>' + e(s.t) + '</td><td class="s"><b>' + soSL(s.sl) + '</b>' + (s.dv ? ' ' + e(s.dv) : '') + '</td><td style="color:#8a5f00">' + e(s.ct) + '</td></tr>'; }).join('') + '</table></div>' +
+      th.sp.map(function (s) { return '<tr><td>' + e(s.t) + '</td><td class="s"><b>' + soSL(s.sl) + '</b>' + (s.dv ? ' ' + e(s.dv) : '') + '</td><td style="color:#8a5f00">' + e(s.ct) + '</td></tr>'; }).join('') +
+      (tongHu ? '<tr><td><b>TỔNG</b></td><td class="s"><b>' + soSL(tongHu) + '</b> hũ</td><td></td></tr>' : '') + '</table></div>' +
       '<h4 style="margin:12px 0 6px">Danh sách đơn</h4>' + th.ds.map(function (x) {
         return '<div class="don" data-chthe="' + e(x.khoa) + '" style="cursor:pointer;margin:6px 0;padding:8px 10px"><b>' + (x.ma ? e(x.ma) : '<span style="color:#b42318">Chưa có mã</span>') + '</b> · ' + e(x.khach) + (x.sdt4 ? ' ' + e(x.sdt4) : '') +
-          '<div class="muted" style="font-size:12.5px">' + x.sp.map(function (s) { return e(s.t) + ' ×' + soSL(s.sl) + (s.ct ? ' (' + e(s.ct) + ')' : ''); }).join(' · ') + '</div></div>';
+          '<div class="muted" style="font-size:12.5px">' + x.sp.map(function (s) { return e(s.t) + ' ×' + soSL(s.sl) + (s.ct ? ' (' + e(s.ct) + ')' : ''); }).join(' · ') + '</div>' +
+          (chotTongHu(x.sp) ? '<div style="font-size:12.5px;font-weight:700;color:var(--xanh)">TỔNG: ' + soSL(chotTongHu(x.sp)) + ' hũ</div>' : '') + '</div>';
       }).join('') : '<p class="muted">Bước này chưa có đơn nào.</p>') +
     '<div class="hang" style="margin-top:12px">' + (th.ds.length ? '<button class="nut vang" id="thCopy">COPY tổng hợp</button>' : '') + '<button class="nut phu" id="thDong">Đóng</button></div>');
   if ($('thCopy')) $('thCopy').onclick = function () { copyChu(chu); };
