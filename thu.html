@@ -1368,13 +1368,15 @@ function cskhHinh(x, nut) {
   nut.disabled = true; nut.textContent = 'Đang tạo hình…';
   napThuVien('html2canvas', 'html2canvas/1.4.1/html2canvas.min.js', function () {
     var hop = document.createElement('div');
-    hop.style.cssText = 'position:fixed;left:-10000px;top:0;width:640px;background:#FBF6EA;font-family:Arial,Helvetica,sans-serif;color:#1d1d1b';
-    hop.innerHTML = '<div style="background:#1F5A4C;color:#fff;padding:22px 28px 18px;border-bottom:5px solid #C9A227"><div style="font-size:13px;letter-spacing:3px;color:#E8D48B">CÔNG TY TNHH</div><div style="font-size:28px;font-weight:800;letter-spacing:1px">YẾN SÀO LANEST</div><div style="font-size:14px;color:#E8D48B;margin-top:2px;font-style:italic">Trao sức khỏe – Trao yêu thương</div></div>' +
-      '<div style="padding:22px 28px 8px"><div style="font-size:21px;font-weight:800;color:#1F5A4C;margin-bottom:12px;line-height:1.3">' + e(td) + '</div>' +
+    hop.style.cssText = 'position:fixed;left:-10000px;top:0;width:640px;background:#FBF6EA;font-family:Be Vietnam Pro,Arial,sans-serif;color:#1d1d1b';
+    hop.innerHTML = '<div style="background:#1F5A4C;color:#fff;padding:22px 28px 18px;border-bottom:5px solid #C9A227;display:flex;align-items:center;gap:16px"><img src="logo-tron.png" style="width:60px;height:60px;border-radius:50%;background:#fff;flex:0 0 auto" crossorigin="anonymous"><div><div style="font-size:13px;color:#E8D48B">CÔNG TY TNHH</div><div style="font-size:26px;font-weight:700;line-height:1.25">YẾN SÀO LANEST</div><div style="font-size:14px;color:#E8D48B;margin-top:2px;font-style:italic">Trao sức khỏe – Trao yêu thương</div></div></div>' +
+      '<div style="padding:22px 28px 8px"><div style="font-size:21px;font-weight:700;color:#1F5A4C;margin-bottom:12px;line-height:1.35">' + e(td) + '</div>' +
       '<div style="font-size:17px;line-height:1.6;white-space:pre-wrap">' + e(chu) + '</div></div>' +
       '<div style="margin:16px 28px 0;padding:14px 0 20px;border-top:2px solid #C9A227;display:flex;justify-content:space-between;font-size:14.5px;color:#1F5A4C;font-weight:700"><span>📞 025.8627.8627</span><span>🌐 www.lanest.com.vn</span></div>';
     document.body.appendChild(hop);
-    html2canvas(hop, { scale: 2, backgroundColor: '#FBF6EA' }).then(function (cv) {
+    var cho = [].filter.call(hop.querySelectorAll('img'), function (x) { return !x.complete; }).map(function (x) { return new Promise(function (ok) { x.onload = x.onerror = ok; }); });
+    Promise.all(cho.concat([document.fonts && document.fonts.load ? Promise.all([document.fonts.load('700 21px "Be Vietnam Pro"', 'Ấ'), document.fonts.load('400 17px "Be Vietnam Pro"', 'ầ')]).catch(function () {}) : 0]))
+    .then(function () { return html2canvas(hop, { scale: 2, backgroundColor: '#FBF6EA', useCORS: true }); }).then(function (cv) {
       hop.remove();
       cv.toBlob(function (blob) {
         var tep = new File([blob], 'Lanest - ' + td.replace(/[^\wÀ-ỹ\s-]/g, '').slice(0, 40) + '.png', { type: 'image/png' });
