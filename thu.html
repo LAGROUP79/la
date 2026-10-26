@@ -3338,6 +3338,11 @@ function sbHuy(loai, ma) {
   if (ly == null) return; if (!ly.trim()) { bao('Cần ghi lý do huỷ.', true); return; }
   goi('ktHuy', [TK, loai, ma, ly, SB_THANG], function (x) { SB = x.so; veSo(); bao('Đã huỷ.'); });
 }
+function sbGopDong(ds) {
+  var gop = [], vt = {};
+  (ds || []).forEach(function (c) { var k = c.sp + '|' + c.gia; if (k in vt) { var g = gop[vt[k]]; g.sl = (Number(g.sl) || 0) + (Number(c.sl) || 0); g.tien = (g.tien || 0) + (c.tien || 0); } else { vt[k] = gop.length; gop.push({ sp: c.sp, sl: c.sl, gia: c.gia, tien: c.tien }); } });
+  return gop;
+}
 function sbVeDon() {
   var h = '<div class="the"><label for="dTim" style="margin-top:0">Tìm đơn (mã, khách, người nhận)</label><input id="dTim" value="' + e(SB_TIM) + '" placeholder="VD: 070110, Khắc Bình, 0393…"></div><div id="dDs"></div>';
   $('sbNoi').innerHTML = h;
@@ -3347,7 +3352,7 @@ function sbVeDon() {
       var huy = d.tt !== 'Hợp lệ';
       return '<div class="the" style="' + (huy ? 'opacity:.55' : '') + '"><div class="hang" style="justify-content:space-between"><b>' + (d.so ? e(d.so) : 'Chưa có mã') + ' · ' + ngVN(d.ngay) + ' · ' + e(d.tenKH) + '</b><b>' + tien(d.tong) + 'đ</b></div>' +
         (sbTachMa(d.nhan)[1] ? '<small class="muted">Giao: ' + e(sbTachMa(d.nhan)[1]) + '</small>' : '') +
-        '<div style="margin-top:4px">' + d.dong.map(function (c) { return '<div class="hang" style="justify-content:space-between;font-size:14px"><span>' + e(c.sp) + (c.sl ? ' × ' + soSL(c.sl) : '') + (c.gia ? ' @ ' + tien(c.gia) : '') + '</span><span>' + tien(c.tien) + '</span></div>'; }).join('') +
+        '<div style="margin-top:4px">' + sbGopDong(d.dong).map(function (c) { return '<div class="hang" style="justify-content:space-between;font-size:14px"><span>' + e(c.sp) + (c.sl ? ' × ' + soSL(c.sl) : '') + (c.gia ? ' @ ' + tien(c.gia) : '') + '</span><span>' + tien(c.tien) + '</span></div>'; }).join('') +
         (d.ship ? '<div class="hang" style="justify-content:space-between;font-size:14px"><span>Phí ship</span><span>' + tien(d.ship) + '</span></div>' : '') +
         (d.ck ? '<div class="hang" style="justify-content:space-between;font-size:14px"><span>Chiết khấu</span><span>−' + tien(d.ck) + '</span></div>' : '') +
         (d.vat ? '<div class="hang" style="justify-content:space-between;font-size:14px"><span>VAT</span><span>' + tien(d.vat) + '</span></div>' : '') + '</div>' +
@@ -3406,8 +3411,7 @@ function sbVeSaoKe(ma, thang, r) {
       hang.push({ ky: ky, ngay: x.ngay, sp: x.tien < 0 ? 'Chuyển trả khách' : 'Thanh toán công nợ', tt: x.tien, nhan: [x.ht, x.ghiChu].filter(Boolean).join(' · ') }); return; }
     ps += x.tien; ky++;
     var kem = (thuKem[x.ma] || []).reduce(function (a, t) { return a + t.tien; }, 0); tra += kem;
-    var gop = [], vt = {};
-    x.ct.forEach(function (c) { var k = c.sp + '|' + c.gia; if (k in vt) { var g = gop[vt[k]]; g.sl = (Number(g.sl) || 0) + (Number(c.sl) || 0); g.tien = (g.tien || 0) + (c.tien || 0); } else { vt[k] = gop.length; gop.push({ sp: c.sp, sl: c.sl, gia: c.gia, tien: c.tien }); } });
+    var gop = sbGopDong(x.ct);
     var ct = gop.length ? gop : [{ sp: '', sl: '', gia: '', tien: 0 }];
     ct.forEach(function (c, i) { hang.push({ ky: ky, ngay: i ? '' : x.ngay, sp: c.sp, sl: c.sl, gia: c.gia, tien: c.tien, tt: i ? 0 : kem, nhan: i ? '' : sbNhanGon(x.nhan) }); });
     if (x.ship) hang.push({ ky: ky, sp: 'Phí ship', tien: x.ship });
