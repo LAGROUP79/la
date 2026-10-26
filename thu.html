@@ -96,7 +96,7 @@ input:disabled{background:#F4F0E4;color:var(--nhat)}
 .pbLuoi{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px}@media(min-width:620px){.pbLuoi{grid-template-columns:repeat(2,1fr)}}@media(min-width:1100px){.pbLuoi{grid-template-columns:repeat(3,1fr);gap:16px}}
 .pb-the{position:relative;overflow:hidden;background:var(--nen);border:1px solid rgba(0,0,0,.04);border-radius:18px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 16px rgba(27,77,64,.08)}.pb-the::after{content:'';position:absolute;right:-28px;top:-28px;width:96px;height:96px;border-radius:50%;background:var(--dam);opacity:.10;pointer-events:none}.pb-the.khoa{filter:grayscale(.75);opacity:.6}
 .pb-dau{display:flex;gap:12px;align-items:center;background:none;border:0;padding:0;text-align:left;cursor:pointer;width:100%;font:inherit;position:relative;z-index:1}.pb-dau .ico{width:46px;height:46px;border-radius:14px;background:var(--dam);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 4px 10px rgba(0,0,0,.12)}.pb-dau .ico svg{width:23px;height:23px}
-.pb-dau .ten{flex:1;min-width:0}.pb-dau b{display:block;font-size:15px;color:var(--dam2);letter-spacing:.3px}.pb-dau small{display:block;font-size:12.5px;color:#4E5B56;line-height:1.35;margin-top:2px}.pb-dau .vai{font-size:11px;font-weight:700;color:var(--dam2);background:rgba(255,255,255,.8);border-radius:20px;padding:2px 8px;white-space:nowrap;align-self:flex-start}.pb-dau .mui{color:var(--dam2);font-size:20px;opacity:.6}
+.pb-dau .ten{flex:1;min-width:0}.pb-dau b{display:block;font-size:15px;color:var(--dam2);letter-spacing:.3px}.pb-dau small{display:block;font-size:12.5px;color:#4E5B56;line-height:1.35;margin-top:2px}.pb-dau .vai{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--dam2);background:rgba(255,255,255,.8);border-radius:20px;padding:2px 8px;max-width:100%;overflow-wrap:anywhere}.pb-dau .mui{color:var(--dam2);font-size:20px;opacity:.6}
 .pb-nhanh{display:flex;gap:6px;flex-wrap:wrap;position:relative;z-index:1}.pb-nhanh button{border:0;background:rgba(255,255,255,.85);color:var(--dam2);font:inherit;font-size:12.5px;font-weight:600;border-radius:20px;padding:6px 12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06)}.pb-nhanh button:hover{background:#fff}
 h3.nhom{font-size:13px;letter-spacing:1.5px;color:var(--nhat);margin:6px 2px 8px}
 .chao{background:linear-gradient(135deg,#1B4D40 0%,#2C6B5A 60%,#3F7F5F 100%);color:#fff;border-radius:18px;padding:16px 16px 14px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(27,77,64,.22)}
@@ -1938,8 +1938,8 @@ function thePhong(ma) {
   var m = MAU_P[ma], vao = H.me.phongVao.indexOf(ma) >= 0, vp = H.me.vaiPhong.filter(function (v) { return v.ma === ma; })[0];
   var nhan = vao ? (H.me.admin ? '' : vp ? vp.vai + (vp.team ? ' · ' + vp.team : '') : '') : '🔒 Chưa có quyền';
   return '<div class="pb-the' + (vao ? '' : ' khoa') + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '">' +
-    '<button class="pb-dau" data-tab="p_' + ma + '"><span class="ico">' + IC_P[ma] + '</span><span class="ten"><b>' + e(tenPhong(ma).replace(/^PHÒNG\s+/, '')) + '</b><small>' + e(MO_TA_P[ma]) + '</small></span>' +
-    (nhan ? '<span class="vai">' + e(nhan) + '</span>' : '') + '<span class="mui">›</span></button>' +
+    '<button class="pb-dau" data-tab="p_' + ma + '"><span class="ico">' + IC_P[ma] + '</span><span class="ten"><b>' + e(tenPhong(ma).replace(/^PHÒNG\s+/, '')) + '</b><small>' + e(MO_TA_P[ma]) + '</small>' +
+    (nhan ? '<span class="vai">' + e(nhan) + '</span>' : '') + '</span><span class="mui">›</span></button>' +
     (vao ? '<div class="pb-nhanh">' + phongNhanh(ma).map(function (x) { return '<button data-tab="' + x[0] + '" data-pb="' + ma + '">' + e(x[1]) + '</button>'; }).join('') + '</div>' : '') + '</div>';
 }
 function oPhong(ma) {
