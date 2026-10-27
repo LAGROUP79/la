@@ -876,7 +876,7 @@ function veTon(r) {
     return '<details open><summary>' + e(p.ten) + ' — ' + (tp.donVi ? soSL(tp.sl) + ' ' + e(tp.donVi) : tp.ma + ' mã') + (tien1 && tp.von ? ' · ' + tienNgan(tp.von) : '') + '</summary><div class="cuon"><table>' +
       '<tr><th>Mã hàng</th><th class="s">Tồn</th><th>Kiểm kho gần nhất</th><th>Cập nhật lần cuối</th>' + (tien1 ? '<th class="s">Giá vốn TB</th><th class="s">Giá trị tồn</th>' : '') + '</tr>' + p.sp.map(function (s) {
       var v = s.ton || 0, k = s.kiem;
-      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + '</td>' +
+      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a> <a href="#" data-xoama="' + e(s.ma) + '" title="Xoá mã hàng" style="text-decoration:none">🗑</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + '</td>' +
         '<td>' + (k ? lucKiem(k.at) + '<br><small class="muted">đếm ' + soSL(k.sl) + (k.by ? ' · ' + e(k.by) : '') + '</small>' : '<span class="muted">chưa kiểm</span>') + '</td>' +
         '<td><small class="muted">' + (s.luc ? (s.boi ? e(s.boi) + ' · ' : '') + lucKiem(s.luc) : '–') + '</small></td>' +
         (tien1 ? '<td class="s">' + (s.von ? tien(s.von) : '<span class="muted">—</span>') + '</td><td class="s">' + (s.von && v > 0 ? tien(v * s.von) + 'đ' : '—') + '</td>' : '') + '</tr>';
@@ -897,6 +897,16 @@ function veTon(r) {
       if (moi == null) return; moi = moi.trim().replace(/\s+/g, ' ');
       if (!moi || moi === s.ten) return;
       goi('khoDoiTen', [TK, s.ma, moi], function (k) { veTon(k.ton); bao('Đã đổi tên “' + s.ten + '” → “' + moi + '”.'); });
+    };
+  });
+  document.querySelectorAll('[data-xoama]').forEach(function (a) {
+    a.onclick = function (ev) {
+      ev.preventDefault();
+      var s = x.ds.filter(function (y) { return y.ma === a.dataset.xoama; })[0]; if (!s) return;
+      var hoi = 'Xoá mã hàng "' + s.ten + '" khỏi Tồn kho?\n\nMã sẽ không còn hiện ở Tồn kho, Kiểm kho, Nhập·xuất. Phiếu kho, đơn hàng cũ vẫn giữ nguyên.';
+      if (s.ton) hoi = '⚠ Mã "' + s.ten + '" đang còn tồn ' + soSL(s.ton) + ' ' + s.dv + '.\n\n' + hoi;
+      if (!confirm(hoi)) return;
+      goi('khoXoaMa', [TK, s.ma], function (k) { veTon(k.ton); bao('Đã xoá mã “' + s.ten + '” khỏi Tồn kho.'); });
     };
   });
   if ($('tonNhap')) $('tonNhap').onclick = function () { KHO_CAT_MO = KHO_MA[x.nhom] || 'hu'; chuyenTab('kn'); };
