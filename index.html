@@ -878,7 +878,7 @@ function veTon(r) {
       return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a> <a href="#" data-xoama="' + e(s.ma) + '" title="Xoá mã hàng" style="text-decoration:none">🗑</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + '</td>' +
         '<td>' + (k ? lucKiem(k.at) + '<br><small class="muted">đếm ' + soSL(k.sl) + (k.by ? ' · ' + e(k.by) : '') + '</small>' : '<span class="muted">chưa kiểm</span>') + '</td>' +
         '<td><small class="muted">' + (s.luc ? (s.boi ? e(s.boi) + ' · ' : '') + lucKiem(s.luc) : '–') + '</small></td>' +
-        (tien1 ? '<td class="s">' + (s.von ? tien(s.von) : '<span class="muted">—</span>') + '</td><td class="s">' + (s.von && v > 0 ? tien(v * s.von) + 'đ' : '—') + '</td>' : '') + '</tr>';
+        (tien1 ? '<td class="s">' + (s.von ? tien(s.von) : '<span class="muted">—</span>') + ' <a href="#" data-giavon="' + e(s.ma) + '" title="Nhập / sửa giá vốn" style="text-decoration:none">✎</a></td><td class="s">' + (s.von && v > 0 ? tien(v * s.von) + 'đ' : '—') + '</td>' : '') + '</tr>';
     }).join('') + '</table></div></details>';
   }).join('') + '</div>';
   $('noiDung').innerHTML = h;
@@ -896,6 +896,15 @@ function veTon(r) {
       if (moi == null) return; moi = moi.trim().replace(/\s+/g, ' ');
       if (!moi || moi === s.ten) return;
       goi('khoDoiTen', [TK, s.ma, moi], function (k) { veTon(k.ton); bao('Đã đổi tên “' + s.ten + '” → “' + moi + '”.'); });
+    };
+  });
+  document.querySelectorAll('[data-giavon]').forEach(function (a) {
+    a.onclick = function (ev) {
+      ev.preventDefault();
+      var s = x.ds.filter(function (y) { return y.ma === a.dataset.giavon; })[0]; if (!s) return;
+      var moi = prompt('Giá vốn của "' + s.ten + '" (đ / 1 ' + s.dv + '). Để trống hoặc 0 = bỏ giá:', s.von ? tien(s.von) : '');
+      if (moi == null) return;
+      goi('khoDatGiaVon', [TK, s.ma, docTien(moi)], function (k) { veTon(k.ton); bao(docTien(moi) ? 'Đã đặt giá vốn “' + s.ten + '”: ' + tien(docTien(moi)) + 'đ.' : 'Đã bỏ giá vốn “' + s.ten + '”.'); });
     };
   });
   document.querySelectorAll('[data-xoama]').forEach(function (a) {
