@@ -876,10 +876,11 @@ function veTon(r) {
     return '<details open><summary>' + e(p.ten) + ' — ' + (tp.donVi ? soSL(tp.sl) + ' ' + e(tp.donVi) : tp.ma + ' mã') + (tien1 && tp.von ? ' · ' + tienNgan(tp.von) : '') + '</summary><div class="cuon"><table>' +
       '<tr><th>Mã hàng</th><th class="s">Tồn</th><th>Kiểm kho gần nhất</th><th>Cập nhật lần cuối</th>' + (tien1 ? '<th class="s">Giá vốn TB</th><th class="s">Giá trị tồn</th>' : '') + '</tr>' + p.sp.map(function (s) {
       var v = s.ton || 0, k = s.kiem;
-      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a> <a href="#" data-xoama="' + e(s.ma) + '" title="Xoá mã hàng" style="text-decoration:none">🗑</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + '</td>' +
+      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a> <a href="#" data-xoama="' + e(s.ma) + '" title="Xoá mã hàng" style="text-decoration:none">🗑</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + (s.qc ? '<br><small class="muted">= ' + tien((s.ton || 0) * s.qc) + ' cái · ' + tien(s.qc) + ' cái/' + e(s.dv) + '</small>' : '') +
+          ((r.doiTen || tien1) && (s.qc || x.nhom === 'PHỤ KIỆN') ? ' <a href="#" data-quycach="' + e(s.ma) + '" title="Quy cách: 1 ' + e(s.dv) + ' = bao nhiêu cái" style="text-decoration:none;font-size:12px">' + (s.qc ? '✎' : '+ quy cách') + '</a>' : '') + '</td>' +
         '<td>' + (k ? lucKiem(k.at) + '<br><small class="muted">đếm ' + soSL(k.sl) + (k.by ? ' · ' + e(k.by) : '') + '</small>' : '<span class="muted">chưa kiểm</span>') + '</td>' +
         '<td><small class="muted">' + (s.luc ? (s.boi ? e(s.boi) + ' · ' : '') + lucKiem(s.luc) : '–') + '</small></td>' +
-        (tien1 ? '<td class="s">' + (s.von ? tien(s.von) : '<span class="muted">—</span>') + ' <a href="#" data-giavon="' + e(s.ma) + '" title="Nhập / sửa giá vốn" style="text-decoration:none">✎</a></td><td class="s">' + (s.von && v > 0 ? tien(v * s.von) + 'đ' : '—') + '</td>' : '') + '</tr>';
+        (tien1 ? '<td class="s">' + (s.qc ? (s.vonCai ? tien(s.vonCai) + '<small class="muted">/cái</small>' : '<span class="muted">—</span>') : s.von ? tien(s.von) : '<span class="muted">—</span>') + ' <a href="#" data-giavon="' + e(s.ma) + '" title="Nhập / sửa giá vốn" style="text-decoration:none">✎</a></td><td class="s">' + (s.von && v > 0 ? tien(v * s.von) + 'đ' : '—') + '</td>' : '') + '</tr>';
     }).join('') + '</table></div></details>';
   }).join('') + '</div>';
   $('noiDung').innerHTML = h;
@@ -899,11 +900,21 @@ function veTon(r) {
       goi('khoDoiTen', [TK, s.ma, moi], function (k) { veTon(k.ton); bao('Đã đổi tên “' + s.ten + '” → “' + moi + '”.'); });
     };
   });
+  document.querySelectorAll('[data-quycach]').forEach(function (a) {
+    a.onclick = function (ev) {
+      ev.preventDefault();
+      var s = x.ds.filter(function (y) { return y.ma === a.dataset.quycach; })[0]; if (!s) return;
+      var moi = prompt('Quy cách "' + s.ten + '": 1 ' + s.dv + ' = bao nhiêu cái? (VD 2500). Có quy cách thì giá vốn nhập theo 1 cái. Để trống hoặc 0 = bỏ quy cách:', s.qc ? s.qc : '');
+      if (moi == null) return;
+      var q = docSo(String(moi).replace(/\./g, '').replace(',', '.'));
+      goi('khoDatQuyCach', [TK, s.ma, q], function (k) { veTon(k.ton); bao(q ? 'Quy cách “' + s.ten + '”: ' + tien(q) + ' cái/' + s.dv + '. Nhớ nhập giá vốn theo 1 CÁI (bấm ✎ ở cột giá vốn).' : 'Đã bỏ quy cách “' + s.ten + '”. Giá vốn giờ tính theo 1 ' + s.dv + '.'); });
+    };
+  });
   document.querySelectorAll('[data-giavon]').forEach(function (a) {
     a.onclick = function (ev) {
       ev.preventDefault();
       var s = x.ds.filter(function (y) { return y.ma === a.dataset.giavon; })[0]; if (!s) return;
-      var moi = prompt('Giá vốn của "' + s.ten + '" (đ / 1 ' + s.dv + '). Để trống hoặc 0 = bỏ giá:', s.von ? tien(s.von) : '');
+      var moi = s.qc ? prompt('Giá vốn của "' + s.ten + '" tính trên 1 CÁI (quy cách ' + soSL(s.qc) + ' cái/' + s.dv + '). Để trống hoặc 0 = bỏ giá:', s.vonCai ? tien(s.vonCai) : '') : prompt('Giá vốn của "' + s.ten + '" (đ / 1 ' + s.dv + '). Để trống hoặc 0 = bỏ giá:', s.von ? tien(s.von) : '');
       if (moi == null) return;
       goi('khoDatGiaVon', [TK, s.ma, docTien(moi)], function (k) { veTon(k.ton); bao(docTien(moi) ? 'Đã đặt giá vốn “' + s.ten + '”: ' + tien(docTien(moi)) + 'đ.' : 'Đã bỏ giá vốn “' + s.ten + '”.'); });
     };
