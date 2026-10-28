@@ -2967,7 +2967,8 @@ function bamNS(b) {
 }
 
 var KHO = null, KF = null, KP = null, KB = null, KB_NGAY = '';
-var KH_TEN = { hu: 'Hàng hũ', tinh: 'Hàng tinh', tho: 'Hàng thô', pk: 'Phụ kiện' };
+var KH_TEN = { hu: 'Hàng hũ', tinh: 'Hàng tinh', tho: 'Hàng thô', pk: 'Phụ kiện', tem: 'Tem' };
+function khThuoc(i, cat) { var laTem = i.cat === 'pk' && /^tem/i.test(i.group || ''); return cat === 'tem' ? laTem : cat === 'pk' ? i.cat === 'pk' && !laTem : i.cat === cat; }
 var KH_LOAI = { kiem: 'Kiểm kho', nhap: 'Nhập vào', xuat: 'Xuất ra', huy: 'Huỷ phiếu', dau: 'Tồn đầu' };
 var KHO_CAT_MO = '';
 function napKho(type) {
@@ -2977,9 +2978,9 @@ function napKho(type) {
 }
 function khBanMode() { return KF.type === 'xuat' && KF.reason === 'Bán hàng'; }
 function veKho() {
-  var k = KHO, f = KF, nhoms = f.type === 'xuat' ? ['tinh', 'tho', 'pk'] : f.type === 'kiem' ? k.nhomKiem : ['hu', 'tinh', 'tho', 'pk'];
+  var k = KHO, f = KF, nhoms = f.type === 'xuat' ? ['tinh', 'tho', 'pk', 'tem'] : ['hu', 'tinh', 'tho', 'pk', 'tem'];
   var goiY = { kiem: 'Mã nào đếm đúng bằng tồn sổ thì để trống, bấm Hoàn tất app ghi là khớp. Mã nào khác sổ thì ghi số đếm thật, app báo chênh lệch về cho chị.' +
-      (f.cat === 'hu' ? ' Hàng hũ: xuất trong ngày = kiểm lần trước + nhập − số đếm hôm nay.' : '') + (k.nhomKiem.indexOf('pk') < 0 ? ' Phụ kiện kiểm vào thứ 7 hằng tuần.' : ''),
+      (f.cat === 'hu' ? ' Hàng hũ: xuất trong ngày = kiểm lần trước + nhập − số đếm hôm nay.' : '') + ((f.cat === 'pk' || f.cat === 'tem') && k.nhomKiem.indexOf('pk') < 0 ? ' Phụ kiện, tem: ngày thường kiểm khi cần, thứ 7 kiểm đầy đủ.' : ''),
     nhap: 'Ghi số nhập vào kho. Hàng tinh, thô có thể ghi giá nhập (100g) để app tự tính lại giá vốn bình quân.',
     xuat: 'Ghi số bán hoặc xuất ra. Bán hàng thì ghi giá bán thật từng mã (app điền sẵn giá lần bán gần nhất). Hàng hũ không ghi xuất ở đây.' }[f.type];
   var h = quayLai() + '<h2 class="tieude">' + { kiem: 'Kiểm kho cuối ngày', nhap: 'Nhập hàng', xuat: 'Xuất hàng' }[f.type] + '</h2>';
@@ -2990,7 +2991,7 @@ function veKho() {
   h += '<div class="the"><p class="muted" style="margin-top:0">' + goiY + '</p>' +
     (f.type !== 'kiem' ? '<label>Lý do</label><select id="khLyDo"><option value="">Chọn lý do…</option>' + k.lyDo[f.type].map(function (x) { return opt(x, f.reason); }).join('') + '</select>' : '') +
     '<input id="khTim" placeholder="Tìm mã hàng…" value="' + e(f.tim) + '" style="margin-top:10px">';
-  var ds = k.items.filter(function (i) { return i.cat === f.cat && (f.type === 'kiem' || i.id !== k.soanId); }), nhom = '', ba = (f.type === 'nhap' && (f.cat === 'tinh' || f.cat === 'tho')) || khBanMode();
+  var ds = k.items.filter(function (i) { return khThuoc(i, f.cat) && (f.type === 'kiem' || i.id !== k.soanId); }), nhom = '', ba = (f.type === 'nhap' && (f.cat === 'tinh' || f.cat === 'tho')) || khBanMode();
   h += '<div class="khds">' + ds.map(function (i) {
     var dau = i.group !== nhom ? '<div class="khphan">' + e((nhom = i.group).toUpperCase()) + '</div>' : '';
     var v = f.draft[i.id] != null ? f.draft[i.id] : '', q = (f.tim || '').toLowerCase();
@@ -3023,7 +3024,7 @@ function lechKho(id) {
   else { o.textContent = 'Tồn mới ' + soSL(it.ton - q) + ' ' + it.unit; if (it.ton - q < 0) o.className = 'le lech'; }
 }
 function khDong() {
-  return KHO.items.filter(function (i) { return i.cat === KF.cat && KF.draft[i.id] != null && String(KF.draft[i.id]).trim() !== ''; });
+  return KHO.items.filter(function (i) { return khThuoc(i, KF.cat) && KF.draft[i.id] != null && String(KF.draft[i.id]).trim() !== ''; });
 }
 function demKho() {
   var o = $('khDem'); if (!o) return;
@@ -3046,7 +3047,7 @@ function guiKho() {
   });
   if (sai) return bao('Số của "' + sai + '" chưa đúng (chỉ ghi số, dùng dấu phẩy cho số lẻ).', true);
   if (!confirm('Lưu phiếu ' + KH_LOAI[KF.type].toLowerCase() + ' ' + KH_TEN[KF.cat].toLowerCase() + ': ' + lines.length + ' mã?')) return;
-  goi('khoLuuPhieu', [TK, { type: KF.type, cat: KF.cat, reason: KF.reason, note: KF.note, lines: lines }], function (x) {
+  goi('khoLuuPhieu', [TK, { type: KF.type, cat: KF.cat === 'tem' ? 'pk' : KF.cat, reason: KF.reason, note: KF.note, lines: lines }], function (x) {
     KHO = x.kho; lines.forEach(function (l) { delete KF.draft[l.id]; delete KF.cost[l.id]; delete KF.price[l.id]; }); KF.note = '';
     veKho(); window.scrollTo(0, 0); bao('Đã lưu phiếu ' + x.id + ' · ' + x.n + ' mã.');
   });
