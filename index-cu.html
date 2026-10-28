@@ -3010,7 +3010,8 @@ function veKho() {
   h += '<div class="tab2">' + nhoms.map(function (c) { return '<button data-khcat="' + c + '" class="' + (f.cat === c ? 'on' : '') + '">' + KH_TEN[c] + '</button>'; }).join('') + '</div>';
   h += '<div class="the"><p class="muted" style="margin-top:0">' + goiY + '</p>' +
     (f.type !== 'kiem' ? '<label>Lý do</label><select id="khLyDo"><option value="">Chọn lý do…</option>' + k.lyDo[f.type].map(function (x) { return opt(x, f.reason); }).join('') + '</select>' : '') +
-    '<input id="khTim" placeholder="Tìm mã hàng…" value="' + e(f.tim) + '" style="margin-top:10px">';
+    '<input id="khTim" placeholder="Tìm mã hàng…" value="' + e(f.tim) + '" style="margin-top:10px">' +
+    (f.type === 'nhap' && k.ghi ? '<button class="nut rong" id="khThemMa" style="margin-top:8px">＋ Thêm mã mới vào ' + e(KH_TEN[f.cat]) + '</button><div id="khFormMa"></div>' : '');
   var ds = k.items.filter(function (i) { return khThuoc(i, f.cat) && (f.type === 'kiem' || i.id !== k.soanId); }), nhom = '', ba = (f.type === 'nhap' && (f.cat === 'tinh' || f.cat === 'tho')) || khBanMode();
   h += '<div class="khds">' + ds.map(function (i) {
     var dau = i.group !== nhom ? '<div class="khphan">' + e((nhom = i.group).toUpperCase()) + '</div>' : '';
@@ -3027,6 +3028,26 @@ function veKho() {
   h += k.ghi ? '<div class="khday"><input id="khGhiChu" placeholder="Ghi chú phiếu (không bắt buộc)" value="' + e(f.note) + '"><div class="hang" style="margin-top:8px"><span id="khDem" class="muted"></span>' +
     '<button class="nut" id="khGui" style="flex:0 0 auto">Lưu phiếu</button></div></div>' : '<p class="muted">Bạn đang ở chế độ chỉ xem.</p>';
   $('noiDung').innerHTML = h;
+  if ($('khThemMa')) $('khThemMa').onclick = function () {
+    var cat = f.cat === 'tem' ? 'pk' : f.cat, dvMD = f.cat === 'tem' ? 'cuộn' : cat === 'hu' ? 'hũ' : cat === 'pk' ? 'cái' : '100g';
+    var phan = []; k.items.forEach(function (i) { if (khThuoc(i, f.cat) && phan.indexOf(i.group) < 0) phan.push(i.group); });
+    $('khFormMa').innerHTML = '<div style="border:1px dashed #d6d3c8;border-radius:10px;padding:8px 10px;margin-top:8px"><label for="nmPhan" style="margin-top:0">Phân nhóm</label><input id="nmPhan" list="nmDsPhan" placeholder="Chọn hoặc gõ phân nhóm mới"><datalist id="nmDsPhan">' +
+      phan.map(function (p) { return '<option value="' + e(p) + '">'; }).join('') + '</datalist>' +
+      '<label for="nmTen">Tên hàng</label><input id="nmTen" placeholder="VD: Đường phèn">' +
+      '<label for="nmDv">Đơn vị</label><input id="nmDv" value="' + dvMD + '">' +
+      (k.coTien ? '<label for="nmGia">Giá vốn (đ / 1 đơn vị, để trống nếu chưa có)</label><input id="nmGia" inputmode="numeric">' : '') +
+      '<div class="hang" style="gap:8px;margin-top:10px"><button class="nut rong" id="nmHuy" style="flex:1">Huỷ</button><button class="nut" id="nmLuu" style="flex:1">Lưu mã mới</button></div></div>';
+    this.style.display = 'none'; $('nmTen').focus();
+    $('nmHuy').onclick = function () { $('khFormMa').innerHTML = ''; $('khThemMa').style.display = ''; };
+    $('nmLuu').onclick = function () {
+      var ten = $('nmTen').value.trim(), nh = $('nmPhan').value.trim();
+      if (!ten) { bao('Nhập tên hàng.', true); return; }
+      if (f.cat === 'tem' && !/^tem/i.test(nh)) { bao('Mã tem: phân nhóm phải bắt đầu bằng chữ "Tem" (VD: Tem 7G).', true); return; }
+      goi('khoThemMa', [TK, { cat: cat, group: nh, name: ten, unit: $('nmDv').value.trim(), cost: $('nmGia') ? $('nmGia').value.replace(/\D/g, '') : '' }], function () {
+        goi('khoDuLieu', [TK], function (r) { KHO = r; NHO.kho = { r: r, s: JSON.stringify(r), t: Date.now() }; veKho(); bao('Đã thêm mã “' + ten + '” — nhập số lượng ngay bên dưới.'); });
+      });
+    };
+  };
   ds.forEach(function (i) { if (f.draft[i.id] != null) lechKho(i.id); });
   demKho();
 }
