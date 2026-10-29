@@ -1000,11 +1000,12 @@ function cocHtml(ghi, tra) {
   var c = cocTien(ghi, tra); if (!ghi || !c) return '';
   return '<div style="color:#B42318;font-weight:800;margin:6px 0 0;line-height:1.6">1. Cần thanh toán trước: ' + tien(c) + 'đ' + (/%$/.test(String(ghi).trim()) ? ' (' + e(String(ghi).trim()) + ')' : '') + '<br>2. Thu COD phần còn lại: ' + tien(Math.max(0, tra - c)) + 'đ</div>';
 }
+function cocCua(o) { if (o.cocGhi) return o.cocGhi; var m = /c[ọo]c\s*(\d{1,3}(?:[.,]\d+)?)\s*%/i.exec(o.ghiChuTT || ''); return m ? m[1] + '%' : ''; }
 function ttTra(o) { return o.tong + (o.traShip === 'nhan' ? 0 : (o.ship || 0)); }
 function daNhanHtml(o) {
   var tra = ttTra(o);
   if (o.thuTien && o.thuHT && o.thuHT !== 'COD') return '<div style="color:#067647;font-weight:800;margin:6px 0 0;line-height:1.6">✅ Đã nhận trước: ' + tien(o.thuTien) + 'đ (' + e(o.thuHT) + ')<br>' + (tra - o.thuTien > 0 ? 'Còn lại thu COD: ' + tien(tra - o.thuTien) + 'đ' : 'Đã thanh toán đủ') + '</div>';
-  return cocHtml(o.cocGhi, tra);
+  return cocHtml(cocCua(o), tra);
 }
 function tinhTong() {
   var tong = 0, th = 0;
@@ -1110,7 +1111,7 @@ function hoaDonHtml(o) {
       (o.giam ? dong('Chiết khấu' + (/%$/.test(o.giamGhi || '') ? ' (' + e(o.giamGhi) + ')' : ''), '−' + tien(o.giam) + 'đ') : '') +
       dong('Phí vận chuyển', o.traShip === 'nhan' ? 'Người nhận trả' + (o.ship ? ' (' + tien(o.ship) + 'đ)' : '') : o.ship ? tien(o.ship) + 'đ' : 'Miễn phí') +
       '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' + dong('KHÁCH THANH TOÁN', tien(tra) + 'đ', 1) + (o.thuTien ? dong('Đã thanh toán (' + e(o.thuHT || 'COD') + ')', '−' + tien(o.thuTien) + 'đ') + dong('CÒN PHẢI THU', tien(Math.max(0, tra - o.thuTien)) + 'đ', 1) : '') + '</table></div>' +
-    (o.thuTien && o.thuHT && o.thuHT !== 'COD' ? '<div style="margin:8px 24px 0;padding:10px 14px;border:2px solid #067647;border-radius:8px;background:#F0FDF4;text-align:right;font-size:15px">' + daNhanHtml(o).replace('margin:6px 0 0;', 'margin:0;') + '</div>' : o.cocGhi && cocTien(o.cocGhi, tra) ? '<div style="margin:8px 24px 0;padding:10px 14px;border:2px solid #B42318;border-radius:8px;background:#FFF5F5;text-align:right;font-size:15px">' + cocHtml(o.cocGhi, tra).replace('margin:6px 0 0;', 'margin:0;') + '</div>' : '') +
+    (o.thuTien && o.thuHT && o.thuHT !== 'COD' ? '<div style="margin:8px 24px 0;padding:10px 14px;border:2px solid #067647;border-radius:8px;background:#F0FDF4;text-align:right;font-size:15px">' + daNhanHtml(o).replace('margin:6px 0 0;', 'margin:0;') + '</div>' : cocCua(o) && cocTien(cocCua(o), tra) ? '<div style="margin:8px 24px 0;padding:10px 14px;border:2px solid #B42318;border-radius:8px;background:#FFF5F5;text-align:right;font-size:15px">' + cocHtml(cocCua(o), tra).replace('margin:6px 0 0;', 'margin:0;') + '</div>' : '') +
     '<div style="padding:8px 24px 0;font-size:13px">' +
       (o.ghiChuTT ? '<div style="margin:3px 0"><b style="color:' + xanh + '">Thanh toán:</b> ' + e(o.ghiChuTT) + '</div>' : '') +
       (o.ghiChu ? '<div style="margin:3px 0"><b style="color:' + xanh + '">Ghi chú:</b> ' + e(o.ghiChu) + '</div>' : '') +
@@ -1273,9 +1274,9 @@ function veDon(r) {
   $('lQ').onblur = function () { if (($('lQ').value || '') !== (LOC.q || '')) locDon(); };
 }
 function moXacNhanTT(o) {
-  var tra = ttTra(o), coc = cocTien(o.cocGhi, tra), daCo = o.thuTien && o.thuHT !== 'COD' ? o.thuTien : 0;
+  var tra = ttTra(o), coc = cocTien(cocCua(o), tra), daCo = o.thuTien && o.thuHT !== 'COD' ? o.thuTien : 0;
   moHop('<h3 style="margin:0;color:var(--xanh)">💰 Xác nhận thanh toán · ' + e(o.ma) + '</h3>' +
-    '<p style="margin:6px 0">' + e(o.khach) + ' · khách thanh toán <b>' + tien(tra) + 'đ</b>' + (coc ? '<br><span style="color:#B42318">Yêu cầu thanh toán trước: <b>' + tien(coc) + 'đ</b>' + (/%$/.test(o.cocGhi) ? ' (' + e(o.cocGhi) + ')' : '') + '</span>' : '') + '</p>' +
+    '<p style="margin:6px 0">' + e(o.khach) + ' · khách thanh toán <b>' + tien(tra) + 'đ</b>' + (coc ? '<br><span style="color:#B42318">Yêu cầu thanh toán trước: <b>' + tien(coc) + 'đ</b>' + (/%$/.test(cocCua(o)) ? ' (' + e(cocCua(o)) + ')' : '') + '</span>' : '') + '</p>' +
     '<div class="luoi2"><div><label for="xnSo">Số tiền đã nhận</label><input id="xnSo" inputmode="numeric" value="' + (daCo || coc ? tien(daCo || coc) : '') + '"></div>' +
     '<div><label for="xnHT">Hình thức</label><select id="xnHT">' + ['Chuyển khoản', 'Tiền mặt', 'Khác'].map(function (x) { return opt(x, daCo ? o.thuHT : 'Chuyển khoản'); }).join('') + '</select></div></div>' +
     '<div id="xnCon" style="font-weight:800;margin:8px 0;color:#067647"></div>' +
