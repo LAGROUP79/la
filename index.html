@@ -975,6 +975,7 @@ function dongSP(it) {
     '<div class="khac' + (it.ma === 'KHAC' ? '' : ' an') + '" style="margin-top:6px"><div class="luoi2"><input data-f="tenKhac" placeholder="Tên sản phẩm" value="' + e(it.ma === 'KHAC' ? it.ten : '') + '"><input data-f="dv" placeholder="Đơn vị (hộp, set…)" value="' + e(it.ma === 'KHAC' ? it.dv : '') + '"></div></div>' +
     '<div class="dong2"><input data-f="sl" inputmode="decimal" placeholder="Số lượng" value="' + (it.sl ? soSL(it.sl) : '') + '">' +
     '<input data-f="gia" inputmode="numeric" placeholder="Giá bán / đơn vị" value="' + (it.gia ? tien(it.gia) : '') + '"></div>' +
+    '<input data-f="ct" value="' + e(it.ct || '') + '" placeholder="Chi tiết cho kho: VD 70 đường phèn, 30 hạt sen · 5 khay 10, 5 khay 6" style="margin-top:6px">' +
     '<div class="info" data-info="1"></div><div class="tt" data-tt="1"></div></div>';
 }
 function capNhatDong(b) {
@@ -1029,7 +1030,7 @@ function veLenDon() {
     if (!it) return dongSP();
     var p = H.sanPham.filter(function (x) { return x.ma === it.maHang; })[0];
     var laPK = !p && it.nganh === NG.PK && (H.phuKien || []).some(function (x) { return x.ten === it.ten; });
-    return dongSP({ nganh: it.nganh || (p ? p.nganh : NG.HU), ma: p ? p.ma : laPK ? 'PK:' + it.ten : 'KHAC', ten: it.ten, dv: it.dv, sl: it.sl, gia: it.gia });
+    return dongSP({ nganh: it.nganh || (p ? p.nganh : NG.HU), ma: p ? p.ma : laPK ? 'PK:' + it.ten : 'KHAC', ten: it.ten, dv: it.dv, sl: it.sl, gia: it.gia, ct: it.ct });
   }).join('');
   $('noiDung').innerHTML = (SUA ? '' : quayLai()) + '<h2 class="tieude">' + (SUA ? 'Sửa đơn ' + e(SUA.ma) : 'Bán hàng — lên đơn mới') + '</h2>' +
     '<div class="the"><h3>Khách hàng</h3>' +
@@ -1062,7 +1063,7 @@ function docForm() {
     var ma = b.querySelector('[data-f=ma]').value;
     if (!ma) return;
     items.push({ ma: ma, nganh: b.querySelector('[data-f=nganh]').value, ten: b.querySelector('[data-f=tenKhac]').value, dv: b.querySelector('[data-f=dv]').value,
-      sl: docSo(b.querySelector('[data-f=sl]').value), gia: docTien(b.querySelector('[data-f=gia]').value) });
+      sl: docSo(b.querySelector('[data-f=sl]').value), gia: docTien(b.querySelector('[data-f=gia]').value), ct: b.querySelector('[data-f=ct]').value.trim() });
   });
   return { ma: SUA ? SUA.ma : '', sdt: $('fSdt').value, ten: $('fTen').value, diaChi: $('fDC').value, tinh: $('fTinh').value, ghiChu: $('fGC').value, ghiChuTT: $('fGCTT').value,
     hd: $('fCoHD').checked ? $('fHD').value : '', giam: $('fGiam').value.trim(), ship: docTien($('fShip').value), traShip: (document.querySelector('[name=fTraShip]:checked') || {}).value || 'gui', thuTien: docTien($('fThu').value), thuHT: $('fThuHT').value, coc: $('fCoc').value.trim(), items: items, loai: fLoai() };
