@@ -2279,9 +2279,12 @@ function chotHoiShip(x, ok) {
 var CHOT_DM = null;
 function chotTienHtml(x) {
   var m = x.tien; if (!m) return '';
-  var cod = m.thu.filter(function (t) { return t.ht === 'COD'; }).reduce(function (a, t) { return a + t.tien; }, 0);
+  var kd = m.kd, cod = m.thu.filter(function (t) { return t.ht === 'COD'; }).reduce(function (a, t) { return a + t.tien; }, 0);
+  if (kd && kd.cod != null && !cod) cod = kd.cod;
+  var phu = kd ? (kd.daNhan ? '<div style="font-size:13.5px;color:#067647;margin-top:3px">✅ Đã nhận trước ' + tien(kd.daNhan) + 'đ (' + e(kd.ht) + ') · khách thanh toán ' + tien(kd.tra) + 'đ</div>' :
+    kd.coc ? '<div style="font-size:13.5px;color:#8a5f00;margin-top:3px">Cần thanh toán trước ' + tien(kd.coc) + 'đ (chưa xác nhận đã nhận) · khách thanh toán ' + tien(kd.tra) + 'đ</div>' : '') : '';
   return '<div style="margin:8px 0;padding:10px 12px;border-radius:10px;background:#FFF8E6;border:1px solid #E8D48B;font-size:16px;font-weight:800;color:' + (cod ? '#B42318' : '#1F5A4C') + '">' +
-    (cod ? '💵 COD cần thu: ' + tien(cod) + 'đ' : '💵 Không thu COD') + '</div>';
+    (cod ? '💵 COD cần thu: ' + tien(cod) + 'đ' : kd && kd.cod == null ? '💵 Khách thanh toán ' + tien(kd.tra) + 'đ · COD / công nợ: xem ghi chú thanh toán' : '💵 Không thu COD') + phu + '</div>';
 }
 function moChotThe(x) {
   var r = CHOT.r, i = r.tt.indexOf(x.tt), cho = i === 0, laKD = x.khoa.indexOf('KD:') === 0;
