@@ -1123,6 +1123,34 @@ function hoaDonHtml(o) {
       '<img src="qr-mb.png" style="width:168px;height:auto;flex:0 0 auto;border-radius:6px" crossorigin="anonymous"></div>' +
     '<div style="text-align:center;padding:14px 24px 16px;color:' + xanh + '"><div style="font-weight:700;font-size:14.5px">Cảm ơn quý khách đã tin chọn Yến Sào Lanest!</div><div style="font-style:italic;color:' + vang + ';font-size:13px">Trao sức khỏe – Trao yêu thương</div></div></div>';
 }
+function xacNhanTTHtml(o, nhan, ht, luc) {
+  var tra = ttTra(o), con = Math.max(0, tra - nhan), xanh = '#1F5A4C', vang = '#C9A227', la = '#067647';
+  var tt = function (k, v) { return v ? '<div style="margin:2px 0"><span style="color:#777;display:inline-block;min-width:92px">' + k + '</span><b style="font-weight:600">' + e(v) + '</b></div>' : ''; };
+  var dong = function (a, b, mau, to) { return '<tr><td style="padding:7px 0;color:' + (mau || '#555') + (to ? ';font-weight:700;font-size:17px' : '') + '">' + a + '</td><td style="padding:7px 0;text-align:right;font-weight:700;font-size:' + (to ? '22px' : '16px') + ';color:' + (mau || '#1d1d1b') + '">' + b + '</td></tr>'; };
+  return '<div style="width:640px;background:#fff;font-family:Be Vietnam Pro,Arial,sans-serif;color:#1d1d1b;font-size:14px;line-height:1.45;border:1px solid #E6DCC0">' +
+    '<div style="background:' + xanh + ';color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;border-bottom:4px solid ' + vang + '">' +
+      '<img src="logo-tron.png" style="width:64px;height:64px;border-radius:50%;background:#fff;flex:0 0 auto" crossorigin="anonymous">' +
+      '<div style="flex:1"><div style="font-size:19px;font-weight:700">' + CTY.ten + '</div>' +
+      '<div style="font-size:12.5px;color:#E8D48B;margin-top:3px">MST: ' + CTY.mst + ' · Hotline: ' + CTY.tel + ' · ' + CTY.web + '</div>' +
+      '<div style="font-size:12.5px;color:#DDE8E4">' + CTY.dc + '</div></div></div>' +
+    '<div style="padding:16px 24px 12px;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px dashed #D9CDA8">' +
+      '<div><div style="font-size:22px;font-weight:700;color:' + la + '">XÁC NHẬN THANH TOÁN</div><div style="color:#777;font-size:12.5px">Lanest đã nhận tiền thanh toán trước của quý khách</div></div>' +
+      '<div style="text-align:right;font-size:13px"><div>Đơn: <b style="color:' + xanh + '">' + e(o.ma) + '</b></div><div>Ngày đặt: <b>' + ngVN(o.ngay) + '/' + String(o.ngay).slice(0, 4) + '</b></div>' +
+      '<div>NV bán: <b>' + e(o.tenNV) + '</b></div></div></div>' +
+    '<div style="padding:12px 24px;background:#FBF6EA"><div style="font-weight:700;color:' + xanh + ';margin-bottom:4px;font-size:13px">THÔNG TIN KHÁCH HÀNG</div>' +
+      tt('Khách hàng', o.khach + (o.loai ? ' (' + o.loai + ')' : '')) + tt('Điện thoại', o.sdt) + '</div>' +
+    '<div style="padding:10px 24px 4px;position:relative"><table style="width:100%;border-collapse:collapse;font-size:15px">' +
+      dong('Tổng giá trị đơn hàng' + (o.ship && o.traShip !== 'nhan' ? ' (gồm ship)' : ''), tien(tra) + 'đ') +
+      '<tr><td colspan="2" style="border-top:1px solid #EFE6CC;padding:0"></td></tr>' +
+      dong('✅ Đã nhận (' + e(String(ht || 'Chuyển khoản').toLowerCase()) + ')<div style="font-size:12.5px;color:#777;font-weight:400">' + e(luc) + '</div>', tien(nhan) + 'đ', la) +
+      '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' +
+      (con > 0 ? dong('CÒN LẠI THU COD KHI NHẬN HÀNG', tien(con) + 'đ', '#B42318', 1) : dong('ĐƠN HÀNG ĐÃ THANH TOÁN ĐỦ', '0đ', la, 1)) + '</table></div>' +
+    '<div style="margin:10px 24px 0;padding:10px 14px;border:2px solid ' + la + ';border-radius:8px;background:#F0FDF4;color:' + la + ';font-weight:700;text-align:center;font-size:15px">' +
+      'Lanest xin xác nhận đã nhận ' + tien(nhan) + 'đ.' + (con > 0 ? ' Số còn lại ' + tien(con) + 'đ quý khách thanh toán khi nhận hàng.' : '') + '</div>' +
+    '<div style="text-align:center;padding:14px 24px 16px;color:' + xanh + '"><div style="font-weight:700;font-size:14.5px">Cảm ơn quý khách đã tin chọn Yến Sào Lanest!</div><div style="font-style:italic;color:' + vang + ';font-size:13px">Trao sức khỏe – Trao yêu thương</div></div></div>';
+}
+function lucVN(d) { d = d || new Date(); var h = function (n) { return (n < 10 ? '0' : '') + n; }; return h(d.getHours()) + ':' + h(d.getMinutes()) + ' ngày ' + h(d.getDate()) + '/' + h(d.getMonth() + 1) + '/' + d.getFullYear(); }
+function lucTuXn(s) { var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})/.exec(s || ''); return m ? m[4] + ' ngày ' + m[3] + '/' + m[2] + '/' + m[1] : ''; }
 function moHoaDon(o, phieu, tieuDe, nutDong) {
   moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(tieuDe || ('Hóa đơn ' + o.ma)) + '</h3><p class="muted" style="margin:0 0 8px">Bấm <b>🖼 Gửi hình hóa đơn</b> để dán thẳng vào Zalo cho khách · <b>COPY phiếu</b> để gửi nhóm soạn hàng.</p>' +
     '<div style="overflow:auto;max-height:58vh;border-radius:8px;background:#F3EEDF;padding:6px"><div id="hdXem" style="transform-origin:0 0"></div></div>' +
@@ -1253,19 +1281,23 @@ function moXacNhanTT(o) {
     '<div><label for="xnHT">Hình thức</label><select id="xnHT">' + ['Chuyển khoản', 'Tiền mặt', 'Khác'].map(function (x) { return opt(x, daCo ? o.thuHT : 'Chuyển khoản'); }).join('') + '</select></div></div>' +
     '<div id="xnCon" style="font-weight:800;margin:8px 0;color:#067647"></div>' +
     (o.xnTT ? '<p class="muted" style="font-size:12px">Lần xác nhận trước: ' + e(o.xnTT) + '</p>' : '') +
+    (daCo ? '<button class="nut vang" id="xnHinhCu" style="margin-bottom:8px">🖼 Gửi hình xác nhận ' + tien(daCo) + 'đ đã nhận</button>' : '') +
     '<p class="muted" style="font-size:12px">Đơn đã duyệt sang Sổ bán hàng thì app tự ghi khoản thu này vào công nợ khách. Để 0 = bỏ xác nhận.</p>' +
     '<div class="hang" style="gap:8px"><button class="nut rong" id="xnHuy" style="flex:1">Huỷ</button><button class="nut" id="xnOk" style="flex:1;background:#067647">✓ Xác nhận đã nhận</button></div>');
   function con() { var s = docTien($('xnSo').value); $('xnCon').innerHTML = s > tra ? '<span style="color:#B42318">Lớn hơn số khách phải thanh toán</span>' : s ? (tra - s > 0 ? 'Còn lại thu COD: ' + tien(tra - s) + 'đ' : 'Khách đã thanh toán đủ') : ''; }
   $('xnSo').oninput = function () { var s = docTien(this.value); this.value = s ? tien(s) : ''; con(); }; con();
   $('xnHuy').onclick = dongHop;
+  if ($('xnHinhCu')) $('xnHinhCu').onclick = function () { chupHinh(xacNhanTTHtml(o, daCo, o.thuHT, lucTuXn(o.xnTT) || lucVN()), 'Xac nhan thanh toan ' + o.ma, this); };
   $('xnOk').onclick = function () {
-    var s = docTien($('xnSo').value); if (s > tra) return bao('Số đã nhận lớn hơn số khách phải thanh toán.', true);
+    var s = docTien($('xnSo').value), ht = $('xnHT').value; if (s > tra) return bao('Số đã nhận lớn hơn số khách phải thanh toán.', true);
     if (!s && !confirm('Bỏ xác nhận thanh toán của đơn này?')) return;
-    goi('kdXacNhanTT', [TK, o.ma, s, $('xnHT').value], function (x) {
+    goi('kdXacNhanTT', [TK, o.ma, s, ht], function (x) {
       napDon();
       if (!x.tin) { dongHop(); bao('Đã bỏ xác nhận thanh toán ' + o.ma + '.'); return; }
       moHop('<h3 style="margin:0;color:#067647">✅ Đã xác nhận ' + tien(x.daNhan) + 'đ</h3><p style="margin:6px 0">' + (x.conLai > 0 ? 'Còn lại thu COD: <b>' + tien(x.conLai) + 'đ</b>' : 'Khách đã thanh toán đủ.') + (x.soMa ? '<br><span class="muted">Đã ghi vào công nợ Sổ bán hàng.</span>' : '<br><span class="muted">Khi duyệt đơn, khoản này tự vào công nợ.</span>') + '</p>' +
-        '<p class="muted" style="margin:6px 0">Tin nhắn báo khách:</p><pre>' + e(x.tin) + '</pre><div class="hang"><button class="nut vang" id="xnCopy">COPY gửi khách</button><button class="nut phu" id="xnDong">Đóng</button></div>');
+        '<p class="muted" style="margin:6px 0">Tin nhắn báo khách:</p><pre>' + e(x.tin) + '</pre><div class="hang"><button class="nut vang" id="xnHinh">🖼 Gửi hình xác nhận</button><button class="nut" id="xnCopy">COPY tin nhắn</button><button class="nut phu" id="xnDong">Đóng</button></div>');
+      var luc = lucVN();
+      $('xnHinh').onclick = function () { chupHinh(xacNhanTTHtml(o, x.daNhan, ht, luc), 'Xac nhan thanh toan ' + o.ma, this); };
       $('xnCopy').onclick = function () { copyChu(x.tin); }; $('xnDong').onclick = dongHop;
     });
   };
