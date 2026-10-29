@@ -309,7 +309,7 @@ td.am{color:var(--do);font-weight:700}
 <script src="https://lagroup79.github.io/kho-lanest/ln-parts.js"></script>
 <script>
 var TK = '', H = null, TAB = 'home', SUA = null, LOC = {}, DS_DON = [], BC = null, BC_THANG = '', BC_XEM = 'tong', DS_KH = null;
-var NG = { HU: 'Hàng hũ', TT: 'Hàng tinh thô' };
+var NG = { HU: 'Hàng hũ', TT: 'Hàng tinh thô', PK: 'Phụ kiện' };
 var TTD = { 'Chờ soạn': 'cho', 'Đã gửi soạn': 'gui', 'Đã giao': 'giao', 'Đã huỷ': 'huy', 'Hoàn thành': 'xong', 'Chờ duyệt': 'gui', 'Trả lại': 'tre' };
 
 function $(id) { return document.getElementById(id); }
@@ -957,6 +957,8 @@ function nhanSP(p) {
   return t;
 }
 function optSP(nganh, chon) {
+  if (nganh === NG.PK) return '<option value="">— Chọn phụ kiện —</option>' + (H.phuKien || []).map(function (x) { var v = 'PK:' + x.ten; return '<option value="' + e(v) + '"' + (v === chon ? ' selected' : '') + '>' + e(x.ten + (x.gia ? ' · ' + tien(x.gia) + 'đ' : '')) + '</option>'; }).join('') +
+    '<option value="KHAC"' + (chon === 'KHAC' ? ' selected' : '') + '>➕ Phụ kiện khác (ghi tên)</option>';
   var nhom = {};
   H.sanPham.filter(function (p) { return p.nganh === nganh; }).forEach(function (p) { var g = p.loai + ' · ' + p.nhom; (nhom[g] = nhom[g] || []).push(p); });
   var h = '<option value="">— Chọn sản phẩm —</option>';
@@ -968,7 +970,7 @@ function optSP(nganh, chon) {
 function dongSP(it) {
   it = it || { nganh: NG.HU };
   return '<div class="sp">' +
-    '<div class="dong1"><select data-f="nganh"><option' + (it.nganh === NG.HU ? ' selected' : '') + '>' + NG.HU + '</option><option' + (it.nganh === NG.TT ? ' selected' : '') + '>' + NG.TT + '</option></select>' +
+    '<div class="dong1"><select data-f="nganh"><option' + (it.nganh === NG.HU ? ' selected' : '') + '>' + NG.HU + '</option><option' + (it.nganh === NG.TT ? ' selected' : '') + '>' + NG.TT + '</option><option' + (it.nganh === NG.PK ? ' selected' : '') + '>' + NG.PK + '</option></select>' +
     '<select data-f="ma">' + optSP(it.nganh, it.ma) + '</select><button class="x" data-xoa="1" title="Bỏ dòng">×</button></div>' +
     '<div class="khac' + (it.ma === 'KHAC' ? '' : ' an') + '" style="margin-top:6px"><div class="luoi2"><input data-f="tenKhac" placeholder="Tên sản phẩm" value="' + e(it.ma === 'KHAC' ? it.ten : '') + '"><input data-f="dv" placeholder="Đơn vị (hộp, set…)" value="' + e(it.ma === 'KHAC' ? it.dv : '') + '"></div></div>' +
     '<div class="dong2"><input data-f="sl" inputmode="decimal" placeholder="Số lượng" value="' + (it.sl ? soSL(it.sl) : '') + '">' +
@@ -1013,7 +1015,8 @@ function veLenDon() {
   var dong = (d.items && d.items.length ? d.items : [null]).map(function (it) {
     if (!it) return dongSP();
     var p = H.sanPham.filter(function (x) { return x.ma === it.maHang; })[0];
-    return dongSP({ nganh: it.nganh || (p ? p.nganh : NG.HU), ma: p ? p.ma : 'KHAC', ten: it.ten, dv: it.dv, sl: it.sl, gia: it.gia });
+    var laPK = !p && it.nganh === NG.PK && (H.phuKien || []).some(function (x) { return x.ten === it.ten; });
+    return dongSP({ nganh: it.nganh || (p ? p.nganh : NG.HU), ma: p ? p.ma : laPK ? 'PK:' + it.ten : 'KHAC', ten: it.ten, dv: it.dv, sl: it.sl, gia: it.gia });
   }).join('');
   $('noiDung').innerHTML = (SUA ? '' : quayLai()) + '<h2 class="tieude">' + (SUA ? 'Sửa đơn ' + e(SUA.ma) : 'Bán hàng — lên đơn mới') + '</h2>' +
     '<div class="the"><h3>Khách hàng</h3>' +
@@ -3956,6 +3959,8 @@ document.addEventListener('change', function (ev) {
     var b2 = t.closest('.sp'), p = H.sanPham.filter(function (x) { return x.ma === t.value; })[0], g = b2.querySelector('[data-f=gia]');
     b2.querySelector('.khac').classList.toggle('an', t.value !== 'KHAC');
     if (p && p.gia && !docTien(g.value)) g.value = tien(p.gia);
+    var pk = t.value.indexOf('PK:') === 0 ? (H.phuKien || []).filter(function (x) { return 'PK:' + x.ten === t.value; })[0] : null;
+    if (pk && pk.gia) g.value = tien(pk.gia);
     tinhTong();
   }
   if (t.id === 'fCoHD') $('fHD').classList.toggle('an', !t.checked);
