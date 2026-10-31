@@ -3886,7 +3886,9 @@ function dbChuNgay(ds) {
   return '<div class="cuon">' + s + '</svg></div>';
 }
 function sbDash(b) {
-  var t = b.truoc, ln2 = b.lnGop - (b.chiPhi || 0), bien = b.tienCoVon ? Math.round(b.lnGop / b.tienCoVon * 1000) / 10 : null;
+  var lg = b.luong || { tien: 0, ds: [], thieu: [] }, lgThang = function (th) { return 'T' + Number(th.slice(5, 7)); };
+  var lgPhu = lg.thieu.length ? 'chưa có bảng lương chốt ' + lg.thieu.map(lgThang).join(', ') : (lg.ds.some(function (x) { return x.ngay < x.soNgay; }) ? 'chia theo ngày từ bảng lương' : 'bảng lương ' + lg.ds.map(function (x) { return lgThang(x.thang); }).join(', '));
+  var t = b.truoc, ln2 = b.lnGop - (b.chiPhi || 0) - lg.tien, bien = b.tienCoVon ? Math.round(b.lnGop / b.tienCoVon * 1000) / 10 : null;
   var o = function (mau, ten, so, phu, delta) { return '<div class="db-o"><span class="db-cham" style="background:' + mau + '"></span><small>' + ten + '</small><b>' + so + '</b>' + (phu ? '<small class="db-sub">' + phu + '</small>' : '') + (delta || '') + '</div>'; };
   var h = '<style>.db-luoi2{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-bottom:12px}' +
     '.db-o{background:#fff;border:1px solid rgba(11,11,11,.08);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;position:relative}' +
@@ -3906,7 +3908,8 @@ function sbDash(b) {
     o(DB_MAU[0], 'Doanh thu', dbTr(b.doanhThu), b.soDon + ' đơn', t && dbDelta(b.doanhThu, t.doanhThu)) +
     o(DB_MAU[1], 'Lợi nhuận gộp', dbTr(b.lnGop), bien != null ? 'biên ' + String(bien).replace('.', ',') + '%' : '', t && dbDelta(b.lnGop, t.lnGop)) +
     o(DB_MAU[6], 'Chi phí', dbTr(b.chiPhi || 0), 'kế toán nhập', t && dbDelta(b.chiPhi || 0, t.chiPhi, false)) +
-    o(DB_MAU[5], 'Lợi nhuận sau chi phí', dbTr(ln2), '', t && dbDelta(ln2, t.lnGop - t.chiPhi)) +
+    o(DB_MAU[4], 'Lương thưởng', dbTr(lg.tien), lgPhu, t && dbDelta(lg.tien, t.luong || 0, false)) +
+    o(DB_MAU[5], 'Lợi nhuận sau chi phí', dbTr(ln2), 'đã trừ chi phí + lương', t && dbDelta(ln2, t.lnGop - t.chiPhi - (t.luong || 0))) +
     o(DB_MAU[2], 'Đã thu', dbTr(b.daThu), b.doanhThu ? 'bằng ' + Math.round(b.daThu / b.doanhThu * 100) + '% doanh thu' : '', t && dbDelta(b.daThu, t.daThu)) +
     o(DB_MAU[3], 'Số đơn', b.soDon, b.soDon ? 'TB ' + dbTr(b.doanhThu / b.soDon) + '/đơn' : '', t && dbDelta(b.soDon, t.soDon)) + '</div>';
   h += '<div class="db-the"><h4>Doanh thu và lãi gộp theo ngày</h4><div class="db-chu"><span><i style="background:' + DB_MAU[0] + '"></i>Doanh thu</span><span><i class="duong" style="background:' + DB_MAU[1] + '"></i>Lãi gộp</span><span class="db-sub">chạm / rê chuột vào cột để xem số</span></div>' + dbChuNgay(b.theoNgay) + '</div>';
@@ -3937,8 +3940,10 @@ function sbVeBCNoi() {
   var o = function (t, v) { return '<div><small class="muted">' + t + '</small><br><b style="font-size:18px">' + v + '</b></div>'; };
   var ky = b.tu === b.den ? 'ngày ' + ngayDu(b.tu) : ngayDu(b.tu) + ' – ' + ngayDu(b.den);
   var h = sbDash(b) + '<h3 style="margin:18px 0 8px;color:var(--xanh)">📋 Bảng số chi tiết</h3><div class="the"><h3 style="margin-top:0">Lợi nhuận gộp ' + ky + '</h3><div class="luoi2">' + o('Doanh thu (tổng đơn)', tien(b.doanhThu) + 'đ') + o('Số đơn', b.soDon) +
-    o('Giá vốn', tien(b.giaVon) + 'đ') + o('Lợi nhuận gộp', mau(b.lnGop) + ' <small class="muted">' + pt(b.lnGop, b.tienCoVon) + '</small>') + o('Chi phí (kế toán nhập)', tien(b.chiPhi || 0) + 'đ') + o('Lợi nhuận sau chi phí', mau(b.lnGop - (b.chiPhi || 0))) + o('Đã thu', tien(b.daThu) + 'đ') + o('Phí ship / VAT', tien(b.ship) + 'đ / ' + tien(b.vat) + 'đ') + '</div>' +
+    o('Giá vốn', tien(b.giaVon) + 'đ') + o('Lợi nhuận gộp', mau(b.lnGop) + ' <small class="muted">' + pt(b.lnGop, b.tienCoVon) + '</small>') + o('Chi phí (kế toán nhập)', tien(b.chiPhi || 0) + 'đ') + o('Lương thưởng (bảng lương)', tien(b.luong ? b.luong.tien : 0) + 'đ') + o('Lợi nhuận sau chi phí', mau(b.lnGop - (b.chiPhi || 0) - (b.luong ? b.luong.tien : 0))) + o('Đã thu', tien(b.daThu) + 'đ') + o('Phí ship / VAT', tien(b.ship) + 'đ / ' + tien(b.vat) + 'đ') + '</div>' +
     '<p class="muted" style="margin-bottom:0">Lợi nhuận gộp = tiền hàng có giá vốn − giá vốn − chiết khấu (' + tien(b.ck) + 'đ). Chưa trừ VAT, vận hành, đóng gói. Phí ship, VAT' + (b.cnKhac ? ', công nợ khác / gửi hộ (' + tien(b.cnKhac) + 'đ)' : '') + ' không tính vào lãi.' +
+    (b.luong ? ' Lương thưởng = thực lĩnh + tạm ứng của bảng lương đã chốt / đã gửi' + b.luong.ds.map(function (x) { return ' · T' + Number(x.thang.slice(5)) + ': ' + tien(x.tong) + 'đ' + (x.ngay < x.soNgay ? ' × ' + x.ngay + '/' + x.soNgay + ' ngày = ' + tien(x.tien) + 'đ' : ''); }).join('') +
+      (b.luong.thieu.length ? ' · <b class="am">tháng ' + b.luong.thieu.map(function (x) { return Number(x.slice(5)) + '/' + x.slice(0, 4); }).join(', ') + ' chưa có bảng lương chốt nên chưa trừ lương</b>' : '') + '.' : '') +
     (b.chuaVon ? ' <b class="am">' + tien(b.chuaVon) + 'đ tiền hàng chưa có giá vốn nên chưa tính lãi</b> — đặt giá vốn ở bảng sản phẩm bên dưới.' : '') + '</p></div>';
   if (b.tang || b.ck) {
     h += '<div class="the"><h3 style="margin-top:0">Chiết khấu / tặng thêm cho khách</h3><table>' +
