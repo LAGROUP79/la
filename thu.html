@@ -3307,6 +3307,7 @@ function sbVeCP() {
   goi('ktChiPhi', [TK, SB.thang], function (r) { SB_CP = r; SB_CP_SUA = null; sbVeCPNoi(); }, true);
 }
 function sbVeCPNoi() {
+  if (!$('sbNoi')) return;
   var r = SB_CP, cungThang = r.homNay.slice(0, 7) === r.thang, d = SB_CP_SUA || { ma: '', ngay: cungThang ? r.homNay : r.thang + '-01', hm: '', nd: '', tien: '', ht: 'Chuyển khoản' };
   var tenT = +r.thang.slice(5) + '/' + r.thang.slice(0, 4), h = '';
   if (r.ghi) {
