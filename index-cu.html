@@ -3593,10 +3593,10 @@ function sbVeSaoKe(ma, thang, r) {
     '<tr class="sk-mo"><td></td><td colspan="3" class="sk-chot">CHỐT ĐẾN ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td class="s sk-chot">' + (o(r.noDau) || '0') + '</td><td></td><td></td></tr>' +
     hang.map(function (h) {
       return '<tr class="' + (h.ky % 2 ? 'sk-le' : '') + '"><td>' + sbDMY(h.ngay || '') + '</td><td>' + e(h.sp) + '</td><td class="s">' + (h.sl ? soSL(h.sl) : '') + '</td><td class="s">' + (h.gia ? tien(h.gia) : '') + '</td>' +
-        '<td class="s">' + o(h.tien) + '</td><td class="s" style="font-weight:600">' + o(h.tt, '#006B3F') + '</td><td>' + e(h.nhan || '') + '</td></tr>';
+        '<td class="s">' + o(h.tien) + '</td><td class="s" style="font-weight:600">' + o(h.tt, '#A8741A') + '</td><td>' + e(h.nhan || '') + '</td></tr>';
     }).join('') +
     '<tr class="sk-cuoi sk-tong"><td></td><td colspan="3" class="s"><i>Tổng cộng</i></td><td class="s"><b>' + o(tong) + '</b></td><td></td><td></td></tr>' +
-    '<tr class="sk-cuoi"><td></td><td colspan="3" class="s"><i>Đã thanh toán / COD</i></td><td></td><td class="s"><b>' + o(tra, '#006B3F') + '</b></td><td></td></tr>' +
+    '<tr class="sk-cuoi"><td></td><td colspan="3" class="s"><i>Đã thanh toán / COD</i></td><td></td><td class="s"><b>' + o(tra, '#A8741A') + '</b></td><td></td></tr>' +
     '<tr class="sk-cuoi sk-het"><td></td><td colspan="3" class="s">CHỐT ĐẾN ' + sbDMY(r.den) + '</td><td class="s">' + (o(chot) || '0') + '</td><td></td><td>' + (chot < 0 ? '<small>khách đang dư tiền</small>' : '') + '</td></tr></table>';
   var css = '<style>.saoke{border-collapse:separate;border-spacing:0;width:100%;min-width:720px;font-size:13px;font-family:"Be Vietnam Pro",Arial,sans-serif;color:#1D2A22;font-variant-numeric:tabular-nums;background:#fff;border:1px solid #D5E5D9;border-radius:12px;overflow:hidden}' +
     '.saoke th,.saoke td{border-bottom:1px solid #E6EFE8;padding:7px 10px;white-space:nowrap}.saoke td:nth-child(2),.saoke td:nth-child(7){white-space:normal}.saoke td:nth-child(2){min-width:210px}.saoke td:nth-child(7){min-width:160px}.sk-mo td{background:#EEF6F0}.saoke td.s,.saoke th.s{text-align:right}' +
@@ -3642,9 +3642,9 @@ function sbVeSaoKe(ma, thang, r) {
     var dsHang = hang.map(function (h) {
       var nen = h.ky % 2 ? '#F4F9F5' : '#fff', laTra = h.sp === 'Thanh toán công nợ' || h.sp === 'Chuyển trả khách';
       return '<tr style="background:' + nen + ';border-bottom:1px solid #E1ECE4"><td style="' + td + 'white-space:nowrap;color:#555">' + (h.ngay ? sbDMY(h.ngay).slice(0, -5) : '') + '</td>' +
-        '<td style="' + td + (laTra ? 'color:' + xanh + ';font-weight:600' : '') + '">' + e(h.sp) + (h.nhan ? '<div style="color:#888;font-size:11.5px">' + e(h.nhan) + '</div>' : '') + '</td>' +
+        '<td style="' + td + (laTra ? 'color:#A8741A' + ';font-weight:600' : '') + '">' + e(h.sp) + (h.nhan ? '<div style="color:#888;font-size:11.5px">' + e(h.nhan) + '</div>' : '') + '</td>' +
         '<td style="' + td + 'text-align:center;white-space:nowrap">' + (h.sl ? soSL(h.sl) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap">' + (h.gia ? tien(h.gia) : '') + '</td>' +
-        '<td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600' + (h.tien < 0 ? ';color:#C62828' : '') + '">' + (h.tien ? am(h.tien) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600;color:' + (h.tt < 0 ? '#B42318' : xanh) + '">' + (h.tt ? am(h.tt) : '') + '</td></tr>';
+        '<td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600' + (h.tien < 0 ? ';color:#C62828' : '') + '">' + (h.tien ? am(h.tien) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600;color:' + (h.tt < 0 ? '#C62828' : '#A8741A') + '">' + (h.tt ? am(h.tt) : '') + '</td></tr>';
     }).join('');
     return '<div style="width:640px;background:#fff;font-family:Be Vietnam Pro,Arial,sans-serif;color:#1d1d1b;font-size:14px;line-height:1.45;border:1px solid #D5E5D9">' +
       '<div style="background:linear-gradient(135deg,#004D2C,' + xanh + ');color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;border-bottom:4px solid ' + vang + '">' +
@@ -3662,7 +3662,7 @@ function sbVeSaoKe(ma, thang, r) {
         '<tr style="border-bottom:1px solid #E1ECE4"><td style="' + td + '"></td><td colspan="3" style="' + td + 'font-weight:600;color:#555">Nợ chốt đến ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td style="' + td + 'text-align:right;font-weight:700' + (r.noDau < 0 ? ';color:#C62828' : '') + '">' + am(r.noDau) + '</td><td></td></tr>' +
         (dsHang || '<tr><td colspan="6" style="' + td + 'color:#888;text-align:center">Chưa có phát sinh trong tháng</td></tr>') + '</tbody></table></div>' +
       '<div style="padding:10px 24px 4px;display:flex;justify-content:flex-end"><table style="width:66%;border-collapse:collapse;font-size:14px">' +
-        dong('Nợ đầu kỳ (đến ' + sbDMY(sbNgayTruoc(r.tu)) + ')', am(r.noDau) + 'đ', 0, r.noDau < 0 ? '#C62828' : '') + dong('Phát sinh trong tháng', am(ps) + 'đ') + dong(tra < 0 ? 'Đã chuyển trả khách' : 'Đã thanh toán / COD', (tra < 0 ? '+' : '−') + tien(Math.abs(tra)) + 'đ', 0, xanh) +
+        dong('Nợ đầu kỳ (đến ' + sbDMY(sbNgayTruoc(r.tu)) + ')', am(r.noDau) + 'đ', 0, r.noDau < 0 ? '#C62828' : '') + dong('Phát sinh trong tháng', am(ps) + 'đ') + dong(tra < 0 ? 'Đã chuyển trả khách' : 'Đã thanh toán / COD', (tra < 0 ? '+' : '−') + tien(Math.abs(tra)) + 'đ', 0, '#A8741A') +
         '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' +
         dong(chot < 0 ? 'KHÁCH ĐANG DƯ' : 'CÒN NỢ ĐẾN ' + sbDMY(r.den), am(chot) + 'đ', 1, chot !== 0 ? '#C62828' : xanh) + '</table></div>' +
       '<div style="margin:12px 24px 0;padding:12px 14px;border:1px solid ' + vang + ';border-radius:8px;background:#F7FBF8;font-size:13.5px;display:flex;align-items:center;gap:16px">' +
@@ -3763,7 +3763,7 @@ function sbSuaBang(ma, thang, r) {
     $('skBang').innerHTML = '<datalist id="dsSpSB">' + SB.sp.map(function (s) { return '<option value="' + e(s.ten) + '">' + (s.kho ? 'Mã kho · ' + e(s.nhom) + ' · ' + e(s.dv) : ''); }).join('') + '</datalist><table class="saoke"><tr class="sk-dau"><th>NGÀY</th><th>SẢN PHẨM</th><th class="s">SỐ LƯỢNG</th><th class="s">ĐƠN GIÁ</th><th class="s">THÀNH TIỀN</th><th class="s">THANH TOÁN</th><th>GIAO HỘ NGƯỜI NHẬN</th></tr>' +
       '<tr><td></td><td colspan="3" class="sk-chot">CHỐT ĐẾN ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td class="s sk-chot">' + sbTien(r.noDau) + '</td><td></td><td></td></tr>' + rows.join('') +
       '<tr><td></td><td colspan="3" class="s"><i>TỔNG CỘNG</i></td><td class="s"><b>' + tien(tong) + '</b></td><td></td><td></td></tr>' +
-      '<tr><td></td><td colspan="3" class="s"><i>ĐÃ THANH TOÁN/COD</i></td><td></td><td class="s"><b style="color:#006B3F">' + tien(tra) + '</b></td><td></td></tr>' +
+      '<tr><td></td><td colspan="3" class="s"><i>ĐÃ THANH TOÁN/COD</i></td><td></td><td class="s"><b style="color:#A8741A">' + tien(tra) + '</b></td><td></td></tr>' +
       '<tr><td></td><td colspan="3" class="sk-chot">CHỐT ĐẾN ' + sbDMY(r.den) + '</td><td class="s sk-chot">' + sbTien(tong - tra) + '</td><td></td><td></td></tr></table>';
     var ij = function (s) { return s.split(',').map(Number); };
     var gan = function (sel, fn) { document.querySelectorAll('[' + sel + ']').forEach(function (el) { el.onchange = function () { fn(el, el.getAttribute(sel)); ve(); }; }); };
