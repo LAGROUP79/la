@@ -3619,7 +3619,7 @@ function sbVeSaoKe(ma, thang, r) {
   if ($('skSuaBang')) $('skSuaBang').onclick = function () { sbSuaBang(ma, thang, r); };
   if ($('skTra')) $('skTra').onclick = function () {
     moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">Thanh toán · ' + e(r.kh.ten) + '</h3><small class="muted">Đang nợ đến ' + sbDMY(r.den) + ': ' + (chot < 0 ? '−' : '') + tien(Math.abs(chot)) + 'đ</small>' +
-      '<label for="ttNgay">Ngày</label><input type="date" id="ttNgay" value="' + e(SB.homNay) + '" max="' + e(SB.homNay) + '" min="2026-10-01">' +
+      '<label for="ttNgay">Ngày <small class="muted">(phiếu nằm ở bảng công nợ của tháng theo ngày này)</small></label><input type="date" id="ttNgay" value="' + e(SB.homNay) + '" max="' + e(SB.homNay) + '" min="2026-10-01">' +
       '<label for="ttTien">Số tiền khách trả <small class="muted">(chuyển trả khách: ghi số âm)</small></label><input id="ttTien" inputmode="text" value="' + (chot > 0 ? tien(chot) : '') + '">' +
       '<label for="ttHT">Hình thức</label><select id="ttHT">' + SB.hinhThuc.map(function (x) { return opt(x, 'Chuyển khoản'); }).join('') + '</select>' +
       '<label for="ttGhi">Ghi chú</label><input id="ttGhi" placeholder="VD: CK công ty, thanh toán công nợ tháng ' + +thang.slice(5) + '">' +
@@ -3628,8 +3628,9 @@ function sbVeSaoKe(ma, thang, r) {
     $('ttLuu').onclick = function () {
       var so = docTienAm($('ttTien').value); if (!so) { bao('Nhập số tiền khách trả (chuyển trả khách thì ghi số âm).', true); return; }
       var nut = this; nut.disabled = true;
-      goi('ktLuuThu', [TK, { ngay: $('ttNgay').value, maKH: ma, tien: so, ht: $('ttHT').value, ghiChu: $('ttGhi').value }, SB_THANG], function (x) {
-        SB = x.so; dongHop(); bao(so < 0 ? 'Đã ghi chuyển trả ' + r.kh.ten + ' ' + tien(-so) + 'đ.' : 'Đã ghi thanh toán ' + tien(so) + 'đ của ' + r.kh.ten + '.'); sbSaoKe(ma, thang);
+      var ngayTT = $('ttNgay').value, thangTT = ngayTT.slice(0, 7) || thang;
+      goi('ktLuuThu', [TK, { ngay: ngayTT, maKH: ma, tien: so, ht: $('ttHT').value, ghiChu: $('ttGhi').value }, SB_THANG], function (x) {
+        SB = x.so; dongHop(); bao((so < 0 ? 'Đã ghi chuyển trả ' + r.kh.ten + ' ' + tien(-so) + 'đ' : 'Đã ghi thanh toán ' + tien(so) + 'đ của ' + r.kh.ten) + ' ngày ' + sbDMY(ngayTT) + (thangTT !== thang ? ' — phiếu nằm ở bảng tháng ' + +thangTT.slice(5) + ', đã chuyển sang tháng đó.' : '.')); sbSaoKe(ma, thangTT);
       }, false, function () { nut.disabled = false; });
     };
   };
