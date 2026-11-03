@@ -3360,7 +3360,7 @@ var SB_MAU_TT = { 'Vượt hạn mức': 'var(--do)', 'Sắp chạm': '#B7791F',
 function napSo(thang) { SB_THANG = thang || SB_THANG || ''; var k = 'so|' + SB_THANG; goiNho(k, 'ktSo', [TK, SB_THANG], function (r) { if (NHO[k]) NHO['so|' + r.thang] = NHO[k]; SB = r; SB_THANG = r.thang; veSo(); }); }
 function sbKhach(ma) { return (SB.khach || []).filter(function (k) { return k.ma === ma; })[0]; }
 function sbKhachTheoTen(t) { t = String(t || '').trim().toLowerCase(); return (SB.khach || []).filter(function (k) { return k.ten.toLowerCase() === t; })[0]; }
-function sbTien(n) { return (n < 0 ? '−' : '') + tien(Math.abs(n)) + 'đ'; }
+function sbTien(n) { return n < 0 ? '<span style="color:#C62828;font-weight:700">−' + tien(-n) + 'đ</span>' : tien(n) + 'đ'; }
 function sbTachMa(s) { var m = /^\s*(\d{6})(?!\d)\s*(.*)$/.exec(String(s || '')); return m ? [m[1], m[2]] : ['', String(s || '').trim()]; }
 function sbGhiChuThu(g) { var m = /^Thu kèm đơn (\S+)$/.exec(g || ''); if (!m) return g; var d = (SB.don || []).filter(function (x) { return x.ma === m[1]; })[0]; return d ? 'Thu kèm đơn' + (d.so ? ' ' + d.so : '') : g; }
 function sbDonMoi() { return { ma: '', ngay: SB.homNay, maKH: '', nhan: '', ghiChu: '', ghiChuTT: '', ship: '', ck: '', vat: '', thuTien: '', thuHT: 'COD', dong: [{ sp: '', nhom: '', sl: '', gia: '' }] }; }
@@ -3587,7 +3587,7 @@ function sbVeSaoKe(ma, thang, r) {
     if (x.vat) hang.push({ ky: ky, sp: 'VAT', tien: x.vat });
   });
   var tong = r.noDau + ps, chot = tong - tra;
-  var o = function (v, mau) { return v ? '<span' + (mau ? ' style="color:' + mau + '"' : '') + '>' + (v < 0 ? '−' : '') + tien(Math.abs(v)) + '</span>' : ''; };
+  var o = function (v, mau) { return v ? '<span' + (v < 0 ? ' class="am" style="color:#C62828;font-weight:700"' : mau ? ' style="color:' + mau + '"' : '') + '>' + (v < 0 ? '−' : '') + tien(Math.abs(v)) + '</span>' : ''; };
   var bang = '<table class="saoke"><tr><th colspan="7" class="sk-thang">THÁNG ' + +thang.slice(5) + (thang.slice(0, 4) !== SB.homNay.slice(0, 4) ? '/' + thang.slice(0, 4) : '') + ' · ' + e(r.kh.ten.toUpperCase()) + '</th></tr>' +
     '<tr class="sk-dau"><th>NGÀY</th><th>SẢN PHẨM</th><th class="s">SỐ LƯỢNG</th><th class="s">ĐƠN GIÁ</th><th class="s">THÀNH TIỀN</th><th class="s">THANH TOÁN</th><th>GIAO HỘ NGƯỜI NHẬN</th></tr>' +
     '<tr class="sk-mo"><td></td><td colspan="3" class="sk-chot">CHỐT ĐẾN ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td class="s sk-chot">' + (o(r.noDau) || '0') + '</td><td></td><td></td></tr>' +
@@ -3604,7 +3604,7 @@ function sbVeSaoKe(ma, thang, r) {
     '.sk-dau th{background:#EEF6F0;color:#004D2C;font-size:11.5px;font-weight:700;letter-spacing:.8px;text-align:center;border-bottom:2px solid #006B3F}.sk-dau th.s{text-align:right}' +
     '.sk-le td{background:#F6FAF7}.sk-chot{color:#004D2C;font-weight:700;letter-spacing:.5px;text-align:center;background:#EEF6F0}' +
     '.sk-cuoi td{background:#fff;border-bottom:0}.sk-cuoi i{font-style:normal;font-size:11.5px;letter-spacing:.8px;color:#5E6F64;font-weight:600;text-transform:uppercase}.sk-cuoi:first-of-type td,.sk-tong td{border-top:2px solid #006B3F}' +
-    '.sk-het td{background:#006B3F!important;color:#fff!important;font-weight:700;font-size:14px}.sk-het td span{color:#fff!important}.sk-het small{color:#E8D48B}</style>';
+    '.sk-het td{background:#006B3F!important;color:#fff!important;font-weight:700;font-size:14px}.sk-het td span{color:#fff!important}.sk-het td span.am{background:#fff;color:#C62828!important;padding:2px 10px;border-radius:12px}.sk-het small{color:#E8D48B}</style>';
   var chuGui = 'CÔNG NỢ THÁNG ' + +thang.slice(5) + ' – ' + r.kh.ten + '\nChốt đến ' + sbDMY(sbNgayTruoc(r.tu)) + ': ' + tien(r.noDau) + 'đ\n' + hang.map(function (h) {
     return (h.ngay ? sbDMY(h.ngay) + ' ' : '   ') + h.sp + (h.sl ? ' x' + soSL(h.sl) : '') + (h.gia ? ' @' + tien(h.gia) : '') + (h.tien ? ' = ' + tien(h.tien) : '') + (h.tt ? ' | trả ' + tien(h.tt) : '') + (h.ngay && h.nhan ? ' (' + h.nhan + ')' : '');
   }).join('\n') + '\nTỔNG CỘNG: ' + tien(tong) + 'đ\nĐÃ THANH TOÁN/COD: ' + tien(tra) + 'đ\nCHỐT ĐẾN ' + sbDMY(r.den) + ': ' + (chot < 0 ? '−' : '') + tien(Math.abs(chot)) + 'đ';
@@ -3644,7 +3644,7 @@ function sbVeSaoKe(ma, thang, r) {
       return '<tr style="background:' + nen + ';border-bottom:1px solid #E1ECE4"><td style="' + td + 'white-space:nowrap;color:#555">' + (h.ngay ? sbDMY(h.ngay).slice(0, -5) : '') + '</td>' +
         '<td style="' + td + (laTra ? 'color:' + xanh + ';font-weight:600' : '') + '">' + e(h.sp) + (h.nhan ? '<div style="color:#888;font-size:11.5px">' + e(h.nhan) + '</div>' : '') + '</td>' +
         '<td style="' + td + 'text-align:center;white-space:nowrap">' + (h.sl ? soSL(h.sl) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap">' + (h.gia ? tien(h.gia) : '') + '</td>' +
-        '<td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600">' + (h.tien ? am(h.tien) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600;color:' + (h.tt < 0 ? '#B42318' : xanh) + '">' + (h.tt ? am(h.tt) : '') + '</td></tr>';
+        '<td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600' + (h.tien < 0 ? ';color:#C62828' : '') + '">' + (h.tien ? am(h.tien) : '') + '</td><td style="' + td + 'text-align:right;white-space:nowrap;font-weight:600;color:' + (h.tt < 0 ? '#B42318' : xanh) + '">' + (h.tt ? am(h.tt) : '') + '</td></tr>';
     }).join('');
     return '<div style="width:640px;background:#fff;font-family:Be Vietnam Pro,Arial,sans-serif;color:#1d1d1b;font-size:14px;line-height:1.45;border:1px solid #D5E5D9">' +
       '<div style="background:linear-gradient(135deg,#004D2C,' + xanh + ');color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;border-bottom:4px solid ' + vang + '">' +
@@ -3659,12 +3659,12 @@ function sbVeSaoKe(ma, thang, r) {
         tt('Khách hàng', r.kh.ten) + tt('Điện thoại', r.kh.sdt || k.sdt) + tt('Khu vực', r.kh.khuVuc || k.khuVuc) + '</div>' +
       '<div style="padding:8px 24px 0"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:' + xanh + ';color:#fff">' +
         '<th style="' + td + 'text-align:left">Ngày</th><th style="' + td + 'text-align:left">Sản phẩm / nội dung</th><th style="' + td + '">SL</th><th style="' + td + 'text-align:right">Đơn giá</th><th style="' + td + 'text-align:right">Thành tiền</th><th style="' + td + 'text-align:right">Đã trả</th></tr></thead><tbody>' +
-        '<tr style="border-bottom:1px solid #E1ECE4"><td style="' + td + '"></td><td colspan="3" style="' + td + 'font-weight:600;color:#555">Nợ chốt đến ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td style="' + td + 'text-align:right;font-weight:700">' + am(r.noDau) + '</td><td></td></tr>' +
+        '<tr style="border-bottom:1px solid #E1ECE4"><td style="' + td + '"></td><td colspan="3" style="' + td + 'font-weight:600;color:#555">Nợ chốt đến ' + sbDMY(sbNgayTruoc(r.tu)) + '</td><td style="' + td + 'text-align:right;font-weight:700' + (r.noDau < 0 ? ';color:#C62828' : '') + '">' + am(r.noDau) + '</td><td></td></tr>' +
         (dsHang || '<tr><td colspan="6" style="' + td + 'color:#888;text-align:center">Chưa có phát sinh trong tháng</td></tr>') + '</tbody></table></div>' +
       '<div style="padding:10px 24px 4px;display:flex;justify-content:flex-end"><table style="width:66%;border-collapse:collapse;font-size:14px">' +
-        dong('Nợ đầu kỳ (đến ' + sbDMY(sbNgayTruoc(r.tu)) + ')', am(r.noDau) + 'đ') + dong('Phát sinh trong tháng', am(ps) + 'đ') + dong(tra < 0 ? 'Đã chuyển trả khách' : 'Đã thanh toán / COD', (tra < 0 ? '+' : '−') + tien(Math.abs(tra)) + 'đ', 0, xanh) +
+        dong('Nợ đầu kỳ (đến ' + sbDMY(sbNgayTruoc(r.tu)) + ')', am(r.noDau) + 'đ', 0, r.noDau < 0 ? '#C62828' : '') + dong('Phát sinh trong tháng', am(ps) + 'đ') + dong(tra < 0 ? 'Đã chuyển trả khách' : 'Đã thanh toán / COD', (tra < 0 ? '+' : '−') + tien(Math.abs(tra)) + 'đ', 0, xanh) +
         '<tr><td colspan="2" style="border-top:2px solid ' + vang + ';padding:0"></td></tr>' +
-        dong(chot < 0 ? 'KHÁCH ĐANG DƯ' : 'CÒN NỢ ĐẾN ' + sbDMY(r.den), tien(Math.abs(chot)) + 'đ', 1, chot > 0 ? '#B42318' : xanh) + '</table></div>' +
+        dong(chot < 0 ? 'KHÁCH ĐANG DƯ' : 'CÒN NỢ ĐẾN ' + sbDMY(r.den), am(chot) + 'đ', 1, chot !== 0 ? '#C62828' : xanh) + '</table></div>' +
       '<div style="margin:12px 24px 0;padding:12px 14px;border:1px solid ' + vang + ';border-radius:8px;background:#F7FBF8;font-size:13.5px;display:flex;align-items:center;gap:16px">' +
         '<div style="flex:1;line-height:1.7"><div style="font-weight:700;color:' + xanh + ';font-size:14px">THÔNG TIN CHUYỂN KHOẢN</div>' +
         '<div><span style="color:#777">Ngân hàng:</span> <b>' + CTY.nh + '</b></div><div><span style="color:#777">Số tài khoản:</span> <b style="font-size:16px;color:' + xanh + '">' + CTY.stk + '</b></div>' +
