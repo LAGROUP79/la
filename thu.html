@@ -3983,12 +3983,22 @@ function sbVeBCNoi() {
     }).join('') + '</table></div>' + (b.ghi ? '<p class="muted" style="margin-bottom:0">Gõ giá vốn (đồng / 1 đơn vị bán, VD tinh tính theo 100g) rồi bấm Enter — áp cho mọi đơn của sản phẩm đó, báo cáo tính lại ngay.</p>' : '') + '</div>';
   h += '<div class="the"><h3 style="margin-top:0">Theo ngày</h3><div class="cuon"><table><tr><th>Ngày</th><th class="s">Số đơn</th><th class="s">Doanh thu</th><th class="s">LN gộp</th><th class="s">Thu tiền</th></tr>' +
     b.theoNgay.map(function (x) { return '<tr><td>' + ngayDu(x.ngay) + '</td><td class="s">' + x.don + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + mau(x.ln) + '</td><td class="s">' + tien(x.thu) + '</td></tr>'; }).join('') + '</table></div></div>';
-  h += '<div class="the"><h3 style="margin-top:0">Top khách</h3><div class="cuon"><table><tr><th>Khách</th><th class="s">Số đơn</th><th class="s">Doanh thu</th><th class="s">LN gộp</th></tr>' +
-    b.theoKhach.map(function (k) { return '<tr><td>' + e(k.ten) + '</td><td class="s">' + k.don + '</td><td class="s">' + tien(k.tien) + '</td><td class="s">' + mau(k.ln) + '</td></tr>'; }).join('') + '</table></div></div>';
+  h += '<div class="the"><h3 style="margin-top:0">Khách hàng · mặt hàng đã mua</h3><p class="muted" style="margin:0 0 8px">Bấm vào tên khách để xem số lượng từng mặt hàng trong kỳ.</p>' +
+    '<input id="bcTimKH" placeholder="Tìm khách…" style="max-width:260px;margin-bottom:8px"><div class="cuon"><table><tr><th>Khách</th><th class="s">Số đơn</th><th class="s">Doanh thu</th><th class="s">LN gộp</th></tr>' +
+    b.theoKhach.map(function (k, i) {
+      var ct = (k.sp || []).map(function (s) {
+        var hu = s.nhom === 'YẾN HŨ' && s.sl >= 105 ? ' <small class="muted">(' + soSL(Math.round(s.sl / 105 * 10) / 10) + ' thùng)</small>' : '';
+        return '<tr><td style="padding-left:18px">' + e(s.sp) + (s.nhom ? ' <small class="muted">· ' + e(s.nhom) + '</small>' : '') + '</td><td class="s"><b>' + soSL(s.sl) + '</b>' + hu + '</td><td class="s">' + tien(s.tien) + '</td></tr>';
+      }).join('');
+      return '<tr data-timkh="' + e(k.ten.toLowerCase()) + '"><td><a href="#" data-bckh="' + i + '" style="color:var(--xanh);text-decoration:none"><b>' + e(k.ten) + '</b> <small class="muted">▾</small></a></td><td class="s">' + k.don + '</td><td class="s">' + tien(k.tien) + '</td><td class="s">' + mau(k.ln) + '</td></tr>' +
+        '<tr class="an" data-bckhct="' + i + '"><td colspan="4" style="background:#F6FAF7;padding:6px 8px 10px"><table style="width:100%"><tr><th>Mặt hàng</th><th class="s">Số lượng</th><th class="s">Doanh thu</th></tr>' + (ct || '<tr><td colspan="3" class="muted">Chưa có dòng hàng</td></tr>') + '</table></td></tr>';
+    }).join('') + '</table></div></div>';
   h += '<div class="the"><h3 style="margin-top:0">Tiền thu theo hình thức</h3><table>' + b.theoHT.map(function (x) { return '<tr><td>' + e(x.ht) + '</td><td class="s">' + tien(x.tien) + 'đ</td></tr>'; }).join('') + '</table>' +
     '<p class="muted" style="margin-bottom:0">Cần file Excel chi tiết: Phòng Tài chính Kế toán → Tải Excel.</p></div>';
   $('bcNoi').innerHTML = h;
   dbGanTip($('bcNoi'));
+  document.querySelectorAll('[data-bckh]').forEach(function (a) { a.onclick = function (ev) { ev.preventDefault(); var r = document.querySelector('[data-bckhct="' + a.dataset.bckh + '"]'); if (r) r.classList.toggle('an'); }; });
+  $('bcTimKH').oninput = function () { var q = this.value.toLowerCase().trim(); document.querySelectorAll('[data-timkh]').forEach(function (tr) { tr.classList.toggle('an', !!q && tr.dataset.timkh.indexOf(q) < 0); }); };
   $('bcTimSP').oninput = function () { var q = this.value.toLowerCase().trim(); document.querySelectorAll('[data-timsp]').forEach(function (tr) { tr.classList.toggle('an', !!q && tr.dataset.timsp.indexOf(q) < 0); }); };
   document.querySelectorAll('[data-gvsp]').forEach(function (el) {
     el.onkeydown = function (ev) {
