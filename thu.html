@@ -341,7 +341,7 @@ function cho(on) {
   if (!on && c) c.remove();
 }
 function goi(ham, args, ok, imLang, loi) {
-  if (!/^(chotDuLieu|khoDuLieu|ktSo|dsDon|baoCao|chotThongKe|chotTraCuu|qlPhanQuyen|trangChu|danhSachTen|chamCongThang|congViec|nghiPhep|tonKho|dsKhach|cskhDuLieu|qlNhatKy|nsHoSo|nsDanhSach|nsVanBanChung|nsBangCong|nsBangLuong|nsNghiPhepThang|khoPhieuNgay|khoBaoCaoNgay|kpiCaiDat)$/.test(ham)) NHO = {};
+  if (!/^(chotDuLieu|khoDuLieu|ktSo|dsDon|baoCao|chotThongKe|chotTraCuu|qlPhanQuyen|trangChu|danhSachTen|chamCongThang|congViec|nghiPhep|tonKho|dsKhach|cskhDuLieu|qlNhatKy|nsHoSo|nsDanhSach|nsVanBanChung|nsBangCong|nsBangLuong|nsNghiPhepThang|khoPhieuNgay|khoBaoCaoNgay|kpiCaiDat|khoTheKho|crmDuLieu)$/.test(ham)) NHO = {};
   if (!imLang) cho(true);
   var r = google.script.run.withSuccessHandler(function (x) { cho(false); if (ok) ok(x); })
     .withFailureHandler(function (err) {
@@ -828,6 +828,30 @@ var TON_R = null, TON_KHO = '';
 var MAU_KHO = { 'HÀNG HŨ': ['#E1F1FA', '#2B8CC4', '#175A80'], 'HÀNG TINH': ['#FFF3D9', '#D89A12', '#8A5F00'], 'HÀNG THÔ': ['#F1E8FB', '#8A4FD1', '#57308A'], 'PHỤ KIỆN': ['#E3F1E8', '#006B3F', '#004D2C'] };
 var KHO_MA = { 'HÀNG HŨ': 'hu', 'HÀNG TINH': 'tinh', 'HÀNG THÔ': 'tho', 'PHỤ KIỆN': 'pk' };
 function napTon() { TON_KHO = ''; goiDoc('tonKho', [TK], veTon); }
+var TK_LOAI = { nhap: ['Nhập', '#006B3F'], xuat: ['Xuất', '#C62828'], kiem: ['Kiểm', '#A8741A'], huy: ['Hoàn lại', '#6b6b6b'], dau: ['Tồn đầu', '#6b6b6b'] };
+function moTheKho(id, tu, den) {
+  goi('khoTheKho', [TK, id, tu || '', den || ''], function (r) {
+    var dv = e(r.unit || '');
+    function so(v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + soSL(Math.abs(v)); }
+    var h = '<h3 style="margin:0 0 2px;color:var(--xanh)">📋 Thẻ kho · ' + e(r.ten) + '</h3><p class="muted" style="margin:0 0 8px">' + e(r.nhom) + ' · đơn vị ' + dv + ' · tồn hiện tại <b>' + soSL(r.tonNay) + '</b></p>' +
+      '<div class="hang" style="gap:8px;align-items:end"><div style="flex:1"><label for="tkTu" style="margin-top:0">Từ ngày</label><input type="date" id="tkTu" value="' + e(r.tu) + '"></div>' +
+      '<div style="flex:1"><label for="tkDen" style="margin-top:0">Đến ngày</label><input type="date" id="tkDen" value="' + e(r.den) + '"></div><button class="nut" id="tkXem" style="width:auto;padding:10px 14px">Xem</button></div>' +
+      '<div class="o" style="margin:10px 0">' + [['Tồn đầu kỳ', soSL(r.dau)], ['Nhập', so(r.tong.nhap)], ['Xuất', so(-r.tong.xuat)], ['Kiểm kho lệch', so(r.tong.kiem)], ['Tồn cuối kỳ', soSL(r.cuoi)]].map(function (o) {
+        return '<div><small>' + o[0] + '</small><b>' + o[1] + '</b></div>'; }).join('') + '</div>' +
+      (r.tong.huy ? '<p class="muted" style="margin:0 0 6px">Phiếu huỷ hoàn lại: ' + so(r.tong.huy) + ' ' + dv + '</p>' : '') +
+      (r.ds.length ? '<div class="cuon"><table><tr><th>Ngày</th><th>Phiếu</th><th class="s">Tăng / giảm</th><th class="s">Tồn sau</th></tr>' + r.ds.map(function (x) {
+        var l = TK_LOAI[x.loai] || [x.loai, '#6b6b6b'], gc = x.ghiChu && x.ghiChu !== 'Để trống = khớp sổ' ? x.ghiChu : x.ghiChu ? 'khớp sổ' : '';
+        return '<tr style="' + (x.huy ? 'opacity:.45;text-decoration:line-through' : '') + '"><td style="white-space:nowrap">' + ngayDu(x.ngay) + '<br><small class="muted">' + e(x.gio) + '</small></td>' +
+          '<td><b style="color:' + l[1] + '">' + l[0] + '</b> · ' + e(x.lyDo) + '<br><small class="muted">' + e(x.nguoi) + (gc ? ' · ' + e(gc.length > 70 ? gc.slice(0, 70) + '…' : gc) : '') + (x.trongKiem ? ' · đã gồm trong số kiểm' : '') + (x.huy ? ' · phiếu đã huỷ' : '') + '</small></td>' +
+          '<td class="s"><b style="color:' + (x.chenh < 0 ? '#C62828' : x.chenh > 0 ? '#006B3F' : 'inherit') + '">' + (x.chenh ? so(x.chenh) : '0') + '</b>' + (x.loai === 'kiem' ? '<br><small class="muted">đếm ' + soSL(x.sl) + '</small>' : '') + '</td>' +
+          '<td class="s">' + soSL(x.sau) + '</td></tr>'; }).join('') + '</table></div>' : '<p class="muted">Không có phiếu nào của mã này trong khoảng ngày đã chọn.</p>') +
+      '<p class="muted" style="font-size:12px">Mới nhất ở trên. Đơn bán hàng tự lập phiếu xuất "Bán hàng". Kiểm kho cuối ngày đặt lại tồn bằng số đếm thật, cột tăng / giảm là phần lệch so với sổ.</p>' +
+      '<button class="nut" id="tkDong" style="margin-top:6px">Đóng</button>';
+    moHop(h);
+    $('tkDong').onclick = dongHop;
+    $('tkXem').onclick = function () { moTheKho(id, $('tkTu').value, $('tkDen').value); };
+  });
+}
 function veTon(r) {
   if (r) TON_R = r;
   r = TON_R;
@@ -880,7 +904,7 @@ function veTon(r) {
     return '<details open><summary>' + e(p.ten) + ' — ' + (tp.donVi ? soSL(tp.sl) + ' ' + e(tp.donVi) : tp.ma + ' mã') + (tien1 && tp.von ? ' · ' + tienNgan(tp.von) : '') + '</summary><div class="cuon"><table>' +
       '<tr><th>Mã hàng</th><th class="s">Tồn</th><th>Kiểm kho gần nhất</th><th>Cập nhật lần cuối</th>' + (tien1 ? '<th class="s">Giá vốn TB</th><th class="s">Giá trị tồn</th>' : '') + '</tr>' + p.sp.map(function (s) {
       var v = s.ton || 0, k = s.kiem;
-      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td>' + e(s.ten) + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a> <a href="#" data-xoama="' + e(s.ma) + '" title="Xoá mã hàng" style="text-decoration:none">🗑</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + (s.qc ? '<br><small class="muted">= ' + tien((s.ton || 0) * s.qc) + ' cái · ' + tien(s.qc) + ' cái/' + e(s.dv) + '</small>' : '') +
+      return '<tr data-tim="' + e((s.ten + ' ' + p.ten + ' ' + s.ma).toLowerCase()) + '"><td><a href="#" data-thekho="' + e(s.ma) + '" title="Xem thẻ kho: lịch sử nhập, xuất, kiểm" style="color:inherit;text-decoration:underline dotted">' + e(s.ten) + '</a>' + (r.doiTen ? ' <a href="#" data-doiten="' + e(s.ma) + '" title="Đổi tên sản phẩm" style="text-decoration:none">✎</a> <a href="#" data-xoama="' + e(s.ma) + '" title="Xoá mã hàng" style="text-decoration:none">🗑</a>' : '') + '</td><td class="s"' + (s.ton != null && s.ton <= 0 ? ' style="color:var(--do)"' : '') + '><b>' + (s.ton == null ? '—' : soSL(s.ton)) + '</b> ' + e(s.dv) + (s.qc ? '<br><small class="muted">= ' + tien((s.ton || 0) * s.qc) + ' cái · ' + tien(s.qc) + ' cái/' + e(s.dv) + '</small>' : '') +
           ((r.doiTen || tien1) && (s.qc || x.nhom === 'PHỤ KIỆN') ? ' <a href="#" data-quycach="' + e(s.ma) + '" title="Quy cách: 1 ' + e(s.dv) + ' = bao nhiêu cái" style="text-decoration:none;font-size:12px">' + (s.qc ? '✎' : '+ quy cách') + '</a>' : '') + '</td>' +
         '<td>' + (k ? lucKiem(k.at) + '<br><small class="muted">đếm ' + soSL(k.sl) + (k.by ? ' · ' + e(k.by) : '') + '</small>' : '<span class="muted">chưa kiểm</span>') + '</td>' +
         '<td><small class="muted">' + (s.luc ? (s.boi ? e(s.boi) + ' · ' : '') + lucKiem(s.luc) : '–') + '</small></td>' +
@@ -894,6 +918,7 @@ function veTon(r) {
     document.querySelectorAll('[data-tim]').forEach(function (tr) { tr.classList.toggle('an', !!q && tr.dataset.tim.indexOf(q) < 0); });
     document.querySelectorAll('[data-nhomton] details').forEach(function (d) { d.open = true; d.classList.toggle('an', !!q && !d.querySelector('[data-tim]:not(.an)')); });
   };
+  document.querySelectorAll('[data-thekho]').forEach(function (a) { a.onclick = function (ev) { ev.preventDefault(); moTheKho(a.dataset.thekho); }; });
   document.querySelectorAll('[data-doiten]').forEach(function (a) {
     a.onclick = function (ev) {
       ev.preventDefault();
@@ -1663,6 +1688,7 @@ function crmNutChe() {
   var r = CRM.r, c = CRM.che;
   if (c === 'km') return '<h2 class="tieude">CRM khách mới</h2>';
   return '<h2 class="tieude">CRM khách cũ</h2><div class="hang" style="margin-bottom:10px;flex-wrap:wrap;gap:6px">' +
+    '<button class="nut' + (c === 'cc' ? '' : ' phu') + '" data-crmche="cc">📞 Cần chăm hôm nay (' + (r.canCham || []).length + ')</button>' +
     '<button class="nut' + (c === 'kl' ? '' : ' phu') + '" data-crmche="kl">Khách lẻ (' + r.khach.length + ')</button>' +
     '<button class="nut' + (c === 'dl' ? '' : ' phu') + '" data-crmche="dl">Đại lý (' + r.daiLy.length + ')</button>' +
     '<button class="nut' + (c === 'lk' ? '' : ' phu') + '" data-crmche="lk">Khách lâu không lấy (' + (r.lauKhong || []).length + ')</button></div>';
@@ -1726,7 +1752,9 @@ function crmThe(x, i, kl, them) {
   if (kl) return mo + '<div class="dau"><span class="ma">' + e(x[1] || '(chưa có tên)') + '</span>' + (x[8] ? '<span class="chip ' + crmChipTT(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
     '<div>' + crmSdt(x[0]) + (x[5] ? ' · đại lý <b>' + e(x[5]) + '</b>' : '') + '</div>' +
     '<div class="muted">' + x[2] + ' lần nhận · ' + tien(x[3]) + 'đ' + (x[4] ? ' · gần nhất ' + crmNgay(x[4]) : '') + ' · im lặng ' + x[6] + ' ngày' + (x[7] ? ' · ' + e(x[7]) : '') + '</div>' + goiY + '</div>';
-  return mo + '<div class="dau"><span class="ma">' + e(x[0]) + '</span>' + (x[6] ? '<span class="chip ' + crmChipTT(x[6]) + '">' + e(x[6]) + '</span>' : '') + '</div>' +
+  var hn = x[21] || {};
+  return mo + '<div class="dau"><span class="ma">' + e(x[0]) + '</span><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">' + crmChipHang(hn.hang, hn.hangTay) + (x[6] ? '<span class="chip ' + crmChipTT(x[6]) + '">' + e(x[6]) + '</span>' : '') + '</span></div>' +
+    (hn.nhip || hn.nguon ? '<div class="muted" style="font-size:12.5px">' + (hn.nhip ? '🔁 thường ' + hn.nhip + ' ngày lấy 1 lần' : '') + (hn.nhip && hn.nguon ? ' · ' : '') + (hn.nguon ? 'nguồn ' + e(hn.nguon) : '') + '</div>' : '') +
     '<div>Còn nợ <b>' + tien(x[3]) + 'đ</b>' + (x[8] ? ' <span class="chip ' + crmChipNo(x[8]) + '">' + e(x[8]) + '</span>' : '') + '</div>' +
     '<div class="muted">' + x[2] + ' giao dịch' + (x[1] ? ' · mua gần nhất ' + crmNgay(x[1]) : '') + ' · ' + x[4] + ' ngày chưa mua' + (x[7] ? ' · ' + e(x[7]) : '') + (x[5] ? ' · ' + e(x[5]) : '') + '</div>' +
     '<div>' + crmSdt(x[9]) + (x[10] ? ' · ' + e(x[10]) : '') + (x[11] ? ' · ' + e(x[11]) : '') + '</div>' + goiY + '</div>';
@@ -1844,9 +1872,53 @@ document.addEventListener('click', function (ev) {
   var km = kmTim(c.dataset.kmthe); if (km) moKhachMoi(km);
 });
 function crmNhan(r) { if (r.ghiGc == null && CRM.r) r.ghiGc = CRM.r.ghiGc; CRM.r = r; veCrm(); }
+var CC_HANG_MAU = { A: '#006B3F', B: '#2a78d6', C: '#A8741A', D: '#6b6b6b' };
+function crmChipHang(h, tay) { return h ? '<span class="chip" style="background:' + (CC_HANG_MAU[h] || '#6b6b6b') + ';color:#fff" title="' + (tay ? 'Hạng kế toán đặt' : 'Hạng theo doanh số 6 tháng (sổ cũ)') + '">Hạng ' + e(h) + '</span>' : ''; }
+function ccDong(o) {
+  if (o.x) return o.x;
+  var r = CRM.r;
+  if (o.i >= 0) o.x = o.loai === 'kl' ? r.khach[o.i] : r.daiLy[o.i];
+  else { o.x = [o.ten, o.cuoi || '', o.soLan || 0, 0, o.chua, '', '', o.hang ? 'Hạng ' + o.hang : '', '', o.sdt || '', o.khuVuc || '', '']; o.x[20] = o.gc; }
+  return o.x;
+}
+function crmLocCc() {
+  var q = CRM.q.toLowerCase().trim(), g = q.replace(/[\s.]/g, ''), f = CRM.loc;
+  return (CRM.r.canCham || []).filter(function (o) {
+    if (f === 'hen' && !o.hen) return false; if (f === 'nhip' && o.hen) return false;
+    if (f && f.length === 1 && o.hang !== f) return false;
+    if (!q) return true;
+    var s = [o.ten, o.sdt, o.khuVuc, o.nguon].join(' ').toLowerCase();
+    return s.indexOf(q) >= 0 || (g && s.replace(/[\s.]/g, '').indexOf(g) >= 0);
+  });
+}
+function veCrmCc() {
+  var ds = CRM.r.canCham || [], hen = ds.filter(function (o) { return o.hen; }).length, dem = {};
+  ds.forEach(function (o) { if (o.hang) dem[o.hang] = (dem[o.hang] || 0) + 1; });
+  function o4(ten, v) { return '<div><small>' + e(ten) + '</small><b>' + v + '</b></div>'; }
+  function nut(k, ten, n) { return '<button class="nut nho' + (CRM.loc === k ? '' : ' phu') + '" data-crmloc="' + k + '" style="width:auto">' + ten + ' · ' + n + '</button>'; }
+  var L = CRM.r.ccLuat || { md: 30, toiDa: 180 };
+  $('noiDung').innerHTML = quayLai() + crmNutChe() +
+    '<div class="o">' + o4('Cần gọi hôm nay', ds.length) + o4('Hẹn gọi lại tới ngày', hen) + o4('Đại lý quá nhịp mua', ds.length - hen) + o4('Hạng A + B', (dem.A || 0) + (dem.B || 0)) + '</div>' +
+    '<div class="the"><label for="crmQ" style="margin-top:0">Tìm khách</label><input id="crmQ" value="' + e(CRM.q) + '" placeholder="Tên, số điện thoại, khu vực, nguồn…">' +
+    '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + nut('hen', '⏰ Hẹn gọi lại', hen) + nut('nhip', '🔁 Quá nhịp mua', ds.length - hen) +
+    ['A', 'B', 'C', 'D'].filter(function (h) { return dem[h]; }).map(function (h) { return nut(h, 'Hạng ' + h, dem[h]); }).join('') + '</div></div><div id="crmDs"></div>' +
+    '<p class="muted">Nhịp mua = khoảng cách thường gặp giữa các lần lấy hàng của chính đại lý đó, tính từ Sổ bán hàng (từ 01/10/2026). Đại lý chưa đủ 3 lần lấy thì tạm tính ' + L.md + ' ngày. ' +
+    'Danh sách hiện đại lý đã quá nhịp vài ngày và chưa lấy quá ' + L.toiDa + ' ngày, cộng các khách có hẹn gọi lại tới ngày. Gọi xong bấm 📝 Ghi chú: khách tự rời danh sách 3 ngày, hoặc tới ngày hẹn mới hiện lại. Xếp: hẹn gọi trước, rồi hạng A → D.</p>';
+  veCrmDs();
+}
+function crmTheCc(o, i) {
+  var x = ccDong(o), lyDo = o.hen ? '<span class="chip cho">⏰ Hẹn gọi hôm nay</span>' : '<span class="chip huy">Quá nhịp ' + o.qua + ' ngày</span>';
+  var nhip = o.loai === 'kl' ? 'Khách lẻ' : o.hen && o.nhip == null ? '' : o.nhipMD ? 'Chưa đủ dữ liệu nhịp (' + (o.soLan || 0) + ' lần lấy từ 01/10), tạm tính ' + ((CRM.r.ccLuat || {}).md || 30) + ' ngày' : 'Thường <b>' + o.nhip + ' ngày</b> lấy 1 lần (' + o.soLan + ' lần từ 01/10)';
+  return '<div class="don crmthe" data-crmhs="' + i + '" style="cursor:pointer"><div class="dau"><span class="ma">' + e(o.ten) + '</span><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">' + crmChipHang(o.hang) + lyDo + '</span></div>' +
+    '<div class="muted">' + nhip + (o.chua != null ? (nhip ? ' · ' : '') + 'đã <b>' + o.chua + ' ngày</b> chưa lấy' : '') + (o.cuoi ? ' · lần cuối ' + ngayDu(o.cuoi) : '') + (o.nguon ? ' · nguồn ' + e(o.nguon) : '') + '</div>' +
+    '<div>' + crmSdt(o.sdt) + (o.khuVuc ? ' · ' + e(o.khuVuc) : '') + '</div>' + crmGcHop(x[20]) +
+    '<div class="hang" style="justify-content:flex-end;gap:10px;align-items:center;font-size:12px;color:var(--xanh);font-weight:600">' +
+    (CRM.r.ghiGc ? '<button class="nut nho phu" data-crmgc="1" style="width:auto;padding:2px 10px;font-size:12px">📝 Ghi chú</button>' : '') + '<span>Xem hồ sơ ›</span></div></div>';
+}
 function veCrm() {
   if (CRM.che === 'km') return veCrmKm();
   if (CRM.che === 'lk') return veCrmLk();
+  if (CRM.che === 'cc') return veCrmCc();
   var r = CRM.r, kl = CRM.che === 'kl', ds = kl ? r.khach : r.daiLy, tt = kl ? 8 : 6, dem = {};
   ds.forEach(function (x) { dem[x[tt]] = (dem[x[tt]] || 0) + 1; });
   function o4(ten, v) { return '<div><small>' + e(ten) + '</small><b>' + v + '</b></div>'; }
@@ -1867,6 +1939,13 @@ function veCrm() {
 }
 function veCrmDs() {
   if (CRM.che === 'km') return veCrmKmDs();
+  if (CRM.che === 'cc') {
+    var dc = crmLocCc(), xc = dc.slice(0, CRM.hien); CRM.xem = xc;
+    $('crmDs').innerHTML = '<p class="muted">' + dc.length + ' khách cần gọi · bấm vào khách để xem hồ sơ</p>' + (xc.map(crmTheCc).join('') ||
+      '<p class="muted">' + (CRM.q || CRM.loc ? 'Không có khách phù hợp.' : (CRM.r.loiCC ? 'Chưa tính được danh sách: ' + e(CRM.r.loiCC) : '🎉 Hôm nay chưa có khách nào tới lượt chăm.')) + '</p>') +
+      (dc.length > xc.length ? '<button class="nut phu rong" data-crmthem="1">Xem thêm (còn ' + (dc.length - xc.length) + ')</button>' : '');
+    return;
+  }
   var kl = CRM.che === 'kl', lk = CRM.che === 'lk', ds = crmLoc(), xem = ds.slice(0, CRM.hien);
   CRM.xem = xem;
   var nutXoa = H.me.admin ? '<button class="nut nho phu" data-crmxoa="1" style="width:auto;padding:2px 10px;font-size:12px;color:#C81E1E">🗑 Xoá</button>' : '';
@@ -1911,7 +1990,8 @@ function moHoSoCrm(x, kl, khoaLk) {
         '<p class="muted">Chưa tìm thấy đại lý này trong Sổ bán hàng mới (khác tên hoặc chưa có số điện thoại). Kế toán kiểm tra tên trong Sổ bán hàng → Công nợ.</p>';
     } else {
       var k = r.kh, n = r.no;
-      h += muc('Thông tin') + dong('Mã khách', e(k.ma)) + dong('Nhóm giá', e(k.nhom)) + dong('Khu vực', e(k.khuVuc)) + dong('Nhóm (sổ cũ)', e(x[5])) + dong('Xếp hạng doanh số', e(x[7])) + dong('Tình trạng mua', e(x[6])) +
+      h += muc('Thông tin') + dong('Mã khách', e(k.ma)) + dong('Nhóm giá', e(k.nhom)) + dong('Khu vực', e(k.khuVuc)) + dong('Nhóm (sổ cũ)', e(x[5])) + dong('Xếp hạng doanh số', e(x[7])) + (k.hang ? dong('Hạng kế toán đặt', 'Hạng ' + e(k.hang)) : '') + dong('Nguồn khách', e(k.nguonKH)) +
+        (x[21] && x[21].nhip ? dong('Nhịp lấy hàng', 'khoảng ' + x[21].nhip + ' ngày / lần') : '') + dong('Tình trạng mua', e(x[6])) +
         (k.ghiChu ? dong('Ghi chú', e(k.ghiChu)) : '') + (k.dung ? '' : dong('Trạng thái', 'Ngừng dùng'));
       if (r.nguon) h += dong('Nguồn khách', e([r.nguon.loai, r.nguon.nguon].filter(Boolean).join(' · ')) + ' (CRM khách mới ' + ngVN(r.nguon.ngay) + ')');
       h += muc('Công nợ tháng ' + +r.thang.slice(5)) + dong('Nợ đầu tháng', tien(n.noDau) + 'đ') + dong('Mua trong tháng', tien(n.ps) + 'đ') + dong('Đã trả trong tháng', tien(n.tra) + 'đ') +
@@ -1943,7 +2023,7 @@ function crmVe(khoa) {
 document.addEventListener('click', function (ev) {
   var c = ev.target.closest('[data-crmhs]'); if (!c || !CRM || !CRM.xem) return;
   var o = CRM.xem[+c.dataset.crmhs]; if (!o) return;
-  var lk = CRM.che === 'lk', x = lk ? o.x : o, kl = lk ? o.loai === 'kl' : CRM.che === 'kl';
+  var lk = CRM.che === 'lk', cc = CRM.che === 'cc', x = cc ? ccDong(o) : lk ? o.x : o, kl = lk || cc ? o.loai === 'kl' : CRM.che === 'kl';
   if (ev.target.closest('[data-crmxoa]')) { crmXoa(x, kl); return; }
   if (ev.target.closest('[data-crmgc]')) { if (x) moGhiChuCrm(x, kl); return; }
   if (ev.target.closest('a,button') || !x) return;
@@ -3811,7 +3891,11 @@ function sbSuaKhach(k, tenMoi, xong) {
     '<label for="kTen">Tên khách</label><input id="kTen" value="' + e(k.ten) + '">' +
     '<label for="kLoai">Loại khách</label><select id="kLoai">' + ['Đại lý', 'Khách lẻ'].map(function (x) { return opt(x, loai); }).join('') + '</select>' +
     '<div id="kDL"' + (loai === 'Khách lẻ' ? ' style="display:none"' : '') + '>' +
-    '<label for="kNhom">Nhóm giá</label><select id="kNhom">' + ['', 'Nhóm 1', 'Nhóm 2', 'Nhóm 3'].map(function (x) { return opt(x, k.nhom || ''); }).join('') + '</select></div>' +
+    '<label for="kNhom">Nhóm giá</label><select id="kNhom">' + ['', 'Nhóm 1', 'Nhóm 2', 'Nhóm 3'].map(function (x) { return opt(x, k.nhom || ''); }).join('') + '</select>' +
+    '<label for="kHang">Hạng khách (để trống = tự xếp theo doanh số 6 tháng: A ≥100tr · B 50–100tr · C 10–50tr · D &lt;10tr)</label><select id="kHang"><option value="">Tự động</option>' +
+    ((SB && SB.hangDs) || ['A', 'B', 'C', 'D']).map(function (x) { return '<option value="' + x + '"' + (k.hang === x ? ' selected' : '') + '>Hạng ' + x + '</option>'; }).join('') + '</select></div>' +
+    '<label for="kNguon">Nguồn khách (biết Lanest từ đâu)</label><input id="kNguon" list="kDsNguon" value="' + e(k.nguon || '') + '" placeholder="Chọn hoặc gõ nguồn khác">' +
+    '<datalist id="kDsNguon">' + ((SB && SB.nguonDs) || ['Fanpage FB', 'Zalo', 'TikTok', 'Website', 'Khách cũ giới thiệu', 'Khác']).map(function (x) { return '<option value="' + e(x) + '">'; }).join('') + '</datalist>' +
     '<label for="kSdt">Số điện thoại</label><input id="kSdt" inputmode="tel" value="' + e(k.sdt || '') + '">' +
     '<label for="kKv">Khu vực</label><input id="kKv" value="' + e(k.khuVuc || '') + '">' +
     '<div id="kDL2"' + (loai === 'Khách lẻ' ? ' style="display:none"' : '') + '>' +
@@ -3828,6 +3912,7 @@ function sbSuaKhach(k, tenMoi, xong) {
   };
   $('kLuu').onclick = function () {
     var gui = { ma: k.ma, ten: $('kTen').value, loai: $('kLoai').value, nhom: $('kNhom').value, sdt: $('kSdt').value, khuVuc: $('kKv').value, hanMuc: $('kHm').value.trim() ? docTien($('kHm').value) : '', ghiChu: $('kGhi').value,
+      hang: $('kLoai').value === 'Khách lẻ' ? '' : $('kHang').value, nguon: $('kNguon').value.trim(),
       dung: $('kDung') ? $('kDung').checked : true, noChot: $('kNo') && $('kNo').value.trim() ? $('kNo').value.replace(/[^\d\-]/g, '') : null };
     if (!gui.ten.trim()) { bao('Nhập tên khách.', true); return; }
     if (xong) { goi('chotThemKhach', [TK, gui], function (x) { dongHop(); xong(x, gui); }); return; }
@@ -3983,6 +4068,14 @@ function sbVeBCNoi() {
     }).join('') + '</table></div>' + (b.ghi ? '<p class="muted" style="margin-bottom:0">Gõ giá vốn (đồng / 1 đơn vị bán, VD tinh tính theo 100g) rồi bấm Enter — áp cho mọi đơn của sản phẩm đó, báo cáo tính lại ngay.</p>' : '') + '</div>';
   h += '<div class="the"><h3 style="margin-top:0">Theo ngày</h3><div class="cuon"><table><tr><th>Ngày</th><th class="s">Số đơn</th><th class="s">Doanh thu</th><th class="s">LN gộp</th><th class="s">Thu tiền</th></tr>' +
     b.theoNgay.map(function (x) { return '<tr><td>' + ngayDu(x.ngay) + '</td><td class="s">' + x.don + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + mau(x.ln) + '</td><td class="s">' + tien(x.thu) + '</td></tr>'; }).join('') + '</table></div></div>';
+  var bangNH = function (tieu, ds) {
+    var tong = ds.reduce(function (a, x) { return a + x.tien; }, 0) || 1;
+    return '<div style="flex:1;min-width:260px"><h4 style="margin:0 0 6px;color:var(--xanh)">' + tieu + '</h4><div class="cuon"><table><tr><th></th><th class="s">Khách</th><th class="s">Đơn</th><th class="s">Doanh thu</th><th class="s">%</th></tr>' +
+      ds.map(function (x) { return '<tr><td>' + e(x.ten) + '</td><td class="s">' + x.khach + '</td><td class="s">' + x.don + '</td><td class="s">' + tien(x.tien) + '</td><td class="s">' + Math.round(x.tien / tong * 100) + '%</td></tr>'; }).join('') + '</table></div></div>';
+  };
+  if (b.theoNguon && b.theoNguon.length) h += '<div class="the"><h3 style="margin-top:0">Doanh thu theo nguồn khách · theo hạng</h3><div class="hang" style="gap:14px;flex-wrap:wrap;align-items:flex-start">' +
+    bangNH('Nguồn khách', b.theoNguon) + bangNH('Hạng khách', b.theoHang || []) + '</div>' +
+    '<p class="muted" style="margin-bottom:0">Nguồn và hạng đặt trong Sổ bán hàng → Công nợ → sửa khách. Hạng để trống thì lấy xếp hạng doanh số 6 tháng của sổ cũ.</p></div>';
   h += '<div class="the"><h3 style="margin-top:0">Khách hàng · mặt hàng đã mua</h3><p class="muted" style="margin:0 0 8px">Bấm vào tên khách để xem số lượng từng mặt hàng trong kỳ.</p>' +
     '<input id="bcTimKH" placeholder="Tìm khách…" style="max-width:260px;margin-bottom:8px"><div class="cuon"><table><tr><th>Khách</th><th class="s">Số đơn</th><th class="s">Doanh thu</th><th class="s">LN gộp</th></tr>' +
     b.theoKhach.map(function (k, i) {
@@ -3990,7 +4083,7 @@ function sbVeBCNoi() {
         var hu = s.nhom === 'YẾN HŨ' && s.sl >= 105 ? ' <small class="muted">(' + soSL(Math.round(s.sl / 105 * 10) / 10) + ' thùng)</small>' : '';
         return '<tr><td style="padding-left:18px">' + e(s.sp) + (s.nhom ? ' <small class="muted">· ' + e(s.nhom) + '</small>' : '') + '</td><td class="s"><b>' + soSL(s.sl) + '</b>' + hu + '</td><td class="s">' + tien(s.tien) + '</td></tr>';
       }).join('');
-      return '<tr data-timkh="' + e(k.ten.toLowerCase()) + '"><td><a href="#" data-bckh="' + i + '" style="color:var(--xanh);text-decoration:none"><b>' + e(k.ten) + '</b> <small class="muted">▾</small></a></td><td class="s">' + k.don + '</td><td class="s">' + tien(k.tien) + '</td><td class="s">' + mau(k.ln) + '</td></tr>' +
+      return '<tr data-timkh="' + e(k.ten.toLowerCase()) + '"><td><a href="#" data-bckh="' + i + '" style="color:var(--xanh);text-decoration:none"><b>' + e(k.ten) + '</b> <small class="muted">▾</small></a>' + (k.hang ? ' <small style="color:' + (CC_HANG_MAU[k.hang] || '#6b6b6b') + ';font-weight:700">' + e(k.hang) + '</small>' : '') + '</td><td class="s">' + k.don + '</td><td class="s">' + tien(k.tien) + '</td><td class="s">' + mau(k.ln) + '</td></tr>' +
         '<tr class="an" data-bckhct="' + i + '"><td colspan="4" style="background:#F6FAF7;padding:6px 8px 10px"><table style="width:100%"><tr><th>Mặt hàng</th><th class="s">Số lượng</th><th class="s">Doanh thu</th></tr>' + (ct || '<tr><td colspan="3" class="muted">Chưa có dòng hàng</td></tr>') + '</table></td></tr>';
     }).join('') + '</table></div></div>';
   h += '<div class="the"><h3 style="margin-top:0">Tiền thu theo hình thức</h3><table>' + b.theoHT.map(function (x) { return '<tr><td>' + e(x.ht) + '</td><td class="s">' + tien(x.tien) + 'đ</td></tr>'; }).join('') + '</table>' +
