@@ -454,7 +454,8 @@ function veNav() {
       return '<button data-tab="p_' + p.ma + '" class="' + (PHONG_HT === p.ma ? 'on' : '') + (vao ? '' : ' khoa') + '" style="--dam:' + m[1] + '"><i></i>' + e(tenPhong(p.ma).replace(/^PHÒNG /, '')) + (vao ? '' : ' 🔒') + '</button>';
     }).join('') + '</div>' +
     (H.me.crm ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '') +
-    '<div class="navPhong"><small>CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button></div>';
+    '<div class="navPhong"><small>CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button>' +
+    (H.me.xemChot ? '<button data-tab="chot" class="' + (TAB === 'chot' ? 'on' : '') + '" style="--dam:#8a5f00"><i></i>Duyệt đơn (chỉ xem)</button>' : '') + '</div>';
 }
 var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT', 'HCNS'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
@@ -475,9 +476,10 @@ function chuyenTab(t) {
   if (t.indexOf('sb:') === 0) { SB_TAB = t.slice(3); t = 'sb'; } else if (t === 'sb' && (SB_TAB === 'bc' || SB_TAB === 'cp')) SB_TAB = 'nhap';
   var can = TAB_PHONG[t];
   if (t === 'cd' && !H.me.chiaKpi && !H.me.admin) can = ['VH'];
+  if (t === 'chot' && H.me.xemChot) can = null;
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
   if ((t === 'crm' || t === 'crmm') && !H.me.crm) { bao('Bạn chưa có quyền xem CRM. Vui lòng liên hệ Admin (anh Thanh / chị Lê).', true); return; }
-  if (t === 'crm' || t === 'crmm' || t === 'cskh') PHONG_HT = '';
+  if (t === 'crm' || t === 'crmm' || t === 'cskh' || (t === 'chot' && H.me.xemChot)) PHONG_HT = '';
   if (t.indexOf('p_') === 0) PHONG_HT = t.slice(2); else if (t === 'home') PHONG_HT = '';
   if (t !== 'len') SUA = null; TAB = t; veNav(); veTab(); window.scrollTo(0, 0);
 }
@@ -525,7 +527,8 @@ function veHome() {
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
     (H.me.ts ? '<h3 class="nhom">RIÊNG CỦA CHỊ</h3><div class="oclon bon"><button data-tab="ts" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.bc || '') + '</span><b>TÀI SẢN CÁ NHÂN</b><span>Cơ cấu tài sản, công nợ theo tháng · chỉ mình chị xem</span></button></div>' : '') +
-    '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button></div>' +
+    '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
+      (H.me.xemChot ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>' +
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +
       '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00: báo cáo ngày (số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, kiểm kho). Trong ngày: <b>Đơn chờ duyệt</b> khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn. Bật trên từng máy muốn nhận.</p>' +
       '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><button class="nut rong" id="tbThu" style="width:auto">Gửi thử ngay</button></div>' +
@@ -2253,7 +2256,7 @@ function napChot(im) {
   if (im) goi('chotDuLieu', [TK], xong, true); else goiNho('chot', 'chotDuLieu', [TK], xong);
 }
 function chotNhan(r) { CHOT.r = r; veChot(); if (TAB === 'cv' && $('cvKho')) napKhoTK(); }
-function chotCot() { var r = CHOT.r; return r.tt.filter(function (t, i) { return i > 0 || r.duyet; }); }
+function chotCot() { var r = CHOT.r; return r.tt.filter(function (t, i) { return i > 0 || r.duyet || r.xemCho; }); }
 function chotDemSo() {
   if (!CHOT || !H || !H.viec) return;
   var r = CHOT.r, n = r.ds.filter(function (x) { return x.tt === (r.duyet ? r.tt[0] : r.tt[1]); }).length;
@@ -2278,8 +2281,9 @@ function veChot() {
     (r.ghiDuyet ? '<button class="nut vang" id="chNhap" style="width:auto;padding:10px 16px">＋ Nhập đơn</button>' : '') +
     '<button class="nut phu" id="chTai" style="width:auto;padding:10px 16px">↻ Tải lại</button></div>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' + cot.map(function (t) { return '<button class="ch-tag" data-chtong="' + e(t) + '" title="Xem tổng hợp đơn ' + e(t) + '" style="background:#fff;border:1px solid ' + CHOT_MAU[t][0] + ';color:' + CHOT_MAU[t][0] + ';font-size:12.5px;padding:3px 10px;cursor:pointer;font-family:inherit">' + CHOT_MAU[t][1] + ' ' + e(t) + ' · <b>' + (dem[t] || 0) + '</b> ›</button>'; }).join('') + '</div>' +
+    (r.xemCho ? '<p style="margin:8px 0 0;padding:8px 10px;border-radius:10px;background:#E3F1E8;color:#006B3F;font-weight:600">👁 Chế độ <b>chỉ xem</b>: thấy đơn ở mọi bước, kể cả Chờ duyệt, để kiểm soát đơn cùng kế toán. Không hiện giá tiền, không chuyển bước, không sửa được.</p>' : '') +
     '<p class="muted" style="margin:8px 0 0">' + (r.duyet ? '<b>Chờ duyệt</b> chỉ kế toán + Admin thấy: bấm vào thẻ để nhập mã đơn rồi chọn <b>Đơn mới</b>, đơn trùng thì bấm <b>Bỏ đơn</b>. ' : '') +
-    '<b>Bấm vào thẻ</b> để xem đơn và chuyển bước, hoặc kéo thẻ sang cột khác. Bảng không hiện giá tiền, thông tin xuất HĐ. Cột Đã xuất kho chỉ giữ đơn xuất hôm nay' + (r.xuatCu ? ' (' + r.xuatCu + ' đơn xuất các ngày trước đã ẩn)' : '') + '.</p></div><div id="chDs"></div>';
+    (r.ghi ? '<b>Bấm vào thẻ</b> để xem đơn và chuyển bước, hoặc kéo thẻ sang cột khác. ' : '<b>Bấm vào thẻ</b> để xem chi tiết đơn. ') + 'Bảng không hiện giá tiền, thông tin xuất HĐ. Cột Đã xuất kho chỉ giữ đơn xuất hôm nay' + (r.xuatCu ? ' (' + r.xuatCu + ' đơn xuất các ngày trước đã ẩn)' : '') + '.</p></div><div id="chDs"></div>';
   (nhung || $('noiDung')).innerHTML = h;
   veChotDs(); setTimeout(chotMoDich, 50);
   $('chQ').oninput = function () { CHOT.q = this.value; veChotDs(); };
