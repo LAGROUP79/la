@@ -2294,8 +2294,36 @@ function veChot() {
   CHOT_HEN = setInterval(function () { if (TAB !== 'chot' && !(TAB === 'cv' && $('cvChot'))) { clearInterval(CHOT_HEN); return; } if (!CN && !$('lop').innerHTML && document.activeElement && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) napChot(true); }, 60000);
 }
 function chotTongHu(sp) { return (sp || []).reduce(function (a, s) { return a + (s.dv === 'hũ' || /yến hũ|hũ yến|yến chưng/i.test(s.t) ? Number(s.sl) || 0 : 0); }, 0); }
-function chotSp(x) { var n = chotTongHu(x.sp); return chotSpDong(x) + (n ? '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #d6d3c8;font-weight:800;color:var(--xanh)">TỔNG: ' + soSL(n) + ' hũ</div>' : ''); }
-function chotSpDong(x) { return x.sp.map(function (s) { return '• ' + e(s.t) + ' × <b>' + soSL(s.sl) + '</b>' + (s.dv ? ' ' + e(s.dv) : '') + (s.ct ? '<div style="margin:1px 0 2px 10px;color:#8a5f00;font-weight:600">↳ ' + e(s.ct) + '</div>' : ''); }).join('<br>'); }
+function chotHuGui(x) { return (x.spGui || []).reduce(function (a, g, i) { var s = x.sp[i]; return a + (s && (s.dv === 'hũ' || /yến hũ|hũ yến|yến chưng/i.test(s.t)) ? g : 0); }, 0); }
+function chotSp(x) { var n = chotTongHu(x.sp), g = chotHuGui(x); return chotSpDong(x) + (n ? '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #d6d3c8;font-weight:800;color:var(--xanh)">TỔNG: ' + soSL(n) + ' hũ' + (g ? ' <span style="color:#8a5f00">· đã gửi ' + soSL(g) + ' · còn ' + soSL(n - g) + '</span>' : '') + '</div>' : ''); }
+function chotSpDong(x) { return x.sp.map(function (s, i) { var g = x.spGui ? x.spGui[i] || 0 : 0; return '• ' + e(s.t) + ' × <b>' + soSL(s.sl) + '</b>' + (s.dv ? ' ' + e(s.dv) : '') + (g ? ' <span style="color:#1baf7a;font-weight:700">· đã gửi ' + soSL(g) + (g < s.sl ? ', còn ' + soSL(Math.round((s.sl - g) * 100) / 100) : ' ✓') + '</span>' : '') + (s.ct ? '<div style="margin:1px 0 2px 10px;color:#8a5f00;font-weight:600">↳ ' + e(s.ct) + '</div>' : ''); }).join('<br>'); }
+function chotXuat1pHtml(x, r) {
+  if (!x.xuat1p || !x.xuat1p.length) return '';
+  return '<div style="margin:8px 0;padding:8px 10px;border-radius:10px;background:#E3F1E8;border:1px solid #b9dcc6"><b style="color:#006B3F">📦 Đã gửi trước 1 phần (' + x.xuat1p.length + ' lần) · phần còn lại vẫn nằm kho</b>' +
+    x.xuat1p.map(function (l, i) { return '<div style="font-size:13px;margin-top:4px">' + (i + 1) + '. ' + e(l.luc) + ' · <b>' + e(l.ai) + '</b>: ' + l.dong.map(function (d) { return e(d.sp) + ' ×' + soSL(d.sl); }).join(', ') +
+      (l.cod != null ? ' · <b style="color:#B42318">COD lần này ' + tien(l.cod) + 'đ</b>' : '') + (l.ghiChu ? ' · <i>' + e(l.ghiChu) + '</i>' : '') + '</div>'; }).join('') +
+    (r.ghiDuyet ? '<button class="nut phu rong" id="chBoX1p" style="margin-top:6px;font-size:13px;padding:6px">↶ Bỏ lần gửi gần nhất (bấm nhầm)</button>' : '') + '</div>';
+}
+function moXuat1Phan(x) {
+  var r = CHOT.r, m = {}, ds = [];
+  x.sp.forEach(function (s, i) { var g = x.spGui ? x.spGui[i] || 0 : 0, k = s.t; if (!m[k]) { m[k] = { sp: s.t, dv: s.dv || '', sl: 0, con: 0 }; ds.push(m[k]); } m[k].sl += Number(s.sl) || 0; m[k].con = Math.round((m[k].con + (Number(s.sl) || 0) - g) * 100) / 100; });
+  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">📦 Xuất 1 phần · ' + e(x.ma || '') + '</h3><p style="margin:0 0 8px"><b>' + e(x.khach) + '</b></p>' +
+    '<p class="muted" style="margin:0 0 8px">Ghi số lượng <b>gửi đi lần này</b>. App chỉ trừ kho phần này, phần còn lại vẫn tính là hàng trong kho. Thẻ giữ nguyên mã đơn, ở lại cột hiện tại; khi gửi nốt thì kéo sang <b>Đã xuất kho</b>.</p>' +
+    '<table style="width:100%;font-size:14px"><tr><th style="text-align:left">Sản phẩm</th><th class="s">Còn chưa gửi</th><th class="s" style="width:90px">Gửi lần này</th></tr>' +
+    ds.map(function (d, i) { return '<tr><td>' + e(d.sp) + '</td><td class="s">' + soSL(d.con) + (d.dv ? ' ' + e(d.dv) : '') + '</td><td><input data-x1p="' + i + '" inputmode="decimal" placeholder="0"' + (d.con > 0 ? '' : ' disabled') + ' style="padding:6px;text-align:right"></td></tr>'; }).join('') + '</table>' +
+    (r.ghiDuyet ? '<label for="x1pCod">COD thu lần gửi này (để trống nếu không đổi)</label><input id="x1pCod" inputmode="numeric" placeholder="VD: 600.000"><small class="muted">Chỉ ghi chú cho đối soát ship. Muốn đổi COD / tổng đơn trong Sổ bán hàng thì bấm <b>✏️ Sửa đơn</b> sau khi lưu.</small>' : '<p class="muted" style="margin:8px 0 0">Lưu xong app báo kế toán kiểm lại COD.</p>') +
+    '<label for="x1pGc">Ghi chú (thiếu hàng gì, khi nào gửi nốt…)</label><input id="x1pGc" placeholder="VD: thiếu vị gừng, chờ mẻ chưng thứ 3">' +
+    '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="x1pHuy" style="flex:1">Huỷ</button><button class="nut vang" id="x1pOk" style="flex:1">✓ Lưu xuất 1 phần</button></div>');
+  $('x1pHuy').onclick = function () { dongHop(); moChotThe(x); };
+  $('x1pOk').onclick = function () {
+    var dong = [], loi = '';
+    document.querySelectorAll('[data-x1p]').forEach(function (o) { var d = ds[o.dataset.x1p], v = Number(String(o.value || '').replace(',', '.')); if (!o.value.trim()) return; if (!(v > 0)) { loi = 'Số lượng không hợp lệ: ' + d.sp; return; } if (v > d.con + 1e-9) { loi = d.sp + ': chỉ còn ' + soSL(d.con) + ' chưa gửi.'; return; } dong.push({ sp: d.sp, sl: v }); });
+    if (loi) { bao(loi, true); return; } if (!dong.length) { bao('Nhập số lượng gửi lần này.', true); return; }
+    var cod = $('x1pCod') && $('x1pCod').value.trim() ? docTien($('x1pCod').value) : null;
+    goi('chotXuat1Phan', [TK, x.khoa, dong, cod, $('x1pGc').value.trim()], function (r2) { chotNhan(r2); dongHop(); bao((x.ma || x.khach) + ' · đã xuất 1 phần' + (r2.canhBao ? ' · ' + r2.canhBao : ''));
+      var y = chotTim(x.khoa); if (y && r2.ghiDuyet) moChotThe(y); });
+  };
+}
 function veChotDs() {
   var r = CHOT.r, cot = chotCot(), q = CHOT.q.toLowerCase().trim();
   var ds = r.ds.filter(function (x) { return !q || (x.ma + ' ' + x.khach + ' ' + x.sdt4 + ' ' + x.sp.map(function (s) { return s.t; }).join(' ') + ' ' + (x.goiY || '')).toLowerCase().indexOf(q) >= 0; });
@@ -2308,7 +2336,8 @@ function veChotDs() {
           '<div><span class="ma">' + (x.huyGoc || x.doiGoc ? '<span title="' + (x.huyGoc ? 'Đơn gốc đã huỷ' : 'Đơn gốc vừa sửa') + '" style="color:' + (x.huyGoc ? '#b42318' : '#8a5f00') + '">⚠ </span>' : '') +
             (x.ma ? e(x.ma) : '<span style="color:#b42318">Chưa có mã đơn</span>') + '</span>' +
             (x.ngay > r.homNay ? ' <span style="color:#8a5f00;font-size:12px;font-weight:700">📅 Giao ngày ' + e(x.ngay.slice(8, 10) + '/' + x.ngay.slice(5, 7)) + '</span>' : '') + '</div>' +
-          '<div><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' ' + e(x.sdt4) : '') + '</div></div>';
+          '<div><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' ' + e(x.sdt4) : '') + '</div>' +
+          (x.xuat1p ? '<div><span class="ch-tag" style="background:#E3F1E8;color:#006B3F;font-weight:700">📦 Đã gửi 1 phần' + (x.xuat1p.length > 1 ? ' · ' + x.xuat1p.length + ' lần' : '') + '</span></div>' : '') + '</div>';
       }).join('') || '<div class="ch-rong">' + (q ? 'Không có đơn phù hợp' : 'Chưa có đơn') + '</div>') + '</div>';
   }).join('') + '</div>';
   document.querySelectorAll('[data-chthe][draggable]').forEach(function (el) {
@@ -2399,7 +2428,7 @@ function moChotThe(x) {
   if (cho && laKD && r.ghiDuyet && !CHOT_DM) { goi('chotDmNhap', [TK], function (dm) { CHOT_DM = dm; moChotThe(x); }); return; }
   moHop('<h3 style="margin:0;color:var(--xanh)">' + (x.ma ? 'Đơn ' + e(x.ma) : 'Đơn chưa có mã') + ' <span class="ch-tag' + (x.nguon !== 'Phòng KD' ? ' kt' : '') + '" style="vertical-align:middle">' + e(x.nguon) + '</span></h3>' +
     (x.huyGoc ? '<p class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán.</p>' : x.doiGoc ? '<p class="ch-canh doi">⚠ Đơn gốc đã sửa sau khi duyệt. Hàng / khách trên thẻ đang là bản cũ.</p>' : '') +
-    '<p style="margin:8px 0 4px"><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' · ***' + e(x.sdt4) : '') + '</p><div style="line-height:1.55">' + chotSp(x) + '</div>' +
+    '<p style="margin:8px 0 4px"><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' · ***' + e(x.sdt4) : '') + '</p><div style="line-height:1.55">' + chotSp(x) + '</div>' + chotXuat1pHtml(x, r) +
     (r.duyet ? chotTienHtml(x) : '') +
     (r.duyet && x.hd ? '<p style="margin:6px 0;color:#006B3F"><b>🧾 Xuất HĐ:</b> ' + e(x.hd) + ' <i class="muted">(kho không thấy)</i></p>' : '') +
     (r.duyet && x.ghiChuTT ? '<p style="margin:6px 0;color:#8a5f00"><b>💳 Ghi chú thanh toán:</b> ' + e(x.ghiChuTT) + ' <i class="muted">(kho không thấy)</i></p>' : '') +
@@ -2412,7 +2441,8 @@ function moChotThe(x) {
       var duoc = t !== x.tt && (r.ghiDuyet || (j > 0 && !cho));
       return duoc ? '<button class="nut nho" data-chden="' + e(t) + '" style="width:auto;background:' + CHOT_MAU[t][0] + '">' + CHOT_MAU[t][1] + ' ' + e(t) + '</button>' : '';
     }).join('') + '</div>' : '') +
-    (r.ghiDuyet && x.khoa.indexOf('KT:') === 0 ? '<button class="nut" id="chSua" style="margin-top:10px">✏️ Sửa đơn</button>' : '') +
+    (r.ghi && x.khoa.indexOf('KT:') === 0 && i > 0 && i < 6 ? '<button class="nut phu" id="chX1p" style="margin-top:10px">📦 Xuất 1 phần (thiếu hàng, gửi trước)</button>' : '') +
+    (r.ghiDuyet && x.khoa.indexOf('KT:') === 0 ? '<button class="nut" id="chSua" style="margin-top:10px">✏️ Sửa đơn' + (x.xuat1p ? ' / COD' : '') + '</button>' : '') +
     (r.ghiDuyet && laKD && cho ? '<button class="nut" id="chSuaKD" style="margin-top:10px">✏️ Sửa đơn phòng KD</button>' : '') +
     (x.doiGoc && r.ghiDuyet ? '<button class="nut vang" id="chLay" style="margin-top:10px">↻ Cập nhật theo đơn gốc</button>' : '') +
     (cho && r.ghiDuyet && laKD ? '<button class="nut phu rong" id="chBo" style="margin-top:10px">Bỏ thẻ này (trùng với đơn đã nhập sổ)</button>' : '') +
@@ -2428,6 +2458,8 @@ function moChotThe(x) {
   if ($('chLay')) $('chLay').onclick = function () { goi('chotChuyen', [TK, x.khoa, x.tt, null, true], function (r2) { chotNhan(r2); dongHop(); bao('Đã cập nhật theo đơn gốc.'); }); };
   if ($('chBo')) $('chBo').onclick = function () { chotBo(x); };
   if ($('chSua')) $('chSua').onclick = function () { moSuaChot(x); };
+  if ($('chX1p')) $('chX1p').onclick = function () { moXuat1Phan(x); };
+  if ($('chBoX1p')) $('chBoX1p').onclick = function () { if (!confirm('Bỏ lần gửi gần nhất? Hàng của lần đó trả lại kho.')) return; goi('chotBoXuat1Phan', [TK, x.khoa], function (r2) { chotNhan(r2); dongHop(); bao('Đã bỏ lần xuất 1 phần gần nhất'); }); };
   if ($('chHuy')) $('chHuy').onclick = function () { var ly = prompt('Huỷ đơn ' + (x.ma || '') + ' của ' + x.khach + '?' + (x.khoa.indexOf('KT:') === 0 ? ' Đơn trong Sổ bán hàng sẽ bị huỷ (công nợ trừ lại' + (x.tt === 'Đã xuất kho' ? ', hoàn tồn kho' : '') + '), mã đơn không cấp lại.' : ' Đơn phòng KD sẽ bị huỷ.') + '\nGhi lý do huỷ:'); if (ly == null) return; goi('chotHuyDon', [TK, x.khoa, ly], function (r2) { chotNhan(r2); dongHop(); bao('Đã huỷ đơn ' + (x.ma || x.khach) + '.'); }); };
   if ($('chSuaKD')) $('chSuaKD').onclick = function () { goi('dsDon', [TK, { ky: 'ngay', ngay: x.ngay, q: x.maNguon }], function (d) { var o = d.ds.filter(function (y) { return y.ma === x.maNguon; })[0]; if (!o) { bao('Không mở được đơn phòng KD.', true); return; } dongHop(); SUA = o; TAB = 'len'; veNav(); veLenDon(); window.scrollTo(0, 0); }); };
 }
