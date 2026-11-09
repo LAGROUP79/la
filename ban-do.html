@@ -112,7 +112,7 @@ tbody tr{cursor:pointer}
   </div>
 
   <div class="huongdan">
-    <b>Số liệu lấy từ đâu?</b> Danh sách đại lý và cột "Khu vực" lấy từ CRM khách cũ (bản chụp sổ TỔNG HỢP BÁN HÀNG mỗi tối). Doanh thu là đơn hợp lệ trong Sổ bán hàng app LA từ 01/10/2026, ghép theo tên đại lý. Khách mới lấy từ CRM khách mới (tỉnh nhân viên chọn).
+    <b>Số liệu lấy từ đâu?</b> Danh sách đại lý lấy từ CRM khách cũ (bản chụp sổ TỔNG HỢP BÁN HÀNG mỗi tối). "Khu vực" lấy ở CRM; CRM trống thì lấy cột "Khu vực" của khách trong Sổ bán hàng app LA (kế toán điền ở Sổ bán hàng → Khách). Doanh thu là đơn hợp lệ trong Sổ bán hàng app LA từ 01/10/2026, ghép theo tên đại lý. Khách mới lấy từ CRM khách mới (tỉnh nhân viên chọn).
     Đại lý ghi khu vực theo tên tỉnh cũ hay tên thành phố (VD "Bình Dương", "Nha Trang") được tự quy về tỉnh mới. Không nhận ra được thì nằm ở mục "Chưa rõ khu vực" — kế toán bổ sung khu vực là đại lý tự lên bản đồ.
   </div>
 </div>
@@ -167,16 +167,17 @@ function dungBanDo(){
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:12,minZoom:4,attribution:'© OpenStreetMap · © CARTO'}).addTo(BAN);
   LOP=L.layerGroup().addTo(BAN);
 }
-function gom(crm,bc){
+function gom(crm,bc,kt){
+  const kvKT={};((kt&&kt.khach)||[]).forEach(k=>{if(String(k.khuVuc||'').trim())kvKT[tenGon(k.ten)]=k.khuVuc});
   const dt={};(bc&&bc.theoKhach||[]).forEach(x=>{const k=tenGon(x.ten);dt[k]=dt[k]||{tien:0,don:0};dt[k].tien+=x.tien||0;dt[k].don+=x.don||0});
   CO_DT=!!(bc&&bc.theoKhach);
   const T={};TINH.forEach(t=>T[t]={ten:t,dl:[],dt:0,tre:0,moi:[]});
   const chuaRo=[];
   (crm.daiLy||[]).forEach(d=>{
-    const x={ten:d[0],muaCuoi:d[1],gd:d[2],no:d[3],ngayChua:d[4],tt:d[6],hang:(d[21]&&d[21].hang)||'',kv:d[10],sdt:d[9]};
+    const x={ten:d[0],muaCuoi:d[1],gd:d[2],no:d[3],ngayChua:d[4],tt:d[6],hang:(d[21]&&d[21].hang)||'',kv:raTinh(d[10])?d[10]:(kvKT[tenGon(d[0])]||d[10]),sdt:d[9]};
     const g=dt[tenGon(d[0])];x.dt=g?g.tien:0;x.don=g?g.don:0;
     x.cham=x.ngayChua>=60;
-    const t=raTinh(d[10]);
+    const t=raTinh(x.kv);
     if(!t){chuaRo.push(x);return}
     T[t].dl.push(x);T[t].dt+=x.dt;if(x.cham)T[t].tre++;
   });
@@ -249,9 +250,9 @@ function nap(){
   if(!BAN)dungBanDo();
   trangThai('Đang tải…');
   const homNay=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
-  Promise.all([goi('crmDuLieu',[TK]),goi('ktBaoCao',[TK,'2026-10-01',homNay]).catch(()=>null)]).then(([crm,bc])=>{
+  Promise.all([goi('crmDuLieu',[TK]),goi('ktBaoCao',[TK,'2026-10-01',homNay]).catch(()=>null),goi('chotDmNhap',[TK]).catch(()=>null)]).then(([crm,bc,kt])=>{
     document.getElementById('chan').classList.add('hide');
-    TINHS=gom(crm,bc);ve();trangThai('Cập nhật '+new Date().toTimeString().slice(0,5)+(crm.luc?' · CRM chụp lúc '+String(crm.luc).slice(0,16):''));
+    TINHS=gom(crm,bc,kt);ve();trangThai('Cập nhật '+new Date().toTimeString().slice(0,5)+(crm.luc?' · CRM chụp lúc '+String(crm.luc).slice(0,16):''));
     setTimeout(()=>BAN.invalidateSize(),50);
   }).catch(e=>{
     if(/HET_PHIEN/.test(e.message))chan('Phiên đăng nhập đã hết','Chị mở app LA đăng nhập lại rồi mở lại Bản đồ đại lý.',true);
