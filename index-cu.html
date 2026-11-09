@@ -472,6 +472,7 @@ function baoKhongQuyen(mas) {
 var MAU_O = null;
 function chuyenTab(t) {
   if (t === 'ts') { location.href = 'tai-san.html' + (/thu\.html/.test(location.pathname) ? '?thu=1' : ''); return; }
+  if (t === 'ag') { location.href = 'agent.html' + (/thu\.html/.test(location.pathname) ? '?thu=1' : ''); return; }
   if (t.indexOf('cd:') === 0) { CD_MO = t.slice(3); t = 'cd'; } else if (t === 'cd') CD_MO = '';
   if (t.indexOf('sb:') === 0) { SB_TAB = t.slice(3); t = 'sb'; } else if (t === 'sb' && (SB_TAB === 'bc' || SB_TAB === 'cp')) SB_TAB = 'nhap';
   var can = TAB_PHONG[t];
@@ -527,6 +528,7 @@ function veHome() {
     (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button></div>' : '') +
     (H.me.ts ? '<h3 class="nhom">RIÊNG CỦA CHỊ</h3><div class="oclon bon"><button data-tab="ts" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.bc || '') + '</span><b>TÀI SẢN CÁ NHÂN</b><span>Cơ cấu tài sản, công nợ theo tháng · chỉ mình chị xem</span></button></div>' : '') +
+    (H.me.ag ? '<h3 class="nhom">TRỢ LÝ AI</h3><div class="oclon bon"><button data-tab="ag" style="--nen:#E4EDF9;--dam:#1F5F9E;--dam2:#163F6B"><span class="ico">' + (IC_O.bc || '') + '</span><b>PHÒNG ĐIỀU HÀNH AGENT</b><span>Các trợ lý AI và việc tự động: con nào chạy ổn, con nào cần xem</span></button></div>' : '') +
     '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
       (H.me.xemChot ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>' +
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +

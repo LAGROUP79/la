@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phòng điều hành Agent · LA</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#005a34">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --bg:#f1f6f2; --card:#ffffff; --ink:#1d2a22; --muted:#66756b; --line:#dbe7de; --soft:#e2f1e6;
+  --on:#3f8f22; --on-soft:#e8f5df; --tre:#b7791f; --tre-soft:#fdf3dc; --loi:#c4473a; --loi-soft:#fbe7e4;
+  --lenh:#1f5f9e; --lenh-soft:#e4edf9; --chua:#8a958d; --chua-soft:#eef1ef;
+  --shadow:0 1px 2px rgba(0,60,30,.06),0 4px 14px rgba(0,60,30,.07);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1712; --card:#18231c; --ink:#e8f1ea; --muted:#9bb0a2; --line:#2a3a30; --soft:#1c3226;
+  --on:#8cc63f; --on-soft:#1d3329; --tre:#e0b04f; --tre-soft:#352b17; --loi:#ec7a6c; --loi-soft:#3a2220;
+  --lenh:#79a6e6; --lenh-soft:#1f2a3c; --chua:#8a958d; --chua-soft:#222c26; --shadow:none;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1712; --card:#18231c; --ink:#e8f1ea; --muted:#9bb0a2; --line:#2a3a30; --soft:#1c3226;
+  --on:#8cc63f; --on-soft:#1d3329; --tre:#e0b04f; --tre-soft:#352b17; --loi:#ec7a6c; --loi-soft:#3a2220;
+  --lenh:#79a6e6; --lenh-soft:#1f2a3c; --chua:#8a958d; --chua-soft:#222c26; --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:16px;background:linear-gradient(120deg,#005a34,#007a45 60%,#5aa52c);color:#fff;border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
+.ve{display:inline-block;color:#fff;text-decoration:none;font-weight:600;font-size:13px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:99px;margin-bottom:8px}
+.tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:8px}
+h1{margin:0;font-size:24px;letter-spacing:-.01em}
+h1 small{display:block;font-size:13px;font-weight:400;color:rgba(255,255,255,.82)}
+.hbtn{display:flex;gap:8px}
+.hbtn button{font:inherit;font-weight:600;font-size:13px;border:0;border-radius:99px;padding:6px 14px;background:rgba(255,255,255,.18);color:#fff;cursor:pointer}
+.hbtn button:hover{background:rgba(255,255,255,.28)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);border-left:5px solid var(--c);cursor:pointer;text-align:left;font:inherit;color:inherit;border-top:0;border-right:0;border-bottom:0}
+.kpi.on-loc{outline:2px solid var(--c)}
+.kpi .lb{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi .v{font-size:28px;font-weight:700;color:var(--c);font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi .s{font-size:12px;color:var(--muted)}
+.toa{background:var(--card);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:16px}
+.toa h2,.nk h2{font-size:16px;margin:2px 4px 12px;display:flex;align-items:center;gap:8px}
+.toa h2 span,.nk h2 span{font-size:13px;font-weight:400;color:var(--muted)}
+.phongs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.phong{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg);min-width:0}
+.phong .dau{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--pm);color:#fff}
+.phong .dau b{font-size:14px;flex:1}
+.phong .dau i{font-style:normal;font-size:12px;background:rgba(255,255,255,.22);padding:1px 8px;border-radius:99px;white-space:nowrap}
+.ag{display:flex;gap:10px;padding:10px 12px;border-top:1px solid var(--line);background:var(--card);cursor:pointer;align-items:flex-start}
+.ag:first-of-type{border-top:0}
+.ag:hover{background:var(--soft)}
+.ag.mo .ct{display:block}
+.ag.an{display:none}
+.cham{flex:none;width:12px;height:12px;border-radius:50%;margin-top:5px;background:var(--c)}
+.cham.nhay{box-shadow:0 0 0 0 var(--c);animation:nhay 2s infinite}
+@keyframes nhay{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 60%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.cham.rong{background:transparent;border:2px dashed var(--c)}
+.ag .than{flex:1;min-width:0}
+.ag .ten{font-weight:600;font-size:14px;line-height:1.35}
+.ag .lich{font-size:12px;color:var(--muted)}
+.nhan{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;background:var(--cs);color:var(--c);white-space:nowrap;margin-top:3px}
+.ag .ct{display:none;font-size:13px;color:var(--muted);margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.ag .ct p{margin:0 0 4px}
+.ag .ct .loi{color:var(--loi)}
+.trong{padding:14px 12px;font-size:13px;color:var(--muted);background:var(--card)}
+.nk{background:var(--card);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:16px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+td.gio{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
+.huongdan{font-size:13px;color:var(--muted);background:var(--soft);border-left:4px solid #006b3f;padding:10px 14px;border-radius:8px}
+.huongdan code{background:var(--card);padding:1px 5px;border-radius:5px;font-size:12px}
+#chan{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:50}
+#chan .card{max-width:380px;background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+#chan a{display:inline-block;margin-top:10px;background:#006b3f;color:#fff;text-decoration:none;font-weight:600;padding:8px 16px;border-radius:10px}
+.hide{display:none!important}
+@media (max-width:900px){.phongs{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.phongs{grid-template-columns:1fr}h1{font-size:20px}.kpi .v{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><a class="ve" href="./" id="veApp">‹ App LA</a><span class="tt" id="trangThai">Đang tải…</span>
+    <h1>Phòng điều hành Agent<small>Các trợ lý AI và việc tự động của Lanest, chia theo phòng · chỉ Admin xem</small></h1></div>
+    <div class="hbtn"><button id="btnMoi" title="Tải lại số mới">↻ Làm mới</button><button id="btnTheme" title="Đổi nền sáng/tối">🌓</button></div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section class="toa">
+    <h2>Toà văn phòng <span id="locTen">· bấm vào từng agent để xem chi tiết</span></h2>
+    <div class="phongs" id="phongs"></div>
+  </section>
+
+  <section class="nk">
+    <h2>Nhật ký gần đây <span>· 60 lần báo về mới nhất</span></h2>
+    <div class="tbl"><table><thead><tr><th>Lúc</th><th>Agent</th><th>Kết quả</th><th>Ghi chú</th></tr></thead><tbody id="nhatKy"></tbody></table></div>
+  </section>
+
+  <div class="huongdan">
+    <b>Agent báo về thế nào?</b> Việc chạy trong app (báo cáo kho 21h, thông báo 21h, sao lưu 22h, CRM 22h) tự ghi.
+    Tác vụ trên máy chị gọi <code>bao_agent.py</code> ở cuối mỗi lượt. Bot n8n (CSKH website, fanpage) cần thêm 1 bước gọi về app, chưa gắn nên đang hiện "Chưa báo về".
+    Tác vụ trên máy chị chỉ chạy khi máy mở — máy tắt lâu thì sẽ hiện "Quá hạn".
+  </div>
+</div>
+
+<div id="chan" class="hide"><div class="card"><h2 id="chanTieuDe" style="margin:0 0 6px"></h2><p id="chanNoiDung" style="margin:0;color:var(--muted)"></p><a id="chanNut" href="./">Mở app LA</a></div></div>
+
+<script>
+const API='https://oubxfxeosmozsttsobsw.supabase.co/functions/v1/la';
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91YnhmeGVvc21venN0dHNvYnN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjg2MjEsImV4cCI6MjEwNjg0NDYyMX0.Vq0h8A8J3OO3KwwzFf_j69JRCQoSZSCvumZRvH5Mhxg';
+const THU=/[?&]thu=1/.test(location.search);
+let TK=null;try{TK=localStorage.getItem((THU?'thu_':'')+'kd_tk')}catch(e){}
+if(THU){document.getElementById('veApp').href='thu.html';document.getElementById('chanNut').href='thu.html'}
+function goi(f,a){return fetch(API,{method:'POST',credentials:'omit',body:JSON.stringify({f,a}),headers:{'Content-Type':'application/json',apikey:ANON,Authorization:'Bearer '+ANON}})
+  .then(r=>r.json(),()=>{throw new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.')})
+  .then(x=>{if(x&&x.loi!=null) throw new Error(x.loi);return x?x.kq:null})}
+
+const TT={
+  on:{nhan:'Đang ổn',c:'--on',cs:'--on-soft'},
+  tre:{nhan:'Quá hạn',c:'--tre',cs:'--tre-soft'},
+  canh:{nhan:'Cảnh báo',c:'--tre',cs:'--tre-soft'},
+  xem:{nhan:'Cần chị quyết',c:'--tre',cs:'--tre-soft'},
+  loi:{nhan:'Lỗi',c:'--loi',cs:'--loi-soft'},
+  chua:{nhan:'Chưa báo về',c:'--chua',cs:'--chua-soft'},
+  lenh:{nhan:'Theo lệnh',c:'--lenh',cs:'--lenh-soft'},
+  kh:{nhan:'Chưa làm',c:'--chua',cs:'--chua-soft'}};
+const NHOM={on:['on'],xem:['tre','canh','xem','chua'],loi:['loi'],kh:['kh','lenh']};
+let D=null,LOC='';
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function phut(a,b){const p=s=>{const m=/^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d)/.exec(s||'');return m?Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5]):NaN};return (p(b)-p(a))/60000}
+function truoc(luc){const m=phut(luc,D.luc);if(isNaN(m))return luc;if(m<1)return 'vừa xong';if(m<60)return Math.round(m)+' phút trước';if(m<48*60)return Math.round(m/60)+' giờ trước';return Math.round(m/1440)+' ngày trước'}
+function trangThaiAg(a){
+  if(a.kieu==='kh')return 'kh';
+  if(a.kieu==='xem')return 'xem';
+  if(a.kieu==='lenh')return 'lenh';
+  if(!a.cuoi)return 'chua';
+  if(a.cuoi.tt==='loi')return 'loi';
+  if(phut(a.cuoi.luc,D.luc)>a.gio*60)return 'tre';
+  if(a.cuoi.tt==='canh')return 'canh';
+  return 'on';
+}
+function cssVar(v){return 'var('+v+')'}
+
+function ve(){
+  const ds=D.agent.map(a=>Object.assign(a,{st:trangThaiAg(a)}));
+  const dem=k=>ds.filter(a=>NHOM[k].includes(a.st)).length;
+  const K=[['on','Đang chạy ổn','--on','tự chạy, báo về đúng hạn'],['xem','Cần xem','--tre','quá hạn, chưa báo về, chờ chị quyết'],['loi','Đang lỗi','--loi','lần báo gần nhất là lỗi'],['kh','Theo lệnh / chưa làm','--lenh','chị gọi mới chạy, hoặc phòng còn trống']];
+  document.getElementById('kpis').innerHTML=K.map(k=>'<button class="kpi'+(LOC===k[0]?' on-loc':'')+'" data-loc="'+k[0]+'" style="--c:'+cssVar(k[2])+'"><div class="lb">'+k[1]+'</div><div class="v">'+dem(k[0])+'</div><div class="s">'+k[3]+'</div></button>').join('');
+  document.getElementById('locTen').textContent=LOC?'· đang lọc: '+K.find(k=>k[0]===LOC)[1]+' (bấm lại ô số để bỏ lọc)':'· bấm vào từng agent để xem chi tiết';
+  document.getElementById('phongs').innerHTML=D.phong.map(p=>{
+    const ag=ds.filter(a=>a.phong===p.ma);
+    const chay=ag.filter(a=>a.kieu!=='kh').length;
+    const than=ag.map(a=>{
+      const t=TT[a.st],an=LOC&&!NHOM[LOC].includes(a.st);
+      const cuoi=a.cuoi?'<p>Báo về gần nhất: <b>'+esc(truoc(a.cuoi.luc))+'</b> ('+esc(a.cuoi.luc)+')'+(a.cuoi.ghiChu?' — '+esc(a.cuoi.ghiChu):'')+'</p>':'';
+      const loi=a.loiCuoi&&a.loiCuoi!==a.cuoi?'<p class="loi">Lỗi gần nhất: '+esc(a.loiCuoi.luc)+' — '+esc(a.loiCuoi.ghiChu)+'</p>':'';
+      const goiY=a.st==='chua'?'<p>Chưa nhận được lần báo nào. '+(/n8n/.test(a.lich)?'Cần thêm bước gọi về app trong luồng n8n.':'Sẽ hiện sau lượt chạy kế tiếp.')+'</p>':a.st==='tre'?'<p>Quá '+a.gio+' giờ chưa báo về — kiểm tra máy có mở không, hoặc tác vụ có bị tắt không.</p>':'';
+      return '<div class="ag'+(an?' an':'')+'" data-ma="'+esc(a.ma)+'" style="--c:'+cssVar(t.c)+';--cs:'+cssVar(t.cs)+'">'+
+        '<span class="cham'+(a.st==='on'?' nhay':'')+(a.st==='kh'?' rong':'')+'"></span>'+
+        '<div class="than"><div class="ten">'+esc(a.ten)+'</div><div class="lich">'+esc(a.lich)+'</div><span class="nhan">'+t.nhan+(a.st==='on'||a.st==='tre'?' · '+esc(truoc(a.cuoi.luc)):'')+'</span>'+
+        '<div class="ct"><p>'+esc(a.viec)+'</p>'+cuoi+loi+goiY+(a.soLan?'<p>Đã báo về '+a.soLan+' lần.</p>':'')+'</div></div></div>';
+    }).join('');
+    return '<div class="phong" style="--pm:'+p.mau+'"><div class="dau"><b>'+esc(p.ten)+'</b><i>'+chay+'/'+ag.length+' đang có</i></div>'+(than||'<div class="trong">Chưa có agent.</div>')+'</div>';
+  }).join('');
+  const ten={};D.agent.forEach(a=>ten[a.ma]=a.ten);
+  document.getElementById('nhatKy').innerHTML=D.gan.length?D.gan.map(x=>{const t=TT[x.tt==='loi'?'loi':x.tt==='canh'?'canh':'on'];
+    return '<tr><td class="gio">'+esc(x.luc)+'</td><td>'+esc(ten[x.ma]||x.ma)+'</td><td><span class="nhan" style="--c:'+cssVar(t.c)+';--cs:'+cssVar(t.cs)+';margin:0">'+(x.tt==='loi'?'Lỗi':x.tt==='canh'?'Cảnh báo':'Xong')+'</span></td><td>'+esc(x.ghiChu)+'</td></tr>'}).join('')
+    :'<tr><td colspan="4" style="color:var(--muted)">Chưa có lần báo nào. Sau 21:00–22:00 hôm nay các việc chạy trong app sẽ tự ghi vào đây.</td></tr>';
+}
+
+function chan(tieuDe,noiDung,nut){document.getElementById('chan').classList.remove('hide');chanTieuDe.textContent=tieuDe;chanNoiDung.textContent=noiDung;chanNut.classList.toggle('hide',!nut)}
+function nap(){
+  if(!TK){chan('Chưa đăng nhập','Chị mở app LA, đăng nhập, rồi bấm ô "Phòng điều hành Agent" ở trang chủ.',true);return}
+  document.getElementById('trangThai').textContent='Đang tải…';
+  goi('agDuLieu',[TK]).then(r=>{D=r;document.getElementById('chan').classList.add('hide');document.getElementById('trangThai').textContent='Cập nhật '+r.luc.slice(11,16);ve()})
+  .catch(e=>{
+    if(/HET_PHIEN/.test(e.message)) chan('Phiên đăng nhập đã hết','Chị mở app LA đăng nhập lại rồi bấm vào ô "Phòng điều hành Agent".',true);
+    else if(/chỉ dành cho Admin/.test(e.message)) chan('Không có quyền','Mục này chỉ dành cho Admin.',true);
+    else chan('Chưa mở được',e.message,false);
+  });
+}
+document.getElementById('kpis').addEventListener('click',e=>{const b=e.target.closest('.kpi');if(!b)return;LOC=LOC===b.dataset.loc?'':b.dataset.loc;ve()});
+document.getElementById('phongs').addEventListener('click',e=>{const a=e.target.closest('.ag');if(a)a.classList.toggle('mo')});
+document.getElementById('btnMoi').onclick=nap;
+document.getElementById('btnTheme').onclick=()=>{const r=document.documentElement,toi=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=toi?'light':'dark';try{localStorage.setItem('ag_theme',r.dataset.theme)}catch(e){}};
+try{const t=localStorage.getItem('ag_theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+nap();
+</script>
+</body>
+</html>
