@@ -45,7 +45,7 @@ h1 small{display:block;font-size:13px;font-weight:400;color:rgba(255,255,255,.82
 .kpi .v{font-size:28px;font-weight:700;color:var(--c);font-variant-numeric:tabular-nums;line-height:1.2}
 .kpi .s{font-size:12px;color:var(--muted)}
 .toa{background:var(--card);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:16px}
-.toa h2,.nk h2{font-size:16px;margin:2px 4px 12px;display:flex;align-items:center;gap:8px}
+.toa h2,.nk h2{font-size:16px;margin:2px 4px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .toa h2 span,.nk h2 span{font-size:13px;font-weight:400;color:var(--muted)}
 .phongs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .phong{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg);min-width:0}
@@ -80,6 +80,32 @@ td.gio{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
 #chan{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:50}
 #chan .card{max-width:380px;background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
 #chan a{display:inline-block;margin-top:10px;background:#006b3f;color:#fff;text-decoration:none;font-weight:600;padding:8px 16px;border-radius:10px}
+.sp{flex:1}
+.doiXem{display:inline-flex;gap:4px;background:var(--bg);padding:3px;border-radius:10px;font-size:13px}
+.doiXem button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer}
+.doiXem button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.khung3d{position:relative;border-radius:14px;overflow:hidden;background:#dfeee3;height:560px}
+.canh3d{position:absolute;inset:0;touch-action:none}
+.canh3d canvas{display:block;width:100%;height:100%;cursor:grab}
+.dangTai3d{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#3c5a46;font-weight:600}
+.che3d{position:absolute;top:12px;left:12px;display:flex;gap:4px;background:rgba(255,255,255,.92);padding:4px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.che3d button{font:inherit;font-size:13px;font-weight:600;border:0;background:transparent;color:#3c4a40;padding:6px 11px;border-radius:9px;cursor:pointer}
+.che3d button.on{background:#006b3f;color:#fff}
+.chuThich3d{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.92);padding:6px 10px;border-radius:10px;font-size:12px;color:#3c4a40;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.chuThich3d i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);margin:0 4px 0 8px}
+.chuThich3d i:first-child{margin-left:0}
+.chips3d{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:6px;overflow-x:auto;background:rgba(255,255,255,.92);padding:6px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.12);scrollbar-width:thin}
+.chips3d button{flex:none;font:inherit;font-size:13px;font-weight:600;border:0;background:transparent;color:#24302a;padding:6px 10px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.chips3d button b{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:var(--pm);color:#fff;font-size:11px}
+.chips3d button.on{background:#e4efe7}
+.the3d{position:absolute;right:12px;top:56px;width:290px;max-width:calc(100% - 24px);background:#fff;color:#1d2a22;border-radius:14px;padding:12px 14px;box-shadow:0 6px 24px rgba(0,0,0,.18);font-size:13px}
+.the3d h3{margin:0 0 2px;font-size:15px;padding-right:22px}
+.the3d .x{position:absolute;top:8px;right:10px;border:0;background:transparent;font-size:18px;cursor:pointer;color:#66756b}
+.the3d p{margin:6px 0 0;color:#4d5c52}
+.the3d .nhan{margin-top:6px}
+.khung3d.dem{background:#0e1a24}
+.khung3d.dem .dangTai3d{color:#cfe0d5}
+@media (max-width:600px){.khung3d{height:470px}.chuThich3d{display:none}.che3d button{padding:6px 8px}.the3d{top:auto;bottom:62px;right:12px}}
 .hide{display:none!important}
 @media (max-width:900px){.phongs{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:1fr 1fr}}
 @media (max-width:600px){.phongs{grid-template-columns:1fr}h1{font-size:20px}.kpi .v{font-size:24px}}
@@ -96,8 +122,18 @@ td.gio{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
   <div class="kpis" id="kpis"></div>
 
   <section class="toa">
-    <h2>Toà văn phòng <span id="locTen">· bấm vào từng agent để xem chi tiết</span></h2>
-    <div class="phongs" id="phongs"></div>
+    <h2>Toà văn phòng <span id="locTen">· bấm vào từng agent để xem chi tiết</span><span class="sp"></span>
+      <span class="doiXem"><button data-xem="3d" class="on">🏢 3D</button><button data-xem="ds">📋 Danh sách</button></span></h2>
+    <div id="khung3d" class="khung3d">
+      <div id="canh3d" class="canh3d"><div class="dangTai3d">Đang dựng toà nhà…</div></div>
+      <div class="che3d">
+        <button data-che="toan" class="on">Toàn cảnh</button><button data-che="tu">Tự tham quan</button><button data-che="dem">🌙 Ban đêm</button>
+      </div>
+      <div class="chuThich3d"><i style="--c:var(--on)"></i>Ổn <i style="--c:var(--tre)"></i>Cần xem <i style="--c:var(--loi)"></i>Lỗi <i style="--c:var(--lenh)"></i>Theo lệnh <i style="--c:var(--chua)"></i>Chưa báo / chưa làm</div>
+      <div id="the3d" class="the3d hide"></div>
+      <div id="chips3d" class="chips3d"></div>
+    </div>
+    <div class="phongs hide" id="phongs"></div>
   </section>
 
   <section class="nk">
@@ -173,6 +209,7 @@ function ve(){
     return '<div class="phong" style="--pm:'+p.mau+'"><div class="dau"><b>'+esc(p.ten)+'</b><i>'+chay+'/'+ag.length+' đang có</i></div>'+(than||'<div class="trong">Chưa có agent.</div>')+'</div>';
   }).join('');
   const ten={};D.agent.forEach(a=>ten[a.ma]=a.ten);
+  if(window.ve3d) ve3d(ds);
   document.getElementById('nhatKy').innerHTML=D.gan.length?D.gan.map(x=>{const t=TT[x.tt==='loi'?'loi':x.tt==='canh'?'canh':'on'];
     return '<tr><td class="gio">'+esc(x.luc)+'</td><td>'+esc(ten[x.ma]||x.ma)+'</td><td><span class="nhan" style="--c:'+cssVar(t.c)+';--cs:'+cssVar(t.cs)+';margin:0">'+(x.tt==='loi'?'Lỗi':x.tt==='canh'?'Cảnh báo':'Xong')+'</span></td><td>'+esc(x.ghiChu)+'</td></tr>'}).join('')
     :'<tr><td colspan="4" style="color:var(--muted)">Chưa có lần báo nào. Sau 21:00–22:00 hôm nay các việc chạy trong app sẽ tự ghi vào đây.</td></tr>';
@@ -195,6 +232,202 @@ document.getElementById('btnMoi').onclick=nap;
 document.getElementById('btnTheme').onclick=()=>{const r=document.documentElement,toi=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=toi?'light':'dark';try{localStorage.setItem('ag_theme',r.dataset.theme)}catch(e){}};
 try{const t=localStorage.getItem('ag_theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
 nap();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+/* ===== TOÀ VĂN PHÒNG 3D (chị Lê yêu cầu 09/11/2026, theo kiểu "Văn phòng Agent KLS") =====
+   Dùng đúng số liệu agDuLieu của trang: mỗi agent là 1 người ngồi bàn, màu áo = trạng thái.
+   Không có thư viện (mất mạng) thì tự quay về dạng Danh sách. */
+(function(){
+const khung=document.getElementById('khung3d'),noi=document.getElementById('canh3d'),the=document.getElementById('the3d');
+const dsPhong=document.getElementById('phongs');
+let XEM='3d',S=null;
+try{XEM=localStorage.getItem('ag_xem')||'3d'}catch(e){}
+function doiXem(x){XEM=x;try{localStorage.setItem('ag_xem',x)}catch(e){}
+  document.querySelectorAll('.doiXem button').forEach(b=>b.classList.toggle('on',b.dataset.xem===x));
+  khung.classList.toggle('hide',x!=='3d');dsPhong.classList.toggle('hide',x==='3d');if(x==='3d'&&S)S.coGian()}
+document.querySelector('.doiXem').addEventListener('click',e=>{const b=e.target.closest('button');if(b)doiXem(b.dataset.xem)});
+if(!window.THREE||!THREE.OrbitControls){doiXem('ds');document.querySelector('.doiXem').classList.add('hide');window.ve3d=null;return}
+doiXem(XEM);
+
+const MAU_TT={on:0x3f8f22,tre:0xd99a1e,canh:0xd99a1e,xem:0xd99a1e,loi:0xd2483a,chua:0x9aa59d,lenh:0x2f6fb5,kh:0xc9d2cc};
+/* Bố cục giống ảnh KLS: hàng sau CEO · Thiết kế · Marketing; hàng trước Kỹ thuật SX · Kinh doanh · Kế toán */
+const VI_TRI={CEO:[-9,-4],TK:[0,-4],MKT:[9,-4],SX:[-9,4],KD:[0,4],KT:[9,4]};
+const SO_PHONG={KT:1,KD:2,SX:3,MKT:4,TK:5,CEO:6};
+const PW=8.4,PD=7.2;
+
+function chuNhan(chu,mau,coDot){
+  const c=document.createElement('canvas'),x=c.getContext('2d'),f=34,pad=18;
+  x.font='600 '+f+'px "Segoe UI",system-ui,sans-serif';
+  const w=Math.ceil(x.measureText(chu).width)+pad*2+(coDot?34:0),h=f+26;
+  c.width=w;c.height=h;x.font='600 '+f+'px "Segoe UI",system-ui,sans-serif';
+  x.fillStyle='rgba(255,255,255,.95)';const r=h/2;x.beginPath();x.moveTo(r,0);x.lineTo(w-r,0);x.arc(w-r,r,r,-Math.PI/2,Math.PI/2);x.lineTo(r,h);x.arc(r,r,r,Math.PI/2,Math.PI*1.5);x.fill();
+  x.strokeStyle='rgba(0,0,0,.12)';x.lineWidth=2;x.stroke();
+  if(coDot){x.fillStyle=mau;x.beginPath();x.arc(pad+12,h/2,12,0,Math.PI*2);x.fill()}
+  x.fillStyle='#1d2a22';x.textBaseline='middle';x.fillText(chu,pad+(coDot?34:0),h/2+2);
+  const t=new THREE.CanvasTexture(c);t.anisotropy=4;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));
+  s.scale.set(w/h*0.95,0.95,1);s.renderOrder=10;return s;
+}
+function hop(w,h,d,mau,o){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial(Object.assign({color:mau,roughness:.85},o||{})));m.castShadow=true;m.receiveShadow=true;return m}
+function cay(x,z,k){const g=new THREE.Group();k=k||1;
+  const than=new THREE.Mesh(new THREE.CylinderGeometry(.12*k,.16*k,.8*k,6),new THREE.MeshStandardMaterial({color:0x8a6a4a}));than.position.y=.4*k;than.castShadow=true;g.add(than);
+  const la=new THREE.Mesh(new THREE.IcosahedronGeometry(.75*k,0),new THREE.MeshStandardMaterial({color:0x6fbf73,flatShading:true,roughness:.9}));la.position.y=1.3*k;la.castShadow=true;g.add(la);
+  g.position.set(x,0,z);g.rotation.y=Math.random()*6;return g}
+
+function dung(){
+  const r=new THREE.WebGLRenderer({antialias:true,alpha:false});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;
+  noi.innerHTML='';noi.appendChild(r.domElement);
+  const sc=new THREE.Scene();sc.background=new THREE.Color(0xdfeee3);sc.fog=new THREE.Fog(0xdfeee3,60,110);
+  const cam=new THREE.PerspectiveCamera(38,1,.1,300);
+  const ctl=new THREE.OrbitControls(cam,r.domElement);
+  ctl.enableDamping=true;ctl.dampingFactor=.08;ctl.maxPolarAngle=1.38;ctl.minDistance=8;ctl.maxDistance=75;ctl.target.set(0,0,2);
+  const hemi=new THREE.HemisphereLight(0xffffff,0xb7c9b9,.85);sc.add(hemi);
+  const sun=new THREE.DirectionalLight(0xffffff,.75);sun.position.set(-18,30,14);sun.castShadow=true;
+  sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-30,right:30,top:30,bottom:-30,near:1,far:80});sc.add(sun);
+
+  /* nền, đường, cây */
+  const dat=new THREE.Mesh(new THREE.PlaneGeometry(160,160),new THREE.MeshStandardMaterial({color:0xcfe5d3,roughness:1}));dat.rotation.x=-Math.PI/2;dat.receiveShadow=true;sc.add(dat);
+  const duong=hop(120,.04,4,0xd4d9d6);duong.position.set(0,.02,-11.5);duong.castShadow=false;sc.add(duong);
+  for(let i=-55;i<56;i+=5){const v=hop(2,.05,.18,0xffffff);v.position.set(i,.03,-11.5);v.castShadow=false;sc.add(v)}
+  const san=hop(30,.12,19,0xf2f4f1);san.position.set(0,.06,0);sc.add(san);
+
+  /* Xưởng yến (sau đường) + kho thành phẩm: cảnh trang trí */
+  const xuong=new THREE.Group();const tX=hop(16,3.2,8,0xeef1f3);tX.position.y=1.6;xuong.add(tX);
+  for(let i=0;i<4;i++){const mai=new THREE.Mesh(new THREE.CylinderGeometry(0,1.4,4,3,1),new THREE.MeshStandardMaterial({color:0xb9c4cc,flatShading:true}));mai.rotation.z=Math.PI/2;mai.rotation.y=Math.PI/2;mai.scale.set(1,1,1.95);mai.position.set(-6+i*4,3.6,0);mai.castShadow=true;xuong.add(mai)}
+  const cuaX=hop(3,2.2,.1,0x6f8fa6);cuaX.position.set(0,1.1,4.02);xuong.add(cuaX);
+  xuong.position.set(-6,0,-19);sc.add(xuong);
+  const nX=chuNhan('Xưởng yến Lanest','#1F7A6B',false);nX.position.set(-6,5.4,-19);sc.add(nX);
+  const kho=hop(8,2.6,6,0xf6efe2);kho.position.set(11,1.3,-19);sc.add(kho);
+  const maiKho=hop(8.6,.3,6.6,0xd7a86e);maiKho.position.set(11,2.75,-19);sc.add(maiKho);
+  const nK=chuNhan('Kho thành phẩm','#B7791F',false);nK.position.set(11,3.8,-19);sc.add(nK);
+  [[-20,-6],[-20,0],[-20,6],[20,-6],[20,1],[20,7],[-16,13],[-8,13.5],[3,13],[12,13.5],[18,12.5],[-24,-16],[24,-16],[-14,-25],[2,-25],[20,-25],[-26,4],[26,-3]].forEach(p=>sc.add(cay(p[0],p[1],.8+Math.random()*.5)));
+
+  /* toà văn phòng: 6 phòng */
+  const banDem=[],dongNguoi=[],denPhong=[],chips=[];
+  const phong={};
+  D.phong.forEach(p=>{
+    const v=VI_TRI[p.ma]||[0,0],g=new THREE.Group();g.position.set(v[0],0,v[1]);
+    const mau=new THREE.Color(p.mau);
+    const san=hop(PW,.1,PD,mau.clone().lerp(new THREE.Color(0xffffff),.82));san.position.y=.17;san.castShadow=false;g.add(san);
+    const tuong=0xffffff,T=.18,H=1.25;
+    const tSau=hop(PW,H,T,tuong);tSau.position.set(0,H/2+.12,-PD/2);g.add(tSau);
+    const tTrai=hop(T,H,PD,tuong);tTrai.position.set(-PW/2,H/2+.12,0);g.add(tTrai);
+    const tPhai=hop(T,H,PD,tuong);tPhai.position.set(PW/2,H/2+.12,0);g.add(tPhai);
+    const kinh=hop(PW,H*.6,.06,0xbfe3ff,{transparent:true,opacity:.35,roughness:.1});kinh.castShadow=false;kinh.position.set(0,H*.3+.12,PD/2);g.add(kinh);
+    const vien=hop(PW,.14,T,mau);vien.position.set(0,H+.19,-PD/2);g.add(vien);
+    const nhan=chuNhan(SO_PHONG[p.ma]+' · '+p.ten,p.mau,true);nhan.position.set(0,2.6,-PD/2+.2);nhan.scale.multiplyScalar(1.15);g.add(nhan);
+    const den=new THREE.PointLight(0xffd9a0,0,9);den.position.set(0,2.6,0);g.add(den);denPhong.push(den);
+    sc.add(g);phong[p.ma]={g:g,p:p,ghe:[]};
+  });
+  const tenToa=chuNhan('Toà văn phòng Agent · Yến Sào Lanest','#006B3F',false);tenToa.position.set(0,.9,9.3);tenToa.scale.multiplyScalar(1.15);sc.add(tenToa);
+
+  /* bàn + người cho từng agent */
+  const ODAT=[[-2.4,-1.3],[0,-1.3],[2.4,-1.3],[-2.4,1.4],[0,1.4],[2.4,1.4]];
+  const matDa=new THREE.MeshStandardMaterial({color:0xf1c9a5,roughness:.7});
+  D.agent.forEach(a=>{
+    const ph=phong[a.phong];if(!ph)return;const i=ph.ghe.length;const o=ODAT[i%6];ph.ghe.push(a.ma);
+    const g=new THREE.Group();g.position.set(o[0],.22,o[1]);
+    const ban=hop(1.5,.08,.75,0xffffff);ban.position.set(0,.72,.45);g.add(ban);
+    [[-.65,.1],[.65,.1],[-.65,.8],[.65,.8]].forEach(c=>{const ch=hop(.06,.7,.06,0xb9c1bb);ch.position.set(c[0],.36,c[1]);g.add(ch)});
+    const mh=hop(.62,.4,.05,0x2b3640);mh.position.set(0,1.0,.72);g.add(mh);
+    const mhSang=new THREE.Mesh(new THREE.PlaneGeometry(.56,.34),new THREE.MeshBasicMaterial({color:0x9fd3ff}));mhSang.position.set(0,1.0,.69);mhSang.rotation.y=Math.PI;g.add(mhSang);
+    const ghe=hop(.55,.08,.55,0x4b5a52);ghe.position.set(0,.45,-.35);g.add(ghe);
+    const nguoi=new THREE.Group();nguoi.position.set(0,0,-.35);
+    const ao=new THREE.MeshStandardMaterial({color:0x9aa59d,roughness:.6});
+    const than=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,.75,12),ao);than.position.y=.88;than.castShadow=true;nguoi.add(than);
+    const dau=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),matDa);dau.position.y=1.48;dau.castShadow=true;nguoi.add(dau);
+    const toc=new THREE.Mesh(new THREE.SphereGeometry(.23,16,12,0,Math.PI*2,0,Math.PI/2.2),new THREE.MeshStandardMaterial({color:0x2d2420}));toc.position.y=1.5;nguoi.add(toc);
+    const vong=new THREE.Mesh(new THREE.RingGeometry(.42,.52,24),new THREE.MeshBasicMaterial({color:0x9aa59d,transparent:true,opacity:.0,side:THREE.DoubleSide}));vong.rotation.x=-Math.PI/2;vong.position.y=.03;nguoi.add(vong);
+    const cham=new THREE.Mesh(new THREE.SphereGeometry(.11,12,10),new THREE.MeshBasicMaterial({color:0xd2483a}));cham.position.y=2.05;cham.visible=false;nguoi.add(cham);
+    g.add(nguoi);
+    [ban,mh,ghe,than,dau,toc].forEach(m=>{m.userData.ma=a.ma});
+    ph.g.add(g);
+    dongNguoi.push({ma:a.ma,g:g,nguoi:nguoi,ao:ao,dau:dau,toc:toc,vong:vong,cham:cham,mhSang:mhSang,pha:Math.random()*6,st:'chua'});
+  });
+
+  /* chip phòng ở dưới */
+  const chipNoi=document.getElementById('chips3d');
+  chipNoi.innerHTML='<button data-p="" class="on">Toàn cảnh</button>'+D.phong.slice().sort((a,b)=>SO_PHONG[a.ma]-SO_PHONG[b.ma]).map(p=>'<button data-p="'+p.ma+'" style="--pm:'+p.mau+'"><b>'+SO_PHONG[p.ma]+'</b>'+esc(p.ten)+'</button>').join('');
+
+  const S0={cam:new THREE.Vector3(26,30,40),tgt:new THREE.Vector3(0,0,-1)};
+  cam.position.copy(S0.cam);
+  let bay=null;
+  function bayToi(pos,tgt){bay={bd:performance.now(),tu:cam.position.clone(),den:pos,tTu:ctl.target.clone(),tDen:tgt}}
+  function veTongQuan(){bayToi(S0.cam.clone(),S0.tgt.clone())}
+  function veP(ma){if(!ma){veTongQuan();return}const v=VI_TRI[ma];bayToi(new THREE.Vector3(v[0]+4,17,v[1]+18),new THREE.Vector3(v[0],.6,v[1]))}
+  chipNoi.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;chipNoi.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    ctl.autoRotate=!b.dataset.p;document.querySelectorAll('.che3d button[data-che="toan"],.che3d button[data-che="tu"]').forEach(x=>x.classList.toggle('on',x.dataset.che===(b.dataset.p?'tu':'toan')));
+    veP(b.dataset.p);an()});
+
+  /* chọn người → thẻ chi tiết */
+  const ray=new THREE.Raycaster(),chuot=new THREE.Vector2();let xuong0=null;
+  r.domElement.addEventListener('pointerdown',e=>{xuong0=[e.clientX,e.clientY];ctl.autoRotate=false});
+  r.domElement.addEventListener('pointerup',e=>{
+    if(!xuong0||Math.hypot(e.clientX-xuong0[0],e.clientY-xuong0[1])>6)return;
+    const b=r.domElement.getBoundingClientRect();chuot.set((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1);
+    ray.setFromCamera(chuot,cam);const h=ray.intersectObjects(sc.children,true).find(x=>x.object.userData.ma);
+    if(h)moThe(h.object.userData.ma);else an();
+  });
+  function an(){the.classList.add('hide');dongNguoi.forEach(n=>n.chon=false)}
+  function moThe(ma){
+    const a=D.agent.find(x=>x.ma===ma);if(!a)return;const t=TT[a.st]||TT.chua;const p=D.phong.find(x=>x.ma===a.phong)||{};
+    dongNguoi.forEach(n=>n.chon=n.ma===ma);
+    the.innerHTML='<button class="x" aria-label="Đóng">×</button><h3>'+esc(a.ten)+'</h3><div style="color:#66756b">'+esc(p.ten||'')+' · '+esc(a.lich)+'</div>'+
+      '<span class="nhan" style="--c:'+cssVar(t.c)+';--cs:'+cssVar(t.cs)+'">'+t.nhan+(a.cuoi&&(a.st==='on'||a.st==='tre')?' · '+esc(truoc(a.cuoi.luc)):'')+'</span>'+
+      '<p>'+esc(a.viec)+'</p>'+
+      (a.cuoi?'<p><b>Báo về gần nhất:</b> '+esc(a.cuoi.luc)+(a.cuoi.ghiChu?' — '+esc(a.cuoi.ghiChu):'')+'</p>':'')+
+      (a.loiCuoi&&a.loiCuoi!==a.cuoi?'<p style="color:#c4473a"><b>Lỗi gần nhất:</b> '+esc(a.loiCuoi.luc)+' — '+esc(a.loiCuoi.ghiChu)+'</p>':'')+
+      (a.st==='chua'?'<p>Chưa nhận được lần báo nào.'+(/n8n/.test(a.lich)?' Cần thêm bước gọi về app trong luồng n8n.':' Sẽ hiện sau lượt chạy kế tiếp.')+'</p>':'')+
+      (a.st==='kh'?'<p>Ghế này còn trống — agent chưa làm.</p>':'');
+    the.classList.remove('hide');the.querySelector('.x').onclick=an;
+  }
+
+  /* ngày / đêm */
+  let dem=false;
+  function datDem(x){dem=x;khung.classList.toggle('dem',x);
+    sc.background.set(x?0x0e1a24:0xdfeee3);sc.fog.color.set(x?0x0e1a24:0xdfeee3);
+    dat.material.color.set(x?0x24352c:0xcfe5d3);hemi.intensity=x?.22:.85;sun.intensity=x?.12:.75;
+    denPhong.forEach(d=>d.intensity=x?.9:0);
+    dongNguoi.forEach(n=>{n.mhSang.material.color.set(n.st==='kh'?0x2b3640:(x?0xbfe6ff:0x9fd3ff))})}
+  document.querySelector('.che3d').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const c=b.dataset.che;
+    if(c==='dem'){datDem(!dem);b.classList.toggle('on',dem);return}
+    document.querySelectorAll('.che3d button[data-che="toan"],.che3d button[data-che="tu"]').forEach(x=>x.classList.toggle('on',x===b));
+    if(c==='toan'){veTongQuan();ctl.autoRotate=true;chipNoi.querySelectorAll('button').forEach((x,i)=>x.classList.toggle('on',i===0))}
+    else{ctl.autoRotate=false;bayToi(new THREE.Vector3(2,5.5,16),new THREE.Vector3(0,.8,4))}
+    an()});
+  ctl.autoRotate=true;ctl.autoRotateSpeed=.45;
+
+  function coGian(){const w=noi.clientWidth,h=noi.clientHeight;if(!w||!h)return;r.setSize(w,h,false);cam.aspect=w/h;cam.fov=w<h?56:38;cam.updateProjectionMatrix()}
+  new ResizeObserver(coGian).observe(noi);coGian();
+
+  const dh=new THREE.Clock();
+  (function vong(){requestAnimationFrame(vong);
+    if(khung.classList.contains('hide'))return;
+    const t=dh.getElapsedTime();
+    if(bay){const p=Math.min(1,(performance.now()-bay.bd)/900),k=1-Math.pow(1-p,3);cam.position.lerpVectors(bay.tu,bay.den,k);ctl.target.lerpVectors(bay.tTu,bay.tDen,k);if(p>=1)bay=null}
+    dongNguoi.forEach(n=>{
+      if(n.st==='on'){n.nguoi.position.y=Math.abs(Math.sin(t*4+n.pha))*.05;n.nguoi.rotation.y=Math.sin(t*1.3+n.pha)*.12}
+      else if(n.st==='loi'){n.nguoi.rotation.y=Math.sin(t*9)*.06;n.cham.position.y=2.05+Math.sin(t*4)*.08}
+      else{n.nguoi.position.y=0;n.nguoi.rotation.y=0}
+      n.vong.material.opacity=n.chon?.9:(n.st==='loi'?.45+.35*Math.sin(t*5):0);
+    });
+    ctl.update();r.render(sc,cam)})();
+
+  return{coGian:coGian,capNhat:function(ds){
+    ds.forEach(a=>{const n=dongNguoi.find(x=>x.ma===a.ma);if(!n)return;n.st=a.st;const m=MAU_TT[a.st]||0x9aa59d;
+      n.ao.color.set(m);n.vong.material.color.set(m);n.cham.visible=a.st==='loi';
+      const ma=a.st==='kh';n.nguoi.visible=!ma;n.mhSang.material.color.set(ma?0x2b3640:(dem?0xbfe6ff:0x9fd3ff))});
+    const loc=LOC?NHOM[LOC]:null;dongNguoi.forEach(n=>{n.g.visible=!loc||loc.includes(n.st)});
+  }};
+}
+window.ve3d=function(ds){
+  if(!S){try{S=dung()}catch(e){console.error(e);doiXem('ds');document.querySelector('.doiXem').classList.add('hide');window.ve3d=null;return}}
+  S.capNhat(ds);
+};
+})();
 </script>
 </body>
 </html>
