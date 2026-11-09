@@ -78,6 +78,7 @@ tbody tr{cursor:pointer}
     <div><a class="ve" href="./" id="veApp">‹ App LA</a><span class="tt" id="trangThai">Đang tải…</span>
     <h1>Bản đồ đại lý &amp; khách<small>Đại lý theo tỉnh/thành (34 tỉnh sau sáp nhập 2025) · số lấy từ CRM + Sổ bán hàng của app LA</small></h1></div>
     <div class="hbtn">
+      <select id="che" aria-label="Ghim theo"><option value="don">📦 Ghim theo nơi nhận hàng</option><option value="dl">🏪 Đại lý theo khu vực</option></select>
       <select id="tô" aria-label="Tô màu theo"><option value="dt">Tô theo doanh thu</option><option value="sl">Tô theo số đại lý</option><option value="tre">Tô theo đại lý chậm mua</option></select>
       <button id="btnMoi">↻ Làm mới</button><button id="btnTheme" title="Đổi nền sáng/tối">🌓</button>
     </div>
@@ -94,18 +95,18 @@ tbody tr{cursor:pointer}
     <div style="display:grid;gap:16px;min-width:0">
       <section class="the">
         <h2>Theo tỉnh <span>· bấm dòng để bay tới</span></h2>
-        <div class="tbl"><table><thead><tr><th>Tỉnh</th><th>Đại lý</th><th id="thDt">Doanh thu</th><th>Chậm mua</th><th>KH mới</th></tr></thead><tbody id="bangTinh"></tbody></table></div>
+        <div class="tbl"><table><thead id="dauBang"></thead><tbody id="bangTinh"></tbody></table></div>
       </section>
       <section class="the" id="theDs">
         <h2 id="dsTieuDe">Chọn một tỉnh</h2>
         <div class="ds" id="dsDl"><p class="m" style="color:var(--muted)">Bấm vào vòng tròn trên bản đồ hoặc một dòng trong bảng.</p></div>
       </section>
       <section class="the">
-        <h2>Vùng trống <span>· tỉnh chưa có đại lý nào</span></h2>
+        <h2>Vùng trống <span id="vtMoTa">· tỉnh chưa có đại lý nào</span></h2>
         <div class="trong" id="vungTrong"></div>
       </section>
       <section class="the">
-        <h2>Chưa rõ khu vực <span id="soChuaRo"></span></h2>
+        <h2><span id="crTieuDe" style="font-size:16px;font-weight:700;color:var(--ink)">Chưa rõ khu vực</span> <span id="soChuaRo"></span></h2>
         <div class="ds" id="chuaRo"></div>
       </section>
     </div>
@@ -139,14 +140,15 @@ const TOA={'TP. Hồ Chí Minh':[10.78,106.70],'Hà Nội':[21.03,105.85],'Hải
   'Thái Nguyên':[21.75,105.85],'Thanh Hóa':[19.95,105.50],'Tuyên Quang':[22.30,105.10],'Vĩnh Long':[10.05,106.25]};
 const TINH=Object.keys(TOA);
 /* Tên cũ / thành phố / huyện hay gặp → tỉnh mới. So khớp trên chuỗi đã bỏ dấu, chữ thường. */
-const BI_DANH={'TP. Hồ Chí Minh':['ho chi minh','hcm','tphcm','tp hcm','sai gon','saigon','sg','thu duc','binh duong','thu dau mot','di an','thuan an','ben cat','tan uyen','ba ria','vung tau','brvt','phu my','cu chi','hoc mon','binh chanh','nha be','can gio','go vap','binh thanh','tan binh','tan phu','phu nhuan','quan '],
-  'Hà Nội':['ha noi','hn','hanoi'],'Hải Phòng':['hai phong','hai duong','hp'],'Đà Nẵng':['da nang','quang nam','hoi an','tam ky','dien ban'],'Huế':['hue','thua thien'],
+const BI_DANH={'TP. Hồ Chí Minh':['ho chi minh','hcm','tphcm','tp hcm','sai gon','saigon','sg','thu duc','binh duong','thu dau mot','di an','thuan an','ben cat','tan uyen','ba ria','vung tau','brvt','phu my','cu chi','hoc mon','binh chanh','nha be','can gio','go vap','binh thanh','tan binh','tan phu','phu nhuan','binh tan'],
+  'Hà Nội':['ha noi','hn','hanoi','cau giay','dong da','hoang mai','ha dong','long bien','thanh xuan','nam tu liem','bac tu liem','hai ba trung','ba dinh','tay ho','hoan kiem','gia lam','dong anh','soc son','thanh tri','son tay'],
+  'Hải Phòng':['hai phong','hai duong','hp'],'Đà Nẵng':['da nang','quang nam','hoi an','tam ky','dien ban','hai chau','thanh khe','son tra','ngu hanh son','lien chieu','cam le','hoa vang'],'Huế':['hue','thua thien'],
   'Cần Thơ':['can tho','soc trang','hau giang','vi thanh','nga bay'],'An Giang':['an giang','kien giang','rach gia','long xuyen','chau doc','phu quoc','ha tien'],
   'Bắc Ninh':['bac ninh','bac giang','tu son'],'Cà Mau':['ca mau','bac lieu'],'Cao Bằng':['cao bang'],'Đắk Lắk':['dak lak','daklak','dac lac','buon ma thuot','bmt','phu yen','tuy hoa','song cau'],
   'Điện Biên':['dien bien'],'Đồng Nai':['dong nai','bien hoa','long khanh','long thanh','nhon trach','trang bom','binh phuoc','dong xoai'],'Đồng Tháp':['dong thap','tien giang','my tho','cao lanh','sa dec','go cong','cai be'],
   'Gia Lai':['gia lai','pleiku','binh dinh','quy nhon','an nhon'],'Hà Tĩnh':['ha tinh'],'Hưng Yên':['hung yen','thai binh'],
   'Khánh Hòa':['khanh hoa','nha trang','cam ranh','ninh hoa','dien khanh','van ninh','cam lam','khanh vinh','khanh son','ninh thuan','phan rang','thap cham'],
-  'Lai Châu':['lai chau'],'Lâm Đồng':['lam dong','da lat','dalat','bao loc','dak nong','gia nghia','binh thuan','phan thiet','la gi','mui ne'],'Lạng Sơn':['lang son'],
+  'Lai Châu':['lai chau'],'Lâm Đồng':['lam dong','da lat','dalat','bao loc','dak nong','gia nghia','binh thuan','phan thiet','la gi','mui ne','duc trong','di linh'],'Lạng Sơn':['lang son'],
   'Lào Cai':['lao cai','yen bai','sa pa','sapa'],'Nghệ An':['nghe an','vinh city','tp vinh','cua lo'],'Ninh Bình':['ninh binh','nam dinh','ha nam','phu ly'],
   'Phú Thọ':['phu tho','viet tri','vinh phuc','vinh yen','hoa binh'],'Quảng Ngãi':['quang ngai','kon tum'],'Quảng Ninh':['quang ninh','ha long','cam pha','mong cai','uong bi'],
   'Quảng Trị':['quang tri','quang binh','dong hoi'],'Sơn La':['son la'],'Tây Ninh':['tay ninh','long an','tan an'],'Thái Nguyên':['thai nguyen','bac kan','bac can'],
@@ -154,7 +156,10 @@ const BI_DANH={'TP. Hồ Chí Minh':['ho chi minh','hcm','tphcm','tp hcm','sai g
 function boDau(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
 const BD=[];TINH.forEach(t=>{BD.push([boDau(t),t]);(BI_DANH[t]||[]).forEach(b=>BD.push([b,t]))});
 BD.sort((a,b)=>b[0].length-a[0].length);
-function raTinh(kv){const s=' '+boDau(kv)+' ';if(s.trim()==='')return '';for(const [b,t] of BD){if(b.endsWith(' ')?s.includes(' '+b):s.includes(' '+b+' '))return t}return ''}
+/* Địa chỉ VN ghi tỉnh ở cuối → lấy tên tỉnh/bí danh xuất hiện SAU CÙNG. "Quận 1..12" chỉ TP.HCM có. */
+function raTinh(kv){const s=' '+boDau(kv)+' ';if(s.trim()==='')return '';if(/ (q|quan) ?(1[0-2]|[1-9]) /.test(s))return 'TP. Hồ Chí Minh';
+  let vt=-1,t='';for(const [b,tt] of BD){const i=s.lastIndexOf(' '+b+' ');if(i>vt){vt=i;t=tt}}return t}
+const TAI_CHO=/giao ra nha|giao kiot|giao tan nha|cam ve|lay tai|qua lay|toi lay|den lay|hang nha/,NHA_XE=/nha xe|gui xe|xe khach|ghtk|ghn|viettel post|vnpost|ninja van|best express|gui ma/;
 function tenGon(s){return String(s||'').normalize('NFC').toLowerCase().replace(/\s+/g,' ').trim()}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function tien(n){n=Math.round(n||0);return Math.abs(n)>=1e9?(Math.round(n/1e8)/10+'').replace('.',',')+' tỷ':Math.abs(n)>=1e6?(Math.round(n/1e5)/10+'').replace('.',',')+' tr':n.toLocaleString('vi-VN')+'đ'}
@@ -189,7 +194,60 @@ function mau(p,cheDo,max){
   const v=cheDo==='sl'?p.dl.length:p.dt;const r=max?v/max:0;
   return r>.5?'#004d2c':r>.2?'#007a45':r>.05?'#4a9a2a':'#8cc63f';
 }
+/* ===== Ghim theo nơi nhận hàng (chị Lê 09/11/2026): mỗi đơn hợp lệ trong Sổ bán hàng, tỉnh lấy từ "Giao hộ người nhận" + ghi chú ===== */
+let CHE='don',DON=[],DT={};
+function gomDon(ds){
+  const T={};TINH.forEach(t=>T[t]={ten:t,don:[],tien:0,khach:{}});
+  const r={T:T,taiCho:0,nhaXe:0,khong:0,tong:0,khongTheoKhach:{}};
+  ds.forEach(d=>{if(d.tt&&d.tt!=='Hợp lệ')return;r.tong++;
+    const s=(d.nhan||'')+' '+(d.ghiChu||''),t=raTinh(s);
+    if(t){T[t].don.push(d);T[t].tien+=d.tong||0;T[t].khach[d.tenKH]=1;return}
+    const b=boDau(s);if(TAI_CHO.test(b))r.taiCho++;else if(NHA_XE.test(b))r.nhaXe++;else r.khong++;
+    r.khongTheoKhach[d.tenKH]=(r.khongTheoKhach[d.tenKH]||0)+1});
+  return r;
+}
+function boSdt(s){return String(s||'').replace(/(\+?84|0)[\d .]{8,12}\d/g,'').replace(/^\d{6}\s*/,'').replace(/\s*-\s*-\s*/g,' - ').replace(/^[\s-]+|[\s-]+$/g,'')}
+function veDon(){
+  const cheDo=document.getElementById('tô').value==='dt'?'dt':'sl',P=DT,ds=Object.values(P.T);
+  const co=ds.filter(p=>p.don.length),trong=ds.filter(p=>!p.don.length),coDc=co.reduce((a,p)=>a+p.don.length,0);
+  const maxDt=Math.max(1,...ds.map(p=>p.tien)),maxSl=Math.max(1,...ds.map(p=>p.don.length));
+  document.getElementById('kpis').innerHTML=[
+    ['Đơn ghi được tỉnh',coDc+' / '+P.tong,'đơn hợp lệ từ 01/10 · '+Math.round(coDc*100/Math.max(1,P.tong))+'%','--xanh'],
+    ['Tỉnh có nhận hàng',co.length+' / 34',trong.length+' tỉnh chưa có đơn giao tới','--on'],
+    ['Doanh thu đơn có tỉnh',tien(co.reduce((a,p)=>a+p.tien,0)),'tổng đơn hợp lệ ghim được','--moi'],
+    ['Đơn không ghi tỉnh',P.taiCho+P.nhaXe+P.khong,P.taiCho+' giao tại chỗ/tự lấy · '+P.nhaXe+' gửi xe/ship · '+P.khong+' chưa rõ','--tre']
+  ].map(k=>'<div class="kpi" style="--c:var('+k[3]+')"><div class="lb">'+k[0]+'</div><div class="v">'+k[1]+'</div><div class="s">'+k[2]+'</div></div>').join('');
+  LOP.clearLayers();
+  co.forEach(p=>{const c=TOA[p.ten],r=7+Math.sqrt(p.don.length/maxSl)*24,v=cheDo==='sl'?p.don.length/maxSl:p.tien/maxDt;
+    const m=L.circleMarker(c,{radius:r,color:'#fff',weight:2,fillColor:v>.5?'#7a2e0e':v>.2?'#c2410c':v>.05?'#ea7a2c':'#f6b26b',fillOpacity:.88}).addTo(LOP);
+    m.bindTooltip(p.ten+' · '+p.don.length+' đơn · '+tien(p.tien),{direction:'top'});m.on('click',()=>chon(p.ten));
+    L.marker(c,{icon:L.divIcon({className:'nhanTinh',html:p.don.length,iconSize:[28,14],iconAnchor:[14,7]}),interactive:false}).addTo(LOP)});
+  document.getElementById('chuThich').innerHTML=(cheDo==='sl'?'<span><i style="--c:#7a2e0e"></i>nhiều đơn</span><span><i style="--c:#f6b26b"></i>ít đơn</span>':'<span><i style="--c:#7a2e0e"></i>doanh thu cao</span><span><i style="--c:#ea7a2c"></i>vừa</span><span><i style="--c:#f6b26b"></i>thấp</span>')+'<span>· vòng to = nhiều đơn giao tới · số trong vòng = số đơn</span>';
+  document.getElementById('dauBang').innerHTML='<tr><th>Tỉnh nhận</th><th>Đơn</th><th>Doanh thu</th><th>Khách gửi</th><th>Gần nhất</th></tr>';
+  document.getElementById('bangTinh').innerHTML=co.sort((a,b)=>b.don.length-a.don.length||b.tien-a.tien).map(p=>{const g=p.don.reduce((a,d)=>d.ngay>a?d.ngay:a,'');
+    return '<tr data-t="'+esc(p.ten)+'"'+(p.ten===CHON?' class="chon"':'')+'><td>'+esc(p.ten)+'</td><td>'+p.don.length+'</td><td>'+tien(p.tien)+'</td><td>'+Object.keys(p.khach).length+'</td><td>'+esc(g.slice(8,10)+'/'+g.slice(5,7))+'</td></tr>'}).join('');
+  document.getElementById('vtMoTa').textContent='· tỉnh chưa có đơn nào giao tới từ 01/10';
+  document.getElementById('vungTrong').innerHTML=trong.map(p=>'<span>'+esc(p.ten)+'</span>').join('')||'<span>Tỉnh nào cũng có đơn</span>';
+  document.getElementById('crTieuDe').textContent='Đơn không ghi tỉnh';
+  const kt=Object.entries(P.khongTheoKhach).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('soChuaRo').textContent='· theo khách gửi';
+  document.getElementById('chuaRo').innerHTML='<p class="m" style="color:var(--muted);margin:0 0 6px">Đơn chỉ ghi "Giao ra nhà", "Hàng nhà", "Gửi nhà xe"… không có tên tỉnh nên chưa ghim được. Nhập đơn có địa chỉ đầy đủ (phường/xã, tỉnh) là tự lên bản đồ.</p>'+
+    kt.slice(0,25).map(([k,n])=>'<div class="dl"><b>'+esc(k)+'</b> <span class="m">· '+n+' đơn</span></div>').join('');
+  if(CHON)veDsDon(CHON);
+}
+function veDsDon(t){
+  const p=DT.T[t];if(!p)return;
+  document.getElementById('dsTieuDe').innerHTML=esc(t)+' <span>· '+p.don.length+' đơn · '+tien(p.tien)+'</span>';
+  document.getElementById('dsDl').innerHTML=p.don.slice().sort((a,b)=>(b.ngay+b.ma)<(a.ngay+a.ma)?-1:1).slice(0,80).map(d=>
+    '<div class="dl"><b>'+esc(boSdt(d.nhan).slice(0,90)||'(không tên người nhận)')+'</b><div class="m">'+esc(d.ngay.slice(8,10)+'/'+d.ngay.slice(5,7))+' · đơn '+esc(d.ma)+' · qua <b>'+esc(d.tenKH)+'</b> · '+tien(d.tong)+'</div></div>').join('')+
+    (p.don.length>80?'<p class="m">… và '+(p.don.length-80)+' đơn nữa</p>':'');
+}
 function ve(){
+  document.getElementById('tô').querySelector('[value="tre"]').hidden=CHE==='don';
+  if(CHE==='don'){if(document.getElementById('tô').value==='tre')document.getElementById('tô').value='dt';veDon();return}
+  veDl();
+}
+function veDl(){
   const cheDo=document.getElementById('tô').value;
   const ds=Object.values(TINHS.T);
   const co=ds.filter(p=>p.dl.length),trong=ds.filter(p=>!p.dl.length);
@@ -201,7 +259,9 @@ function ve(){
     [CO_DT?'Doanh thu từ 01/10':'Doanh thu',CO_DT?tien(tongDt):'—',CO_DT?'đơn hợp lệ, ghép theo tên đại lý':'cần quyền Sổ bán hàng','--moi'],
     ['Đại lý chậm mua',tre,'≥ 60 ngày chưa mua · '+moi+' khách mới đang theo','--tre']
   ].map(k=>'<div class="kpi" style="--c:var('+k[3]+')"><div class="lb">'+k[0]+'</div><div class="v">'+k[1]+'</div><div class="s">'+k[2]+'</div></div>').join('');
-  document.getElementById('thDt').classList.toggle('hide',!CO_DT);
+  document.getElementById('dauBang').innerHTML='<tr><th>Tỉnh</th><th>Đại lý</th>'+(CO_DT?'<th>Doanh thu</th>':'')+'<th>Chậm mua</th><th>KH mới</th></tr>';
+  document.getElementById('vtMoTa').textContent='· tỉnh chưa có đại lý nào';
+  document.getElementById('crTieuDe').textContent='Chưa rõ khu vực';
   LOP.clearLayers();
   const max=cheDo==='sl'?maxSl:maxDt;
   co.concat(ds.filter(p=>!p.dl.length&&p.moi.length)).forEach(p=>{
@@ -230,6 +290,7 @@ function ve(){
     '<div class="dl"><b>'+esc(x.ten)+'</b>'+(x.kv?' <span class="m">· ghi "'+esc(x.kv)+'"</span>':' <span class="m">· chưa ghi khu vực</span>')+'</div>').join('')+(TINHS.chuaRo.length>60?'<p class="m">… và '+(TINHS.chuaRo.length-60)+' đại lý nữa</p>':''):'<p class="m">Đại lý nào cũng đã có khu vực.</p>';
   if(CHON)veDs(CHON);
 }
+
 function veDs(t){
   const p=TINHS.T[t];if(!p)return;
   document.getElementById('dsTieuDe').innerHTML=esc(t)+' <span>· '+p.dl.length+' đại lý'+(CO_DT?' · '+tien(p.dt):'')+'</span>';
@@ -239,10 +300,13 @@ function veDs(t){
   const moi=p.moi.map(k=>'<div class="dl"><b>'+esc(k.ten)+'</b><span class="chip" style="background:#e4edf9;color:#1f5f9e">'+esc(k.tt)+'</span><div class="m">'+esc(k.loai||'')+(k.nguon?' · nguồn '+esc(k.nguon):'')+'</div></div>').join('');
   document.getElementById('dsDl').innerHTML=(dl||'<p class="m">Chưa có đại lý.</p>')+(moi?'<p class="m" style="margin:10px 0 0;font-weight:700">Khách mới đang theo</p>'+moi:'');
 }
-function chon(t){CHON=t;veDs(t);document.querySelectorAll('#bangTinh tr').forEach(r=>r.classList.toggle('chon',r.dataset.t===t));
+function chon(t){CHON=t;if(CHE==='don')veDsDon(t);else veDs(t);document.querySelectorAll('#bangTinh tr').forEach(r=>r.classList.toggle('chon',r.dataset.t===t));
   if(innerWidth<900)document.getElementById('theDs').scrollIntoView({behavior:'smooth',block:'start'})}
 document.getElementById('bangTinh').addEventListener('click',e=>{const r=e.target.closest('tr');if(!r)return;chon(r.dataset.t);BAN.flyTo(TOA[r.dataset.t],7,{duration:.8})});
 document.getElementById('tô').onchange=ve;
+document.getElementById('che').onchange=e=>{CHE=e.target.value;CHON='';document.getElementById('dsTieuDe').textContent='Chọn một tỉnh';
+  document.getElementById('dsDl').innerHTML='<p class="m" style="color:var(--muted)">Bấm vào vòng tròn trên bản đồ hoặc một dòng trong bảng.</p>';try{localStorage.setItem('bd_che',CHE)}catch(x){}ve()};
+try{const c=localStorage.getItem('bd_che');if(c==='dl'||c==='don'){CHE=c;document.getElementById('che').value=c}}catch(e){}
 
 function nap(){
   if(!TK){chan('Chưa đăng nhập','Chị mở app LA, đăng nhập, rồi mở lại Bản đồ đại lý.',true);return}
@@ -250,8 +314,13 @@ function nap(){
   if(!BAN)dungBanDo();
   trangThai('Đang tải…');
   const homNay=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
-  Promise.all([goi('crmDuLieu',[TK]),goi('ktBaoCao',[TK,'2026-10-01',homNay]).catch(()=>null),goi('chotDmNhap',[TK]).catch(()=>null)]).then(([crm,bc,kt])=>{
+  /* Đơn Sổ bán hàng từng tháng từ 10/2026 (ktSo — cùng chức năng màn Sổ bán hàng dùng) để lấy địa chỉ người nhận. */
+  const thang=[];for(let y=2026,m=10;(y+'-'+String(m).padStart(2,'0'))<=homNay.slice(0,7);m===12?(y++,m=1):m++)thang.push(y+'-'+String(m).padStart(2,'0'));
+  const dsDon=Promise.all(thang.map(t=>goi('ktSo',[TK,t]).then(r=>r.don||[]))).then(a=>[].concat(...a)).catch(()=>null);
+  Promise.all([goi('crmDuLieu',[TK]),goi('ktBaoCao',[TK,'2026-10-01',homNay]).catch(()=>null),goi('chotDmNhap',[TK]).catch(()=>null),dsDon]).then(([crm,bc,kt,don])=>{
     document.getElementById('chan').classList.add('hide');
+    if(!don){CHE='dl';document.getElementById('che').value='dl';document.getElementById('che').disabled=true}
+    DON=don||[];DT=gomDon(DON);
     TINHS=gom(crm,bc,kt);ve();trangThai('Cập nhật '+new Date().toTimeString().slice(0,5)+(crm.luc?' · CRM chụp lúc '+String(crm.luc).slice(0,16):''));
     setTimeout(()=>BAN.invalidateSize(),50);
   }).catch(e=>{
