@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bản đồ đại lý · LA</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#005a34">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#f1f6f2; --card:#ffffff; --ink:#1d2a22; --muted:#66756b; --line:#dbe7de; --soft:#e2f1e6;
+  --on:#3f8f22; --tre:#b7791f; --loi:#c4473a; --xanh:#006b3f; --moi:#1f5f9e;
+  --shadow:0 1px 2px rgba(0,60,30,.06),0 4px 14px rgba(0,60,30,.07);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1712; --card:#18231c; --ink:#e8f1ea; --muted:#9bb0a2; --line:#2a3a30; --soft:#1c3226;
+  --on:#8cc63f; --tre:#e0b04f; --loi:#ec7a6c; --xanh:#2fa86a; --moi:#79a6e6; --shadow:none;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1712; --card:#18231c; --ink:#e8f1ea; --muted:#9bb0a2; --line:#2a3a30; --soft:#1c3226;
+  --on:#8cc63f; --tre:#e0b04f; --loi:#ec7a6c; --xanh:#2fa86a; --moi:#79a6e6; --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+.wrap{max-width:1300px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:16px;background:linear-gradient(120deg,#005a34,#007a45 60%,#5aa52c);color:#fff;border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
+.ve{display:inline-block;color:#fff;text-decoration:none;font-weight:600;font-size:13px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:99px;margin-bottom:8px}
+.tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:8px}
+h1{margin:0;font-size:24px}
+h1 small{display:block;font-size:13px;font-weight:400;color:rgba(255,255,255,.82)}
+.hbtn{display:flex;gap:8px;flex-wrap:wrap}
+.hbtn button,.hbtn select{font:inherit;font-weight:600;font-size:13px;border:0;border-radius:99px;padding:6px 14px;background:rgba(255,255,255,.18);color:#fff;cursor:pointer}
+.hbtn select option{color:#1d2a22}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);border-left:5px solid var(--c)}
+.kpi .lb{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi .v{font-size:26px;font-weight:700;color:var(--c);font-variant-numeric:tabular-nums;line-height:1.25}
+.kpi .s{font-size:12px;color:var(--muted)}
+.luoi{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.the{background:var(--card);border-radius:16px;padding:14px;box-shadow:var(--shadow);min-width:0}
+.the h2{font-size:16px;margin:2px 2px 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.the h2 span{font-size:13px;font-weight:400;color:var(--muted)}
+#banDo{height:640px;border-radius:12px;z-index:0}
+.chuThich{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+.chuThich i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);margin-right:5px;vertical-align:-1px}
+.tbl{max-height:360px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0;background:var(--card)}
+td:first-child,th:first-child{text-align:left}
+tr.chon td{background:var(--soft)}
+tbody tr{cursor:pointer}
+.trong{display:flex;flex-wrap:wrap;gap:6px}
+.trong span{font-size:12px;background:var(--soft);color:var(--xanh);padding:2px 9px;border-radius:99px}
+.ds{font-size:13px}
+.ds .dl{padding:8px 2px;border-bottom:1px solid var(--line)}
+.ds .dl b{font-size:14px}
+.ds .m{color:var(--muted);font-size:12px}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;margin-left:4px}
+.huongdan{font-size:13px;color:var(--muted);background:var(--soft);border-left:4px solid var(--xanh);padding:10px 14px;border-radius:8px;margin-top:16px}
+#chan{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:2000}
+#chan .c{max-width:380px;background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+#chan a{display:inline-block;margin-top:10px;background:#006b3f;color:#fff;text-decoration:none;font-weight:600;padding:8px 16px;border-radius:10px}
+.leaflet-popup-content{font:13px/1.45 "Segoe UI",system-ui,sans-serif;margin:10px 12px}
+.nhanTinh{background:transparent;border:0;box-shadow:none;font-weight:700;font-size:11px;color:#1d2a22;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.hide{display:none!important}
+@media (max-width:900px){.luoi{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}#banDo{height:480px}}
+@media (max-width:600px){h1{font-size:20px}.kpi .v{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><a class="ve" href="./" id="veApp">‹ App LA</a><span class="tt" id="trangThai">Đang tải…</span>
+    <h1>Bản đồ đại lý &amp; khách<small>Đại lý theo tỉnh/thành (34 tỉnh sau sáp nhập 2025) · số lấy từ CRM + Sổ bán hàng của app LA</small></h1></div>
+    <div class="hbtn">
+      <select id="tô" aria-label="Tô màu theo"><option value="dt">Tô theo doanh thu</option><option value="sl">Tô theo số đại lý</option><option value="tre">Tô theo đại lý chậm mua</option></select>
+      <button id="btnMoi">↻ Làm mới</button><button id="btnTheme" title="Đổi nền sáng/tối">🌓</button>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="luoi">
+    <section class="the">
+      <h2>Bản đồ <span id="moTa">· bấm vào vòng tròn để xem đại lý trong tỉnh</span></h2>
+      <div id="banDo"></div>
+      <div class="chuThich" id="chuThich"></div>
+    </section>
+    <div style="display:grid;gap:16px;min-width:0">
+      <section class="the">
+        <h2>Theo tỉnh <span>· bấm dòng để bay tới</span></h2>
+        <div class="tbl"><table><thead><tr><th>Tỉnh</th><th>Đại lý</th><th id="thDt">Doanh thu</th><th>Chậm mua</th><th>KH mới</th></tr></thead><tbody id="bangTinh"></tbody></table></div>
+      </section>
+      <section class="the" id="theDs">
+        <h2 id="dsTieuDe">Chọn một tỉnh</h2>
+        <div class="ds" id="dsDl"><p class="m" style="color:var(--muted)">Bấm vào vòng tròn trên bản đồ hoặc một dòng trong bảng.</p></div>
+      </section>
+      <section class="the">
+        <h2>Vùng trống <span>· tỉnh chưa có đại lý nào</span></h2>
+        <div class="trong" id="vungTrong"></div>
+      </section>
+      <section class="the">
+        <h2>Chưa rõ khu vực <span id="soChuaRo"></span></h2>
+        <div class="ds" id="chuaRo"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="huongdan">
+    <b>Số liệu lấy từ đâu?</b> Danh sách đại lý và cột "Khu vực" lấy từ CRM khách cũ (bản chụp sổ TỔNG HỢP BÁN HÀNG mỗi tối). Doanh thu là đơn hợp lệ trong Sổ bán hàng app LA từ 01/10/2026, ghép theo tên đại lý. Khách mới lấy từ CRM khách mới (tỉnh nhân viên chọn).
+    Đại lý ghi khu vực theo tên tỉnh cũ hay tên thành phố (VD "Bình Dương", "Nha Trang") được tự quy về tỉnh mới. Không nhận ra được thì nằm ở mục "Chưa rõ khu vực" — kế toán bổ sung khu vực là đại lý tự lên bản đồ.
+  </div>
+</div>
+
+<div id="chan" class="hide"><div class="c"><h2 id="chanTieuDe" style="margin:0 0 6px"></h2><p id="chanNoiDung" style="margin:0;color:var(--muted)"></p><a id="chanNut" href="./">Mở app LA</a></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const API='https://oubxfxeosmozsttsobsw.supabase.co/functions/v1/la';
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91YnhmeGVvc21venN0dHNvYnN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjg2MjEsImV4cCI6MjEwNjg0NDYyMX0.Vq0h8A8J3OO3KwwzFf_j69JRCQoSZSCvumZRvH5Mhxg';
+const THU=/[?&]thu=1/.test(location.search);
+let TK=null;try{TK=localStorage.getItem((THU?'thu_':'')+'kd_tk')}catch(e){}
+if(THU){document.getElementById('veApp').href='thu.html';document.getElementById('chanNut').href='thu.html'}
+function goi(f,a){return fetch(API,{method:'POST',credentials:'omit',body:JSON.stringify({f,a}),headers:{'Content-Type':'application/json',apikey:ANON,Authorization:'Bearer '+ANON}})
+  .then(r=>r.json(),()=>{throw new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.')})
+  .then(x=>{if(x&&x.loi!=null) throw new Error(x.loi);return x?x.kq:null})}
+
+/* 34 tỉnh/thành sau sáp nhập 2025 (cùng tên với danh sách TINH trong app) — toạ độ trung tâm gần đúng để đặt vòng tròn. */
+const TOA={'TP. Hồ Chí Minh':[10.78,106.70],'Hà Nội':[21.03,105.85],'Hải Phòng':[20.86,106.55],'Đà Nẵng':[15.85,108.10],'Huế':[16.46,107.59],'Cần Thơ':[9.85,105.80],
+  'An Giang':[10.25,105.20],'Bắc Ninh':[21.25,106.15],'Cà Mau':[9.20,105.40],'Cao Bằng':[22.67,106.26],'Đắk Lắk':[12.85,108.65],'Điện Biên':[21.39,103.02],
+  'Đồng Nai':[11.25,106.95],'Đồng Tháp':[10.40,106.00],'Gia Lai':[13.95,108.55],'Hà Tĩnh':[18.34,105.91],'Hưng Yên':[20.55,106.20],'Khánh Hòa':[12.10,109.10],
+  'Lai Châu':[22.40,103.46],'Lâm Đồng':[11.60,107.95],'Lạng Sơn':[21.85,106.76],'Lào Cai':[22.10,104.30],'Nghệ An':[19.10,104.95],'Ninh Bình':[20.30,106.05],
+  'Phú Thọ':[21.10,105.30],'Quảng Ngãi':[14.85,108.40],'Quảng Ninh':[21.05,107.30],'Quảng Trị':[17.10,106.70],'Sơn La':[21.33,103.91],'Tây Ninh':[11.00,106.25],
+  'Thái Nguyên':[21.75,105.85],'Thanh Hóa':[19.95,105.50],'Tuyên Quang':[22.30,105.10],'Vĩnh Long':[10.05,106.25]};
+const TINH=Object.keys(TOA);
+/* Tên cũ / thành phố / huyện hay gặp → tỉnh mới. So khớp trên chuỗi đã bỏ dấu, chữ thường. */
+const BI_DANH={'TP. Hồ Chí Minh':['ho chi minh','hcm','tphcm','tp hcm','sai gon','saigon','sg','thu duc','binh duong','thu dau mot','di an','thuan an','ben cat','tan uyen','ba ria','vung tau','brvt','phu my','cu chi','hoc mon','binh chanh','nha be','can gio','go vap','binh thanh','tan binh','tan phu','phu nhuan','quan '],
+  'Hà Nội':['ha noi','hn','hanoi'],'Hải Phòng':['hai phong','hai duong','hp'],'Đà Nẵng':['da nang','quang nam','hoi an','tam ky','dien ban'],'Huế':['hue','thua thien'],
+  'Cần Thơ':['can tho','soc trang','hau giang','vi thanh','nga bay'],'An Giang':['an giang','kien giang','rach gia','long xuyen','chau doc','phu quoc','ha tien'],
+  'Bắc Ninh':['bac ninh','bac giang','tu son'],'Cà Mau':['ca mau','bac lieu'],'Cao Bằng':['cao bang'],'Đắk Lắk':['dak lak','daklak','dac lac','buon ma thuot','bmt','phu yen','tuy hoa','song cau'],
+  'Điện Biên':['dien bien'],'Đồng Nai':['dong nai','bien hoa','long khanh','long thanh','nhon trach','trang bom','binh phuoc','dong xoai'],'Đồng Tháp':['dong thap','tien giang','my tho','cao lanh','sa dec','go cong','cai be'],
+  'Gia Lai':['gia lai','pleiku','binh dinh','quy nhon','an nhon'],'Hà Tĩnh':['ha tinh'],'Hưng Yên':['hung yen','thai binh'],
+  'Khánh Hòa':['khanh hoa','nha trang','cam ranh','ninh hoa','dien khanh','van ninh','cam lam','khanh vinh','khanh son','ninh thuan','phan rang','thap cham'],
+  'Lai Châu':['lai chau'],'Lâm Đồng':['lam dong','da lat','dalat','bao loc','dak nong','gia nghia','binh thuan','phan thiet','la gi','mui ne'],'Lạng Sơn':['lang son'],
+  'Lào Cai':['lao cai','yen bai','sa pa','sapa'],'Nghệ An':['nghe an','vinh city','tp vinh','cua lo'],'Ninh Bình':['ninh binh','nam dinh','ha nam','phu ly'],
+  'Phú Thọ':['phu tho','viet tri','vinh phuc','vinh yen','hoa binh'],'Quảng Ngãi':['quang ngai','kon tum'],'Quảng Ninh':['quang ninh','ha long','cam pha','mong cai','uong bi'],
+  'Quảng Trị':['quang tri','quang binh','dong hoi'],'Sơn La':['son la'],'Tây Ninh':['tay ninh','long an','tan an'],'Thái Nguyên':['thai nguyen','bac kan','bac can'],
+  'Thanh Hóa':['thanh hoa','sam son'],'Tuyên Quang':['tuyen quang','ha giang'],'Vĩnh Long':['vinh long','ben tre','tra vinh']};
+function boDau(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+const BD=[];TINH.forEach(t=>{BD.push([boDau(t),t]);(BI_DANH[t]||[]).forEach(b=>BD.push([b,t]))});
+BD.sort((a,b)=>b[0].length-a[0].length);
+function raTinh(kv){const s=' '+boDau(kv)+' ';if(s.trim()==='')return '';for(const [b,t] of BD){if(b.endsWith(' ')?s.includes(' '+b):s.includes(' '+b+' '))return t}return ''}
+function tenGon(s){return String(s||'').normalize('NFC').toLowerCase().replace(/\s+/g,' ').trim()}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function tien(n){n=Math.round(n||0);return Math.abs(n)>=1e9?(Math.round(n/1e8)/10+'').replace('.',',')+' tỷ':Math.abs(n)>=1e6?(Math.round(n/1e5)/10+'').replace('.',',')+' tr':n.toLocaleString('vi-VN')+'đ'}
+function trangThai(t){document.getElementById('trangThai').textContent=t}
+function chan(a,b,nut){document.getElementById('chan').classList.remove('hide');chanTieuDe.textContent=a;chanNoiDung.textContent=b;chanNut.classList.toggle('hide',!nut)}
+
+let BAN=null,LOP=null,TINHS={},CHON='',CO_DT=false;
+function dungBanDo(){
+  BAN=L.map('banDo',{zoomControl:true,attributionControl:true}).setView([16.2,106.5],5);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:12,minZoom:4,attribution:'© OpenStreetMap · © CARTO'}).addTo(BAN);
+  LOP=L.layerGroup().addTo(BAN);
+}
+function gom(crm,bc){
+  const dt={};(bc&&bc.theoKhach||[]).forEach(x=>{const k=tenGon(x.ten);dt[k]=dt[k]||{tien:0,don:0};dt[k].tien+=x.tien||0;dt[k].don+=x.don||0});
+  CO_DT=!!(bc&&bc.theoKhach);
+  const T={};TINH.forEach(t=>T[t]={ten:t,dl:[],dt:0,tre:0,moi:[]});
+  const chuaRo=[];
+  (crm.daiLy||[]).forEach(d=>{
+    const x={ten:d[0],muaCuoi:d[1],gd:d[2],no:d[3],ngayChua:d[4],tt:d[6],hang:(d[21]&&d[21].hang)||'',kv:d[10],sdt:d[9]};
+    const g=dt[tenGon(d[0])];x.dt=g?g.tien:0;x.don=g?g.don:0;
+    x.cham=x.ngayChua>=60;
+    const t=raTinh(d[10]);
+    if(!t){chuaRo.push(x);return}
+    T[t].dl.push(x);T[t].dt+=x.dt;if(x.cham)T[t].tre++;
+  });
+  (crm.khachMoi||[]).forEach(k=>{if(k.tt==='Từ chối')return;const t=raTinh(k.tinh);if(t)T[t].moi.push(k)});
+  return {T:T,chuaRo:chuaRo,tongDl:(crm.daiLy||[]).length};
+}
+function mau(p,cheDo,max){
+  if(cheDo==='tre'){const r=p.dl.length?p.tre/p.dl.length:0;return r>=.5?'#c4473a':r>=.25?'#d99a1e':'#3f8f22'}
+  const v=cheDo==='sl'?p.dl.length:p.dt;const r=max?v/max:0;
+  return r>.5?'#004d2c':r>.2?'#007a45':r>.05?'#4a9a2a':'#8cc63f';
+}
+function ve(){
+  const cheDo=document.getElementById('tô').value;
+  const ds=Object.values(TINHS.T);
+  const co=ds.filter(p=>p.dl.length),trong=ds.filter(p=>!p.dl.length);
+  const maxDt=Math.max(1,...ds.map(p=>p.dt)),maxSl=Math.max(1,...ds.map(p=>p.dl.length));
+  const tongDt=ds.reduce((a,p)=>a+p.dt,0),tre=ds.reduce((a,p)=>a+p.tre,0),moi=ds.reduce((a,p)=>a+p.moi.length,0);
+  document.getElementById('kpis').innerHTML=[
+    ['Đại lý có khu vực',(TINHS.tongDl-TINHS.chuaRo.length)+' / '+TINHS.tongDl,TINHS.chuaRo.length+' đại lý chưa rõ khu vực','--xanh'],
+    ['Tỉnh có đại lý',co.length+' / 34',trong.length+' tỉnh còn trống','--on'],
+    [CO_DT?'Doanh thu từ 01/10':'Doanh thu',CO_DT?tien(tongDt):'—',CO_DT?'đơn hợp lệ, ghép theo tên đại lý':'cần quyền Sổ bán hàng','--moi'],
+    ['Đại lý chậm mua',tre,'≥ 60 ngày chưa mua · '+moi+' khách mới đang theo','--tre']
+  ].map(k=>'<div class="kpi" style="--c:var('+k[3]+')"><div class="lb">'+k[0]+'</div><div class="v">'+k[1]+'</div><div class="s">'+k[2]+'</div></div>').join('');
+  document.getElementById('thDt').classList.toggle('hide',!CO_DT);
+  LOP.clearLayers();
+  const max=cheDo==='sl'?maxSl:maxDt;
+  co.concat(ds.filter(p=>!p.dl.length&&p.moi.length)).forEach(p=>{
+    const c=TOA[p.ten];
+    if(p.dl.length){
+      const r=8+Math.sqrt(p.dl.length/maxSl)*22;
+      const m=L.circleMarker(c,{radius:r,color:'#fff',weight:2,fillColor:mau(p,cheDo,max),fillOpacity:.85}).addTo(LOP);
+      m.bindTooltip(p.ten+' · '+p.dl.length+' đại lý'+(CO_DT?' · '+tien(p.dt):''),{direction:'top'});
+      m.on('click',()=>chon(p.ten));
+      L.marker(c,{icon:L.divIcon({className:'nhanTinh',html:p.dl.length,iconSize:[24,14],iconAnchor:[12,7]}),interactive:false}).addTo(LOP);
+    }
+    if(p.moi.length){
+      const m2=L.circleMarker([c[0]-.35,c[1]+.45],{radius:5+Math.min(8,p.moi.length),color:'#fff',weight:1.5,fillColor:'#1f5f9e',fillOpacity:.9}).addTo(LOP);
+      m2.bindTooltip(p.ten+' · '+p.moi.length+' khách mới đang theo');m2.on('click',()=>chon(p.ten));
+    }
+  });
+  const ct={dt:'<span><i style="--c:#004d2c"></i>doanh thu cao</span><span><i style="--c:#4a9a2a"></i>vừa</span><span><i style="--c:#8cc63f"></i>thấp / chưa có đơn mới</span>',
+    sl:'<span><i style="--c:#004d2c"></i>nhiều đại lý</span><span><i style="--c:#8cc63f"></i>ít đại lý</span>',
+    tre:'<span><i style="--c:#c4473a"></i>≥ 50% đại lý chậm mua</span><span><i style="--c:#d99a1e"></i>25–50%</span><span><i style="--c:#3f8f22"></i>đang mua đều</span>'}[cheDo];
+  document.getElementById('chuThich').innerHTML=ct+'<span><i style="--c:#1f5f9e"></i>khách mới đang theo (CRM)</span><span>· vòng to = nhiều đại lý</span>';
+  document.getElementById('bangTinh').innerHTML=ds.filter(p=>p.dl.length||p.moi.length).sort((a,b)=>(b.dt-a.dt)||(b.dl.length-a.dl.length)).map(p=>
+    '<tr data-t="'+esc(p.ten)+'"'+(p.ten===CHON?' class="chon"':'')+'><td>'+esc(p.ten)+'</td><td>'+p.dl.length+'</td>'+(CO_DT?'<td>'+tien(p.dt)+'</td>':'')+'<td>'+(p.tre||'')+'</td><td>'+(p.moi.length||'')+'</td></tr>').join('');
+  document.getElementById('vungTrong').innerHTML=trong.map(p=>'<span>'+esc(p.ten)+(p.moi.length?' · '+p.moi.length+' KH mới':'')+'</span>').join('')||'<span>Tỉnh nào cũng có đại lý</span>';
+  document.getElementById('soChuaRo').textContent='· '+TINHS.chuaRo.length+' đại lý';
+  document.getElementById('chuaRo').innerHTML=TINHS.chuaRo.length?TINHS.chuaRo.slice().sort((a,b)=>b.dt-a.dt||a.ngayChua-b.ngayChua).slice(0,60).map(x=>
+    '<div class="dl"><b>'+esc(x.ten)+'</b>'+(x.kv?' <span class="m">· ghi "'+esc(x.kv)+'"</span>':' <span class="m">· chưa ghi khu vực</span>')+'</div>').join('')+(TINHS.chuaRo.length>60?'<p class="m">… và '+(TINHS.chuaRo.length-60)+' đại lý nữa</p>':''):'<p class="m">Đại lý nào cũng đã có khu vực.</p>';
+  if(CHON)veDs(CHON);
+}
+function veDs(t){
+  const p=TINHS.T[t];if(!p)return;
+  document.getElementById('dsTieuDe').innerHTML=esc(t)+' <span>· '+p.dl.length+' đại lý'+(CO_DT?' · '+tien(p.dt):'')+'</span>';
+  const dl=p.dl.slice().sort((a,b)=>b.dt-a.dt||a.ngayChua-b.ngayChua).map(x=>
+    '<div class="dl"><b>'+esc(x.ten)+'</b>'+(x.hang?'<span class="chip" style="background:var(--soft);color:var(--xanh)">Hạng '+esc(x.hang)+'</span>':'')+(x.cham?'<span class="chip" style="background:#fdf3dc;color:#8a5f00">'+x.ngayChua+' ngày chưa mua</span>':'')+
+    '<div class="m">'+(CO_DT?(x.dt?tien(x.dt)+' từ 01/10 · '+x.don+' đơn':'chưa có đơn từ 01/10')+' · ':'')+(x.muaCuoi?'mua gần nhất '+esc(String(x.muaCuoi).slice(0,10)):'')+(x.no?' · còn nợ '+tien(x.no):'')+'</div></div>').join('');
+  const moi=p.moi.map(k=>'<div class="dl"><b>'+esc(k.ten)+'</b><span class="chip" style="background:#e4edf9;color:#1f5f9e">'+esc(k.tt)+'</span><div class="m">'+esc(k.loai||'')+(k.nguon?' · nguồn '+esc(k.nguon):'')+'</div></div>').join('');
+  document.getElementById('dsDl').innerHTML=(dl||'<p class="m">Chưa có đại lý.</p>')+(moi?'<p class="m" style="margin:10px 0 0;font-weight:700">Khách mới đang theo</p>'+moi:'');
+}
+function chon(t){CHON=t;veDs(t);document.querySelectorAll('#bangTinh tr').forEach(r=>r.classList.toggle('chon',r.dataset.t===t));
+  if(innerWidth<900)document.getElementById('theDs').scrollIntoView({behavior:'smooth',block:'start'})}
+document.getElementById('bangTinh').addEventListener('click',e=>{const r=e.target.closest('tr');if(!r)return;chon(r.dataset.t);BAN.flyTo(TOA[r.dataset.t],7,{duration:.8})});
+document.getElementById('tô').onchange=ve;
+
+function nap(){
+  if(!TK){chan('Chưa đăng nhập','Chị mở app LA, đăng nhập, rồi mở lại Bản đồ đại lý.',true);return}
+  if(!window.L){chan('Chưa tải được bản đồ','Kiểm tra mạng rồi tải lại trang.',false);return}
+  if(!BAN)dungBanDo();
+  trangThai('Đang tải…');
+  const homNay=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
+  Promise.all([goi('crmDuLieu',[TK]),goi('ktBaoCao',[TK,'2026-10-01',homNay]).catch(()=>null)]).then(([crm,bc])=>{
+    document.getElementById('chan').classList.add('hide');
+    TINHS=gom(crm,bc);ve();trangThai('Cập nhật '+new Date().toTimeString().slice(0,5)+(crm.luc?' · CRM chụp lúc '+String(crm.luc).slice(0,16):''));
+    setTimeout(()=>BAN.invalidateSize(),50);
+  }).catch(e=>{
+    if(/HET_PHIEN/.test(e.message))chan('Phiên đăng nhập đã hết','Chị mở app LA đăng nhập lại rồi mở lại Bản đồ đại lý.',true);
+    else if(/quyền xem CRM/.test(e.message))chan('Không có quyền','Bản đồ dùng số của CRM khách hàng — cần quyền xem CRM.',true);
+    else chan('Chưa mở được',e.message,false);
+  });
+}
+document.getElementById('btnMoi').onclick=nap;
+document.getElementById('btnTheme').onclick=()=>{const r=document.documentElement,toi=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=toi?'light':'dark';try{localStorage.setItem('bd_theme',r.dataset.theme)}catch(e){}};
+try{const t=localStorage.getItem('bd_theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+nap();
+</script>
+</body>
+</html>
