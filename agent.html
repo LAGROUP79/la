@@ -215,11 +215,17 @@ function ve(){
     :'<tr><td colspan="4" style="color:var(--muted)">Chưa có lần báo nào. Sau 21:00–22:00 hôm nay các việc chạy trong app sẽ tự ghi vào đây.</td></tr>';
 }
 
+/* 09/11/2026: chị tắt tác vụ Nhắc 21 ngày và đã có Bản tin sáng 7:45, nhưng máy chủ chưa deploy AG_DS mới → sửa tạm ở trang.
+   Máy chủ đã có danh mục mới thì đoạn này không còn tác dụng, xoá được. */
+function suaDanhMuc(d){
+  d.agent=d.agent.filter(a=>a.ma!=='nhac-21-ngay');
+  d.agent.forEach(a=>{if(a.ma==='ban-tin-sang'&&a.kieu==='kh')Object.assign(a,{kieu:'tu',gio:30,lich:'7:45 hằng ngày · máy chị'})});
+}
 function chan(tieuDe,noiDung,nut){document.getElementById('chan').classList.remove('hide');chanTieuDe.textContent=tieuDe;chanNoiDung.textContent=noiDung;chanNut.classList.toggle('hide',!nut)}
 function nap(){
   if(!TK){chan('Chưa đăng nhập','Chị mở app LA, đăng nhập, rồi bấm ô "Phòng điều hành Agent" ở trang chủ.',true);return}
   document.getElementById('trangThai').textContent='Đang tải…';
-  goi('agDuLieu',[TK]).then(r=>{D=r;document.getElementById('chan').classList.add('hide');document.getElementById('trangThai').textContent='Cập nhật '+r.luc.slice(11,16);ve()})
+  goi('agDuLieu',[TK]).then(r=>{D=r;suaDanhMuc(D);document.getElementById('chan').classList.add('hide');document.getElementById('trangThai').textContent='Cập nhật '+r.luc.slice(11,16);ve()})
   .catch(e=>{
     if(/HET_PHIEN/.test(e.message)) chan('Phiên đăng nhập đã hết','Chị mở app LA đăng nhập lại rồi bấm vào ô "Phòng điều hành Agent".',true);
     else if(/chỉ dành cho Admin/.test(e.message)) chan('Không có quyền','Mục này chỉ dành cho Admin.',true);
