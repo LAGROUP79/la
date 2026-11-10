@@ -262,6 +262,17 @@ function suaDanhMuc(d){
    {ma:'cong-no-tuan',phong:'KT',ai:AI1,ten:'Công nợ + dòng tiền tuần',viec:'Bảng công nợ đại lý, tin nhắc nợ soạn sẵn (không tự gửi), dòng tiền 7 ngày',lich:'8:30 thứ Hai · máy chị',kieu:'tu',gio:24*8},
    {ma:'bao-cao-thang',phong:'KT',ai:AI3,ten:'Báo cáo tháng',viec:'Doanh thu, lãi gộp, chi phí, lương, công nợ, tồn kho, so với tháng trước',lich:'21:30 ngày cuối tháng · máy chị',kieu:'tu',gio:24*32}]
     .forEach(a=>{if(!coMa[a.ma])d.agent.push(Object.assign(a,tim(a.ma)))});
+  /* 10/11/2026: Phòng Kỹ thuật SX → Phòng Nhân sự, Phòng Thiết kế → Phòng Khách hàng (máy chủ cũ còn SX/TK thì đổi ở trang) */
+  d.phong=d.phong.map(p=>p.ma==='SX'?{ma:'NS',ten:'Phòng Nhân sự',mau:'#8A5CB8'}:p.ma==='TK'?{ma:'KH',ten:'Phòng Khách hàng',mau:'#1F5F9E'}:p);
+  d.agent=d.agent.filter(a=>a.ma!=='lo-han-dung'&&a.ma!=='mau-ma');
+  d.agent.forEach(a=>{if(a.ma==='cham-dai-ly-c')a.phong='KH'});
+  const coMa2={};d.agent.forEach(a=>coMa2[a.ma]=1);
+  [{ma:'chat-luong-nhan-su',phong:'NS',ten:'Chất lượng nhân sự',viec:'Chấm công, đi trễ, nghỉ phép, KPI từng người; ai đang tụt, ai làm tốt để khen',lich:'Chưa làm',kieu:'kh'},
+   {ma:'chat-luong-cong-viec',phong:'NS',ten:'Chất lượng công việc',viec:'Việc giao đúng hạn / quá hạn, báo cáo cuối ngày có đủ không, việc nào hay bị trễ',lich:'Chưa làm',kieu:'kh'},
+   {ma:'van-hoa-nhan-su',phong:'NS',ten:'Văn hóa nhân sự',viec:'Nội quy, 6 giá trị cốt lõi, tác phong, thi đua; nhắc khen thưởng và việc cần chấn chỉnh',lich:'Chưa làm',kieu:'kh'},
+   {ma:'crm-khach-hang',phong:'KH',ten:'Quản lý CRM khách hàng',viec:'Khách mới chưa được chăm, khách lâu không mua, hẹn gọi lại đến hạn → nhắc người phụ trách',lich:'Chưa làm',kieu:'kh'},
+   {ma:'phan-tich-khach-hang',phong:'KH',ten:'Báo cáo phân tích khách hàng',viec:'Khách theo hạng, nguồn, tỉnh, tần suất mua; khách mới / mất khách; gợi ý chăm sóc',lich:'Chưa làm',kieu:'kh'}]
+    .forEach(a=>{if(!coMa2[a.ma])d.agent.push(Object.assign(a,{cuoi:null,loiCuoi:null,soLan:0}))});
   const AI={'cong-no-tuan':AI1,'bao-cao-kho-21h':AI2,'thong-bao-21h':AI2,'bao-cao-thang':AI3,'sao-luu-22h':AI3,'crm-22h':AI3};
   d.agent.forEach(a=>{if(!a.ai&&AI[a.ma])a.ai=AI[a.ma]});
   /* xếp phòng Kế toán theo thứ tự AI 1 → 2 → 3 */
@@ -349,9 +360,9 @@ if(!window.THREE||!THREE.OrbitControls){doiXem('ds');document.querySelector('.do
 doiXem(XEM);
 
 const MAU_TT={on:0x3f8f22,tre:0xd99a1e,canh:0xd99a1e,xem:0xd99a1e,loi:0xd2483a,chua:0x9aa59d,lenh:0x2f6fb5,kh:0xc9d2cc};
-/* Bố cục giống ảnh KLS: hàng sau CEO · Thiết kế · Marketing; hàng trước Kỹ thuật SX · Kinh doanh · Kế toán */
-const VI_TRI={CEO:[-9,-4],TK:[0,-4],MKT:[9,-4],SX:[-9,4],KD:[0,4],KT:[9,4]};
-const SO_PHONG={KT:1,KD:2,SX:3,MKT:4,TK:5,CEO:6};
+/* Bố cục: hàng sau CEO · Khách hàng · Marketing; hàng trước Nhân sự · Kinh doanh · Kế toán (SX/TK cũ giữ chỗ để máy chủ bản cũ vẫn vẽ được) */
+const VI_TRI={CEO:[-9,-4],KH:[0,-4],MKT:[9,-4],NS:[-9,4],KD:[0,4],KT:[9,4],TK:[0,-4],SX:[-9,4]};
+const SO_PHONG={KT:1,KD:2,NS:3,MKT:4,KH:5,CEO:6,SX:3,TK:5};
 const PW=8.4,PD=7.2;
 
 function chuNhan(chu,mau,coDot){
