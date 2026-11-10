@@ -203,7 +203,7 @@ function ve(){
       const goiY=a.st==='chua'?'<p>Chưa nhận được lần báo nào. '+(/n8n/.test(a.lich)?'Cần thêm bước gọi về app trong luồng n8n.':'Sẽ hiện sau lượt chạy kế tiếp.')+'</p>':a.st==='tre'?'<p>Quá '+a.gio+' giờ chưa báo về — kiểm tra máy có mở không, hoặc tác vụ có bị tắt không.</p>':'';
       return '<div class="ag'+(an?' an':'')+'" data-ma="'+esc(a.ma)+'" style="--c:'+cssVar(t.c)+';--cs:'+cssVar(t.cs)+'">'+
         '<span class="cham'+(a.st==='on'?' nhay':'')+(a.st==='kh'?' rong':'')+'"></span>'+
-        '<div class="than"><div class="ten">'+esc(a.ten)+'</div><div class="lich">'+esc(a.lich)+'</div><span class="nhan">'+t.nhan+(a.st==='on'||a.st==='tre'?' · '+esc(truoc(a.cuoi.luc)):'')+'</span>'+
+        '<div class="than">'+(a.ai?'<div class="lich" style="font-weight:700;color:var(--ink)">🤖 '+esc(a.ai)+'</div>':'')+'<div class="ten">'+esc(a.ten)+'</div><div class="lich">'+esc(a.lich)+'</div><span class="nhan">'+t.nhan+(a.st==='on'||a.st==='tre'?' · '+esc(truoc(a.cuoi.luc)):'')+'</span>'+
         '<div class="ct"><p>'+esc(a.viec)+'</p>'+cuoi+loi+goiY+(a.soLan?'<p>Đã báo về '+a.soLan+' lần.</p>':'')+'</div></div></div>';
     }).join('');
     return '<div class="phong" style="--pm:'+p.mau+'"><div class="dau"><b>'+esc(p.ten)+'</b><i>'+chay+'/'+ag.length+' đang có</i></div>'+(than||'<div class="trong">Chưa có agent.</div>')+'</div>';
@@ -217,9 +217,21 @@ function ve(){
 
 /* 09/11/2026: chị tắt tác vụ Nhắc 21 ngày và đã có Bản tin sáng 7:45, nhưng máy chủ chưa deploy AG_DS mới → sửa tạm ở trang.
    Máy chủ đã có danh mục mới thì đoạn này không còn tác dụng, xoá được. */
+const AI1='Kế toán AI 1 · Thu tiền & Công nợ',AI2='Kế toán AI 2 · Kho & Đối soát',AI3='Kế toán AI 3 · Tổng hợp & Báo cáo';
 function suaDanhMuc(d){
-  d.agent=d.agent.filter(a=>a.ma!=='nhac-21-ngay');
+  d.agent=d.agent.filter(a=>a.ma!=='nhac-21-ngay'&&a.ma!=='doi-soat-no');
   d.agent.forEach(a=>{if(a.ma==='ban-tin-sang'&&a.kieu==='kh')Object.assign(a,{kieu:'tu',gio:30,lich:'7:45 hằng ngày · máy chị'})});
+  /* 3 kế toán AI (chị Lê 10/11/2026) — máy chủ chưa có thì thêm ở trang */
+  const coMa={};d.agent.forEach(a=>coMa[a.ma]=a);
+  const cuoi=d.gan||[],tim=ma=>{let c=null,l=null,n=0;cuoi.forEach(x=>{if(x.ma===ma){n++;if(!c)c=x;if(!l&&x.tt==='loi')l=x}});return{cuoi:c,loiCuoi:l,soLan:n}};
+  [{ma:'cong-no-tuan',phong:'KT',ai:AI1,ten:'Công nợ + dòng tiền tuần',viec:'Bảng công nợ đại lý, tin nhắc nợ soạn sẵn (không tự gửi), dòng tiền 7 ngày',lich:'8:30 thứ Hai · máy chị',kieu:'tu',gio:24*8},
+   {ma:'bao-cao-thang',phong:'KT',ai:AI3,ten:'Báo cáo tháng',viec:'Doanh thu, lãi gộp, chi phí, lương, công nợ, tồn kho, so với tháng trước',lich:'21:30 ngày cuối tháng · máy chị',kieu:'tu',gio:24*32}]
+    .forEach(a=>{if(!coMa[a.ma])d.agent.push(Object.assign(a,tim(a.ma)))});
+  const AI={'cong-no-tuan':AI1,'bao-cao-kho-21h':AI2,'thong-bao-21h':AI2,'bao-cao-thang':AI3,'sao-luu-22h':AI3,'crm-22h':AI3};
+  d.agent.forEach(a=>{if(!a.ai&&AI[a.ma])a.ai=AI[a.ma]});
+  /* xếp phòng Kế toán theo thứ tự AI 1 → 2 → 3 */
+  const kt=d.agent.filter(a=>a.phong==='KT').sort((x,y)=>String(x.ai||'~').localeCompare(String(y.ai||'~')));
+  d.agent=d.agent.filter(a=>a.phong!=='KT').concat(kt);
 }
 function chan(tieuDe,noiDung,nut){document.getElementById('chan').classList.remove('hide');chanTieuDe.textContent=tieuDe;chanNoiDung.textContent=noiDung;chanNut.classList.toggle('hide',!nut)}
 function nap(){
@@ -381,7 +393,7 @@ function dung(){
   function moThe(ma){
     const a=D.agent.find(x=>x.ma===ma);if(!a)return;const t=TT[a.st]||TT.chua;const p=D.phong.find(x=>x.ma===a.phong)||{};
     dongNguoi.forEach(n=>n.chon=n.ma===ma);
-    the.innerHTML='<button class="x" aria-label="Đóng">×</button><h3>'+esc(a.ten)+'</h3><div style="color:#66756b">'+esc(p.ten||'')+' · '+esc(a.lich)+'</div>'+
+    the.innerHTML='<button class="x" aria-label="Đóng">×</button><h3>'+esc(a.ten)+'</h3><div style="color:#66756b">'+(a.ai?'🤖 '+esc(a.ai)+'<br>':'')+esc(p.ten||'')+' · '+esc(a.lich)+'</div>'+
       '<span class="nhan" style="--c:'+cssVar(t.c)+';--cs:'+cssVar(t.cs)+'">'+t.nhan+(a.cuoi&&(a.st==='on'||a.st==='tre')?' · '+esc(truoc(a.cuoi.luc)):'')+'</span>'+
       '<p>'+esc(a.viec)+'</p>'+
       (a.cuoi?'<p><b>Báo về gần nhất:</b> '+esc(a.cuoi.luc)+(a.cuoi.ghiChu?' — '+esc(a.cuoi.ghiChu):'')+'</p>':'')+
