@@ -80,6 +80,30 @@ td.gio{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
 #chan{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:50}
 #chan .card{max-width:380px;background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
 #chan a{display:inline-block;margin-top:10px;background:#006b3f;color:#fff;text-decoration:none;font-weight:600;padding:8px 16px;border-radius:10px}
+.gs{background:var(--card);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:16px;border:2px solid color-mix(in srgb,#006b3f 25%,transparent)}
+.gs-dau{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.gs-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#006b3f,#5aa52c);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.gs h2{margin:0;font-size:17px}
+.gs-mo{font-size:13px;color:var(--muted)}
+.gs-dem{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--loi-soft);color:var(--loi);white-space:nowrap}
+.gs-dem.ok{background:var(--on-soft);color:var(--on)}
+.dx{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.2fr) auto;gap:12px;align-items:start;padding:12px 2px;border-top:1px solid var(--line)}
+.dx:first-child{border-top:0}
+.dx .loi{display:flex;gap:9px;min-width:0}
+.dx .cham{margin-top:4px}
+.dx .dx-tt{font-weight:600;font-size:14px;line-height:1.4;color:var(--ink)}
+.dx .ph{font-size:12px;color:var(--muted)}
+.dx .huong{font-size:13.5px;line-height:1.45;background:var(--soft);border-radius:10px;padding:8px 10px}
+.dx .huong b{display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.dx .nut{display:flex;flex-direction:column;gap:6px;min-width:128px}
+.dx .nut button{font:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:7px 12px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.dx .nut button.duyet{background:#006b3f;border-color:#006b3f;color:#fff}
+.dx .nut button:disabled{opacity:.5;cursor:default}
+.dx .trangthai{font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:10px;background:var(--lenh-soft);color:var(--lenh);max-width:200px}
+.dx .trangthai.xong{background:var(--on-soft);color:var(--on)}
+.dx .ghi{font-size:12px;color:var(--muted);margin-top:4px}
+.gs-trong{font-size:14px;color:var(--on);font-weight:600;padding:6px 2px}
+@media (max-width:760px){.dx{grid-template-columns:1fr}.dx .nut{flex-direction:row;min-width:0}.dx .nut button{flex:1}}
 .sp{flex:1}
 .doiXem{display:inline-flex;gap:4px;background:var(--bg);padding:3px;border-radius:10px;font-size:13px}
 .doiXem button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer}
@@ -118,6 +142,15 @@ td.gio{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
     <h1>Phòng điều hành Agent<small>Các trợ lý AI và việc tự động của Lanest, chia theo phòng · chỉ Admin xem</small></h1></div>
     <div class="hbtn"><button id="btnMoi" title="Tải lại số mới">↻ Làm mới</button><button id="btnTheme" title="Đổi nền sáng/tối">🌓</button></div>
   </header>
+
+  <section class="gs" id="giamSat">
+    <div class="gs-dau">
+      <div class="gs-av">🛡️</div>
+      <div style="flex:1;min-width:0"><h2>Trợ lý giám sát</h2><div class="gs-mo" id="gsMoTa">Đang soát các phòng…</div></div>
+      <span class="gs-dem" id="gsDem"></span>
+    </div>
+    <div id="gsDs"></div>
+  </section>
 
   <div class="kpis" id="kpis"></div>
 
@@ -209,6 +242,7 @@ function ve(){
     return '<div class="phong" style="--pm:'+p.mau+'"><div class="dau"><b>'+esc(p.ten)+'</b><i>'+chay+'/'+ag.length+' đang có</i></div>'+(than||'<div class="trong">Chưa có agent.</div>')+'</div>';
   }).join('');
   const ten={};D.agent.forEach(a=>ten[a.ma]=a.ten);
+  veGiamSat(ds);
   if(window.ve3d) ve3d(ds);
   document.getElementById('nhatKy').innerHTML=D.gan.length?D.gan.map(x=>{const t=TT[x.tt==='loi'?'loi':x.tt==='canh'?'canh':'on'];
     return '<tr><td class="gio">'+esc(x.luc)+'</td><td>'+esc(ten[x.ma]||x.ma)+'</td><td><span class="nhan" style="--c:'+cssVar(t.c)+';--cs:'+cssVar(t.cs)+';margin:0">'+(x.tt==='loi'?'Lỗi':x.tt==='canh'?'Cảnh báo':'Xong')+'</span></td><td>'+esc(x.ghiChu)+'</td></tr>'}).join('')
@@ -224,7 +258,8 @@ function suaDanhMuc(d){
   /* 3 kế toán AI (chị Lê 10/11/2026) — máy chủ chưa có thì thêm ở trang */
   const coMa={};d.agent.forEach(a=>coMa[a.ma]=a);
   const cuoi=d.gan||[],tim=ma=>{let c=null,l=null,n=0;cuoi.forEach(x=>{if(x.ma===ma){n++;if(!c)c=x;if(!l&&x.tt==='loi')l=x}});return{cuoi:c,loiCuoi:l,soLan:n}};
-  [{ma:'cong-no-tuan',phong:'KT',ai:AI1,ten:'Công nợ + dòng tiền tuần',viec:'Bảng công nợ đại lý, tin nhắc nợ soạn sẵn (không tự gửi), dòng tiền 7 ngày',lich:'8:30 thứ Hai · máy chị',kieu:'tu',gio:24*8},
+  [{ma:'tro-ly-giam-sat',phong:'CEO',ten:'Trợ lý giám sát',viec:'Soát mọi phòng và agent, ghi lỗi + hướng xử lý lên đầu trang; làm theo khi chị bấm Duyệt',lich:'2 giờ/lần 7h–21h · máy chị',kieu:'tu',gio:14},
+   {ma:'cong-no-tuan',phong:'KT',ai:AI1,ten:'Công nợ + dòng tiền tuần',viec:'Bảng công nợ đại lý, tin nhắc nợ soạn sẵn (không tự gửi), dòng tiền 7 ngày',lich:'8:30 thứ Hai · máy chị',kieu:'tu',gio:24*8},
    {ma:'bao-cao-thang',phong:'KT',ai:AI3,ten:'Báo cáo tháng',viec:'Doanh thu, lãi gộp, chi phí, lương, công nợ, tồn kho, so với tháng trước',lich:'21:30 ngày cuối tháng · máy chị',kieu:'tu',gio:24*32}]
     .forEach(a=>{if(!coMa[a.ma])d.agent.push(Object.assign(a,tim(a.ma)))});
   const AI={'cong-no-tuan':AI1,'bao-cao-kho-21h':AI2,'thong-bao-21h':AI2,'bao-cao-thang':AI3,'sao-luu-22h':AI3,'crm-22h':AI3};
@@ -233,6 +268,50 @@ function suaDanhMuc(d){
   const kt=d.agent.filter(a=>a.phong==='KT').sort((x,y)=>String(x.ai||'~').localeCompare(String(y.ai||'~')));
   d.agent=d.agent.filter(a=>a.phong!=='KT').concat(kt);
 }
+/* ===== TRỢ LÝ GIÁM SÁT (chị Lê 10/11/2026) =====
+   Đề xuất do tác vụ "tro-ly-giam-sat" ghi (D.deXuat). Agent đang lỗi/quá hạn mà trợ lý chưa đề xuất → hiện "tự phát hiện" để chị thấy ngay. */
+const TT_DX={cho:'',duyet:'✅ Chị đã duyệt — trợ lý làm ở lượt soát tới',xemlai:'🔁 Chị yêu cầu xem xét lại — trợ lý đang tìm cách khác',danglam:'⚙️ Trợ lý đang xử lý',xong:'✔️ Đã xử lý xong',bo:'Đã bỏ qua'};
+function huongTuDong(a){
+  if(a.st==='loi')return 'Lỗi gần nhất: '+(a.cuoi&&a.cuoi.ghiChu||'chưa rõ')+'. Trợ lý sẽ tìm nguyên nhân và đề xuất cách sửa ở lượt soát tới.';
+  if(a.st==='tre')return 'Quá '+a.gio+' giờ chưa báo về. Thường do máy chị tắt đúng giờ chạy, hoặc tác vụ bị tạm dừng. Trợ lý sẽ kiểm và chạy lại.';
+  if(a.st==='canh')return (a.cuoi&&a.cuoi.ghiChu||'Có việc cần chị xem')+'.';
+  if(a.st==='chua'&&/n8n/.test(a.lich))return 'Luồng n8n chưa gắn bước báo về app — trợ lý sẽ đề xuất cách gắn.';
+  return '';
+}
+function veGiamSat(ds){
+  const coMayChu=Array.isArray(D.deXuat),dx=(D.deXuat||[]).slice();
+  const daCo={};dx.forEach(x=>{if(x.tt!=='xong'&&x.tt!=='bo')daCo[x.ma]=1});
+  const tuPhat=ds.filter(a=>['loi','tre','canh'].includes(a.st)&&!daCo[a.ma]&&a.ma!=='tro-ly-giam-sat'&&a.ma!=='ban-tin-sang')
+    .map(a=>({tuDong:true,ma:a.ma,phong:a.phong,muc:a.st==='loi'?'do':'vang',tomTat:a.ten+' — '+TT[a.st].nhan.toLowerCase(),huong:huongTuDong(a)}));
+  const thu=t=>({cho:0,xemlai:1,duyet:2,danglam:3,xong:4,bo:5}[t]??0);
+  const mo=dx.filter(x=>x.tt!=='xong'&&x.tt!=='bo').sort((a,b)=>thu(a.tt)-thu(b.tt)||(a.muc==='do'?-1:1));
+  const xong=dx.filter(x=>x.tt==='xong'||x.tt==='bo').slice(-3);
+  const tatCa=mo.concat(tuPhat).concat(xong);
+  const ph={};D.phong.forEach(p=>ph[p.ma]=p.ten);const ten={};D.agent.forEach(a=>ten[a.ma]=a.ten);
+  const choChi=mo.filter(x=>x.tt==='cho').length,soLoi=mo.length+tuPhat.length;
+  const gs=D.agent.find(a=>a.ma==='tro-ly-giam-sat');
+  document.getElementById('gsMoTa').textContent=(gs&&gs.cuoi?'Lượt soát gần nhất '+truoc(gs.cuoi.luc)+' · ':'Chưa có lượt soát nào · ')+'soát '+ds.filter(a=>a.kieu==='tu').length+' việc tự chạy ở '+D.phong.length+' phòng';
+  const dem=document.getElementById('gsDem');dem.className='gs-dem'+(soLoi?'':' ok');dem.textContent=soLoi?(choChi?choChi+' việc chờ chị duyệt · ':'')+soLoi+' vấn đề':'Mọi phòng đang ổn';
+  if(!tatCa.length){document.getElementById('gsDs').innerHTML='<div class="gs-trong">✅ Không có lỗi nào cần chị xử lý.</div>';return}
+  document.getElementById('gsDs').innerHTML=tatCa.map(x=>{
+    const c=x.muc==='do'?'--loi':'--tre',dong=x.tt==='xong'||x.tt==='bo';
+    let nut;
+    if(x.tuDong) nut='<div class="trangthai">🕵️ Tự phát hiện — chờ trợ lý đề xuất</div>';
+    else if(x.tt==='cho') nut='<button class="duyet" data-dx="'+esc(x.id)+'" data-qd="duyet"'+(coMayChu?'':' disabled')+'>✔ Duyệt</button><button data-dx="'+esc(x.id)+'" data-qd="xemlai"'+(coMayChu?'':' disabled')+'>↺ Xem xét lại</button>';
+    else nut='<div class="trangthai'+(dong?' xong':'')+'">'+TT_DX[x.tt]+'</div>';
+    return '<div class="dx"><div class="loi"><span class="cham" style="--c:var('+(dong?'--on':c)+')"></span><div><div class="dx-tt">'+esc(x.tomTat)+'</div>'+
+      '<div class="ph">'+esc(ph[x.phong]||x.phong||'')+(ten[x.ma]?' · '+esc(ten[x.ma]):'')+(x.luc?' · '+esc(truoc(x.luc)):'')+'</div>'+
+      (x.ghiChuChi?'<div class="ghi">Chị ghi: '+esc(x.ghiChuChi)+'</div>':'')+(x.ketQua?'<div class="ghi">Kết quả: '+esc(x.ketQua)+'</div>':'')+'</div></div>'+
+      '<div class="huong"><b>Hướng xử lý</b>'+esc(x.huong||'—')+'</div><div class="nut">'+nut+'</div></div>';
+  }).join('');
+}
+document.getElementById('gsDs').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-dx]');if(!b)return;
+  let ghi='';if(b.dataset.qd==='xemlai'){ghi=prompt('Chị muốn trợ lý xem xét lại thế nào? (có thể để trống)','');if(ghi===null)return}
+  b.disabled=true;document.getElementById('trangThai').textContent='Đang lưu quyết định…';
+  goi('agQuyetDinh',[TK,b.dataset.dx,b.dataset.qd,ghi]).then(r=>{D=r;suaDanhMuc(D);document.getElementById('trangThai').textContent='Đã lưu · '+r.luc.slice(11,16);ve()})
+  .catch(er=>{alert('Chưa lưu được: '+er.message);b.disabled=false;document.getElementById('trangThai').textContent=''});
+});
 function chan(tieuDe,noiDung,nut){document.getElementById('chan').classList.remove('hide');chanTieuDe.textContent=tieuDe;chanNoiDung.textContent=noiDung;chanNut.classList.toggle('hide',!nut)}
 function nap(){
   if(!TK){chan('Chưa đăng nhập','Chị mở app LA, đăng nhập, rồi bấm ô "Phòng điều hành Agent" ở trang chủ.',true);return}
