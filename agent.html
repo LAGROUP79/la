@@ -266,11 +266,12 @@ function suaDanhMuc(d){
   d.phong=d.phong.map(p=>p.ma==='SX'?{ma:'NS',ten:'Phòng Nhân sự',mau:'#8A5CB8'}:p.ma==='TK'?{ma:'KH',ten:'Phòng Khách hàng',mau:'#1F5F9E'}:p);
   d.agent=d.agent.filter(a=>a.ma!=='lo-han-dung'&&a.ma!=='mau-ma');
   d.agent.forEach(a=>{if(a.ma==='cham-dai-ly-c')a.phong='KH';
+    if(a.ma==='chat-luong-cong-viec'&&a.kieu==='kh')Object.assign(a,{kieu:'tu',gio:50,lich:'17:45 thứ 2–7 · máy chị',viec:'Cuối ngày soát việc giao: đúng hạn / quá hạn, chờ duyệt lâu, bị trả lại, khó khăn chưa xử lý, ghi chú CSKH theo người'});
     if(a.ma==='phan-tich-khach-hang'&&a.kieu==='kh')Object.assign(a,{kieu:'tu',gio:192,lich:'9:00 thứ Hai · máy chị',viec:'Mỗi thứ Hai: 30 ngày so 30 ngày trước — khách mới / mất khách, tăng giảm mạnh, theo hạng, nguồn, loại khách, độ tập trung; gợi ý chăm sóc'});
     if(a.ma==='crm-khach-hang'&&a.kieu==='kh')Object.assign(a,{kieu:'tu',gio:50,lich:'7:50 thứ 2–7 · máy chị',viec:'Mỗi sáng soát CRM: cần chăm hôm nay, khách bị bỏ quên, khách mới bị ngâm, phàn nàn / sao thấp → báo cáo + cảnh báo'})});
   const coMa2={};d.agent.forEach(a=>coMa2[a.ma]=1);
   [{ma:'chat-luong-nhan-su',phong:'NS',ten:'Chất lượng nhân sự',viec:'Chấm công, đi trễ, nghỉ phép, KPI từng người; ai đang tụt, ai làm tốt để khen',lich:'Chưa làm',kieu:'kh'},
-   {ma:'chat-luong-cong-viec',phong:'NS',ten:'Chất lượng công việc',viec:'Việc giao đúng hạn / quá hạn, báo cáo cuối ngày có đủ không, việc nào hay bị trễ',lich:'Chưa làm',kieu:'kh'},
+   {ma:'chat-luong-cong-viec',phong:'NS',ten:'Chất lượng công việc',viec:'Cuối ngày soát việc giao: đúng hạn / quá hạn, chờ duyệt lâu, bị trả lại, khó khăn chưa xử lý, ghi chú CSKH theo người',lich:'17:45 thứ 2–7 · máy chị',kieu:'tu',gio:50},
    {ma:'van-hoa-nhan-su',phong:'NS',ten:'Văn hóa nhân sự',viec:'Nội quy, 6 giá trị cốt lõi, tác phong, thi đua; nhắc khen thưởng và việc cần chấn chỉnh',lich:'Chưa làm',kieu:'kh'},
    {ma:'crm-khach-hang',phong:'KH',ten:'Quản lý CRM khách hàng',viec:'Mỗi sáng soát CRM: cần chăm hôm nay, khách bị bỏ quên, khách mới bị ngâm, phàn nàn / sao thấp → báo cáo + cảnh báo',lich:'7:50 thứ 2–7 · máy chị',kieu:'tu',gio:50},
    {ma:'phan-tich-khach-hang',phong:'KH',ten:'Báo cáo phân tích khách hàng',viec:'Mỗi thứ Hai: 30 ngày so 30 ngày trước — khách mới / mất khách, tăng giảm mạnh, theo hạng, nguồn, loại khách, độ tập trung; gợi ý chăm sóc',lich:'9:00 thứ Hai · máy chị',kieu:'tu',gio:192}]
