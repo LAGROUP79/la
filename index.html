@@ -340,7 +340,7 @@ function cho(on) {
   if (!on && c) c.remove();
 }
 function goi(ham, args, ok, imLang, loi) {
-  if (!/^(chotDuLieu|khoDuLieu|ktSo|dsDon|baoCao|chotThongKe|chotTraCuu|qlPhanQuyen|trangChu|danhSachTen|chamCongThang|congViec|nghiPhep|tonKho|dsKhach|cskhDuLieu|qlNhatKy|nsHoSo|nsDanhSach|nsVanBanChung|nsBangCong|nsBangLuong|nsNghiPhepThang|khoPhieuNgay|khoBaoCaoNgay|kpiCaiDat|khoTheKho|crmDuLieu|chotXuatTheoNgay)$/.test(ham)) NHO = {};
+  if (!/^(chotDuLieu|khoDuLieu|ktSo|dsDon|baoCao|chotThongKe|chotTraCuu|qlPhanQuyen|trangChu|danhSachTen|chamCongThang|congViec|nghiPhep|tonKho|dsKhach|cskhDuLieu|qlNhatKy|nsHoSo|nsDanhSach|nsVanBanChung|nsBangCong|nsBangLuong|nsNghiPhepThang|khoPhieuNgay|khoBaoCaoNgay|kpiCaiDat|khoTheKho|crmDuLieu|chotXuatTheoNgay|nsBaoCao)$/.test(ham)) NHO = {};
   if (!imLang) cho(true);
   var r = google.script.run.withSuccessHandler(function (x) { cho(false); if (ok) ok(x); })
     .withFailureHandler(function (err) {
@@ -460,7 +460,7 @@ function veNav() {
 var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT', 'HCNS'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
   p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
-  hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'],
+  hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'], nsbc: ['HCNS'],
   kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], knx: ['KHO'], chot: ['KHO', 'TCKT', 'VH'], kbx: ['KHO', 'TCKT', 'VH'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'], xl: ['TCKT'], sb: ['TCKT', 'VH'], bct: ['TCKT', 'VH'] };
 function tenPhong(ma) { return ((H.phongBan || []).filter(function (p) { return p.ma === ma; })[0] || {}).ten || ma; }
 function baoKhongQuyen(mas) {
@@ -489,7 +489,7 @@ function veTab() {
   if (TAB.indexOf('p_') === 0) return vePhong(TAB.slice(2));
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
     th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
-    hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); },
+    hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); }, nsbc: napNsBc,
     kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, knx: veKnx, bct: veBaoCaoTC, chot: function () { napChot(); }, kbx: function () { napKbx(); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
   (m[TAB] || veHome)();
 }
@@ -2262,7 +2262,7 @@ var MO_TA_P = { VH: 'Phân quyền, nhật ký hệ thống', HCNS: 'Hồ sơ nh
 function phongNhanh(ma) {
   var me = H.me, kg = me.phongGhi.indexOf('KHO') >= 0;
   var m = { VH: [['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký']],
-    HCNS: [me.nsQL && ['ns_nv', 'Nhân viên'], me.xemLuong && ['ns_luong', 'Bảng lương'], me.duyetCC && ['np', 'Duyệt yêu cầu'], me.nsQL && ['ns_np', 'Nghỉ phép']],
+    HCNS: [me.nsQL && ['ns_nv', 'Nhân viên'], me.xemLuong && ['nsbc', 'Báo cáo'], me.xemLuong && ['ns_luong', 'Bảng lương'], me.duyetCC && ['np', 'Duyệt yêu cầu'], me.nsQL && ['ns_np', 'Nghỉ phép']],
     TCKT: [['sb', 'Sổ bán hàng'], ['chot', 'Chốt đơn'], ['bct', 'Báo cáo']],
     KD: me.mk ? [['ton', 'Tồn kho']] : [['len', 'Bán hàng'], ['ds', 'Đơn hàng'], ['bc', 'Doanh số KD']],
     KHO: kg ? [['chot', 'Chốt đơn'], ['kk', 'Kiểm kho'], ['ton', 'Tồn kho']] : [['chot', 'Chốt đơn'], ['cv', 'Công việc'], ['ton', 'Tồn kho']] }[ma] || [];
@@ -2292,6 +2292,7 @@ function vePhong(ma) {
   if (ma === 'VH') o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']];
   if (ma === 'HCNS') {
     if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds']);
+    if (H.me.xemLuong) o.push(['nsbc', 'BÁO CÁO', 'Tổng hợp nhân sự, hiệu suất từng người · AI Phòng Nhân sự theo dõi, nhận xét', 'bc']);
     if (H.me.xemLuong) o.push(['ns_luong', 'BẢNG LƯƠNG', 'Phiếu lương, tổng lương, chốt & gửi', 'th'], ['th', 'THƯỞNG NHÂN VIÊN', 'Thưởng tạm tính từng nhân viên KD theo sản phẩm', 'th']);
     if (H.me.nsQL) o.push(['ns_np', 'NGHỈ PHÉP · NGHỈ VIỆC', 'Đơn nghỉ trong tháng, đơn nghỉ việc', 'np']);
     if (H.me.duyetCC) o.push(['np', 'DUYỆT YÊU CẦU', 'Nghỉ phép, chấm công ngoài bán kính, nghỉ việc', 'dy']);
@@ -2912,6 +2913,67 @@ function moTongHopChot(tt) {
     '<div class="hang" style="margin-top:12px">' + (th.ds.length ? '<button class="nut vang" id="thCopy">COPY tổng hợp</button>' : '') + '<button class="nut phu" id="thDong">Đóng</button></div>');
   if ($('thCopy')) $('thCopy').onclick = function () { copyChu(chu); };
   $('thDong').onclick = dongHop;
+}
+var NSBC = null, NSBC_TEN = { 'chat-luong-nhan-su': 'AI Chất lượng nhân sự', 'chat-luong-cong-viec': 'AI Chất lượng công việc', 'van-hoa-nhan-su': 'AI Văn hóa nhân sự' };
+var NSBC_MUC = { khen: ['👏 Khen', '#E3F1E8', '#006B3F'], nhac: ['⚠ Cần nhắc', '#FDE8E8', '#B42318'], theoDoi: ['👀 Theo dõi', '#FFF3D9', '#8a5f00'], binhThuong: ['Ổn', '#EEF1F4', '#4a5560'] };
+function napNsBc() { goi('nsBaoCao', [TK], function (r) { NSBC = r; veNsBc(); }, true); }
+function nsKey(t) { return String(t || '').trim().toLowerCase(); }
+function veNsBc() {
+  var r = NSBC, th = r.tongHop, ns = r.ns || { nhanVien: [], choDuyetNghi: [] }, cv = r.cv || { theoNguoi: [], quaHan: [], khoKhan: [], choDuyetLau: [], cskh: [] };
+  var ng = {}, lay = function (t) { var k = nsKey(t); return ng[k] = ng[k] || { ten: t, nx: [] }; };
+  ns.nhanVien.forEach(function (x) { lay(x.ten).cc = x; });
+  cv.theoNguoi.forEach(function (x) { lay(x.ten).cv = x; });
+  (cv.cskh || []).forEach(function (x) { if (ng[nsKey(x.nguoi)]) ng[nsKey(x.nguoi)].cs = x; });
+  var moi = {}; Object.keys(r.nhanXet || {}).forEach(function (ma) { var l = r.nhanXet[ma][0]; if (!l) return; moi[ma] = l;
+    (l.nguoi || []).forEach(function (p) { var o = ng[nsKey(p.ten)]; if (o) o.nx.push({ ma: ma, muc: p.muc, nhanXet: p.nhanXet, luc: l.luc }); }); });
+  var diem = function (o) { var c = o.cc || {}, v = o.cv || {}, s = 0; s += (c.vang7 || 0) * 3 + (c.tre7 || 0) * 2 + (c.quenRa7 || 0) + (v.treMo || 0) * 2 + (v.traLai30 || 0);
+    if (v.tyLeDungHan != null && v.tyLeDungHan < 70) s += 2; if (o.nx.some(function (x) { return x.muc === 'nhac'; })) s += 3; return s; };
+  var ds = Object.keys(ng).map(function (k) { return ng[k]; }).sort(function (a, b) { return diem(b) - diem(a) || (a.ten < b.ten ? -1 : 1); });
+  var mau = function (bad, warn) { return bad ? 'color:#B42318;font-weight:700' : warn ? 'color:#8a5f00;font-weight:700' : ''; };
+  var oAI = function (ma) { var a = (r.ai || {})[ma] || {}, l = moi[ma], c = a.cuoi;
+    var tt = !c ? ['Chưa chạy lần nào', '#8a5f00'] : c.tt === 'loi' ? ['Lỗi lần gần nhất', '#B42318'] : c.tt === 'canh' ? ['Có cảnh báo', '#8a5f00'] : ['Đang chạy ổn', '#006B3F'];
+    return '<div class="don" style="margin:6px 0;padding:10px"><div class="hang" style="justify-content:space-between;gap:6px;flex-wrap:wrap"><b>🤖 ' + e(NSBC_TEN[ma]) + '</b><span style="font-size:12px;font-weight:700;color:' + tt[1] + '">● ' + tt[0] + '</span></div>' +
+      '<div class="muted" style="font-size:12.5px">' + e(a.viec || '') + (a.lich ? ' · ' + e(a.lich) : '') + (c ? ' · báo về lần cuối ' + e(c.luc) : '') + '</div>' +
+      (l ? '<div style="margin-top:6px;font-size:13.5px;line-height:1.5;white-space:pre-wrap">' + e(l.tong || '') + '</div>' + ((l.viec || []).length ? '<div style="margin-top:4px;font-size:13px"><b>Việc nên làm:</b><br>' + l.viec.map(function (v) { return '• ' + e(v); }).join('<br>') + '</div>' : '') +
+        '<div class="muted" style="font-size:12px;margin-top:4px">Nhận xét lúc ' + e(l.luc) + '</div>' : '<div class="muted" style="font-size:12.5px;margin-top:6px">Chưa có nhận xét. AI sẽ ghi vào đây ở lần chạy kế tiếp.</div>') + '</div>'; };
+  var dongNguoi = function (o) { var c = o.cc, v = o.cv, s = o.cs;
+    return '<div class="don" style="margin:6px 0;padding:10px"><div class="hang" style="justify-content:space-between;gap:6px;flex-wrap:wrap"><b>' + e(o.ten) + '</b>' + (c && c.boPhan ? '<span class="muted" style="font-size:12px">' + e(c.boPhan) + '</span>' : '') + '</div>' +
+      '<div style="font-size:13px;line-height:1.6;margin-top:4px">' +
+      (c ? '🕘 <b>Chấm công</b> · hôm nay: ' + (c.homNay && c.homNay.vao ? 'vào ' + e(c.homNay.vao) : c.homNay && c.homNay.ma ? e(c.homNay.ma) : '<span style="color:#8a5f00">chưa chấm</span>') +
+        ' · tháng: <b>' + soSL(c.thang.cong) + '</b>/' + soSL(c.thang.congChuan) + ' công' +
+        ' · <span style="' + mau(c.tre7 >= 2, c.tre7 === 1) + '">trễ 7 ngày: ' + c.tre7 + '</span>' + (c.ngayTre7.length ? ' <span class="muted">(' + e(c.ngayTre7.join(', ')) + ')</span>' : '') +
+        ' · <span style="' + mau(c.vang7 > 0) + '">vắng: ' + c.vang7 + '</span> · <span style="' + mau(false, c.quenRa7 > 0) + '">quên chấm ra: ' + c.quenRa7 + '</span>' +
+        ' · trễ tháng: ' + c.thang.tre + ' · phép: ' + soSL(c.thang.phep) + ' · đột xuất: ' + soSL(c.thang.dotXuat) + '<br>' : '') +
+      (v ? '📋 <b>Công việc 30 ngày</b> · giao ' + v.giao30 + ' · xong ' + v.xong30 + ' · <span style="' + mau(v.tyLeDungHan != null && v.tyLeDungHan < 50, v.tyLeDungHan != null && v.tyLeDungHan < 80) + '">đúng hạn ' + (v.tyLeDungHan == null ? '—' : v.tyLeDungHan + '%') + '</span>' +
+        ' · <span style="' + mau(v.treMo > 0) + '">đang quá hạn ' + v.treMo + '</span> · chờ duyệt ' + v.choDuyet + ' · <span style="' + mau(false, v.traLai30 > 0) + '">bị trả lại ' + v.traLai30 + '</span><br>' : '<span class="muted">📋 Chưa được giao việc trong app</span><br>') +
+      (s ? '💬 <b>CSKH 7 ngày</b> · ' + s.ghiChu7 + ' ghi chú chăm khách (hôm qua ' + s.homQua + ')' : '') + '</div>' +
+      o.nx.map(function (x) { var m = NSBC_MUC[x.muc] || NSBC_MUC.binhThuong; return '<div style="margin-top:6px;padding:6px 8px;border-radius:8px;background:' + m[1] + ';font-size:13px"><b style="color:' + m[2] + '">' + m[0] + '</b> <span class="muted" style="font-size:11.5px">· ' + e(NSBC_TEN[x.ma] || x.ma) + '</span><br>' + e(x.nhanXet) + '</div>'; }).join('') + '</div>'; };
+  var hn = th.homNay;
+  var chu = '📊 BÁO CÁO NHÂN SỰ · ' + ngayDu(r.homNay) + '\nNhân sự: ' + th.soNV + ' người' + (hn ? ' · hôm nay đã chấm ' + hn.daCham + '/' + hn.tong + ', nghỉ ' + hn.nghi : '') +
+    '\n\n' + Object.keys(moi).map(function (ma) { return '🤖 ' + NSBC_TEN[ma] + ':\n' + (moi[ma].tong || ''); }).join('\n\n') +
+    '\n\nTỪNG NGƯỜI:\n' + ds.map(function (o) { var c = o.cc, v = o.cv; return '• ' + o.ten + (c ? ' · công ' + soSL(c.thang.cong) + '/' + soSL(c.thang.congChuan) + ', trễ 7 ngày ' + c.tre7 + ', vắng ' + c.vang7 : '') +
+      (v ? ' · việc 30 ngày: xong ' + v.xong30 + '/' + v.giao30 + ', đúng hạn ' + (v.tyLeDungHan == null ? '—' : v.tyLeDungHan + '%') + ', quá hạn ' + v.treMo : '') + o.nx.map(function (x) { return '\n   ' + (NSBC_MUC[x.muc] || NSBC_MUC.binhThuong)[0] + ': ' + x.nhanXet; }).join(''); }).join('\n');
+  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo nhân sự</h2>' +
+    '<div class="the"><div class="o"><div><small>Nhân sự đang làm</small><b>' + th.soNV + '</b></div>' +
+      (hn ? '<div><small>Hôm nay đã chấm vào</small><b>' + hn.daCham + '/' + hn.tong + '</b></div><div><small>Nghỉ hôm nay</small><b>' + hn.nghi + '</b></div>' : '') +
+      '<div><small>Việc đang quá hạn</small><b style="' + mau(cv.soQuaHan > 0) + '">' + (cv.soQuaHan || 0) + '</b></div></div>' +
+      '<div style="font-size:13px;margin-top:8px;line-height:1.6"><b>Theo phòng:</b> ' + th.theoPhong.map(function (p) { return e(tenPhong(p.ma).replace(/^PHÒNG\s+/, '')) + ' ' + p.so; }).join(' · ') +
+      '<br><b>Theo bộ phận:</b> ' + th.theoBoPhan.map(function (p) { return e(p.boPhan) + ' ' + p.so; }).join(' · ') +
+      (th.moiVao.length ? '<br><b>Mới vào 30 ngày:</b> ' + th.moiVao.map(function (x) { return e(x.ten) + ' (' + e(x.ngayVao) + ')'; }).join(', ') : '') +
+      (th.thuViec.length ? '<br><b>Đang thử việc:</b> ' + e(th.thuViec.join(', ')) : '') +
+      (hn && hn.chuaCham.length ? '<br><b style="color:#8a5f00">Chưa chấm vào hôm nay:</b> ' + e(hn.chuaCham.join(', ')) : '') + '</div>' +
+      '<div class="hang" style="gap:8px;margin-top:10px;flex-wrap:wrap"><button class="nut vang" id="nsbcCopy" style="flex:1">📋 COPY báo cáo</button><button class="nut phu" id="nsbcTai" style="flex:1">↻ Tải lại số mới</button></div>' +
+      '<p class="muted" style="margin:8px 0 0">Số lấy thẳng từ chấm công, nghỉ phép, việc giao và ghi chú CSKH trong app, tính tới ' + e(r.luc) + '. Không có lương, SĐT, CCCD.</p></div>' +
+    '<div class="the"><h3 style="margin-top:0">🤖 AI Phòng Nhân sự đang phụ trách</h3>' + ['chat-luong-nhan-su', 'chat-luong-cong-viec', 'van-hoa-nhan-su'].map(oAI).join('') +
+      ((r.deXuat || []).length ? '<h4 style="margin:10px 0 4px">Đề xuất đang chờ xử lý</h4>' + r.deXuat.map(function (x) { return '<div style="font-size:13px;margin:4px 0">' + (x.muc === 'do' ? '🔴' : '🟡') + ' ' + e(x.tomTat) + (x.huong ? '<div class="muted" style="font-size:12.5px">→ ' + e(x.huong) + '</div>' : '') + '</div>'; }).join('') : '') + '</div>' +
+    '<div class="the"><h3 style="margin-top:0">Hiệu suất từng người (' + ds.length + ')</h3><p class="muted" style="margin:0 0 4px;font-size:12.5px">Người cần chú ý xếp trước: vắng, đi trễ, việc quá hạn, bị trả lại, AI ghi "cần nhắc".</p>' +
+      (r.nsLoi ? '<p style="color:#B42318">Chưa đọc được chấm công: ' + e(r.nsLoi) + '</p>' : '') + (r.cvLoi ? '<p style="color:#B42318">Chưa đọc được việc giao: ' + e(r.cvLoi) + '</p>' : '') + ds.map(dongNguoi).join('') + '</div>' +
+    (cv.quaHan.length ? '<div class="the"><h3 style="margin-top:0">⏰ Việc đang quá hạn (' + cv.soQuaHan + ')</h3>' + cv.quaHan.map(function (x) { return '<div style="font-size:13px;margin:4px 0">• <b>' + e(x.nguoi) + '</b>: ' + e(x.viec) + ' <span style="color:#B42318">· quá ' + x.quaNgay + ' ngày</span> <span class="muted">(giao: ' + e(x.giao) + ')</span></div>'; }).join('') + '</div>' : '') +
+    (cv.khoKhan.length ? '<div class="the"><h3 style="margin-top:0">🧱 Khó khăn nhân viên đang báo</h3>' + cv.khoKhan.map(function (x) { return '<div style="font-size:13px;margin:4px 0">• <b>' + e(x.nguoi) + '</b> · ' + e(x.viec) + (x.khoKhan ? '<br><span class="muted">Khó khăn: ' + e(x.khoKhan) + '</span>' : '') + (x.deXuat ? '<br><span class="muted">Đề xuất: ' + e(x.deXuat) + '</span>' : '') + '</div>'; }).join('') + '</div>' : '') +
+    (cv.choDuyetLau.length ? '<div class="the"><h3 style="margin-top:0">⌛ Báo xong nhưng chờ duyệt lâu</h3>' + cv.choDuyetLau.map(function (x) { return '<div style="font-size:13px;margin:4px 0">• ' + e(x.nguoi) + ': ' + e(x.viec) + ' <span class="muted">· chờ ' + x.choNgay + ' ngày, người giao ' + e(x.giao) + '</span></div>'; }).join('') + '</div>' : '') +
+    ((ns.choDuyetNghi || []).length ? '<div class="the"><h3 style="margin-top:0">📝 Đơn nghỉ chờ duyệt</h3>' + ns.choDuyetNghi.map(function (x) { return '<div style="font-size:13px;margin:4px 0">• ' + e(x.ten) + ' · ' + e(x.ngay) + ' · ' + e(x.buoi) + ' · ' + e(x.loai) + '</div>'; }).join('') + '<button class="nut phu" data-tab="np" style="margin-top:6px">Mở Duyệt yêu cầu</button></div>' : '');
+  $('nsbcCopy').onclick = function () { copyChu(chu); };
+  $('nsbcTai').onclick = napNsBc;
 }
 var KBX = { ngay: '' };
 function kbxKhoa(x) { var m = String(x.ma || ''); return /^\d{6}$/.test(m) ? '0' + m.slice(4, 6) + m.slice(2, 4) + m.slice(0, 2) : '1' + (x.ngayDon || '') + m; }
