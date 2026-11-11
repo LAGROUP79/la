@@ -376,7 +376,7 @@ function dongViec(x,ng,anNgay){
 }
 function dongLich(o){ // o = {x, gio, ten, phu, loai}
   const x=o.x;
-  return '<div class="dong"><div class="gioc">'+(o.gio?e(o.gio):'<span class="muted nho">cả ngày</span>')+'</div><div class="nd" data-act="sua" data-id="'+e(x.id)+'"><div class="ten">'+(o.icon||'')+e(o.ten)+'</div><div class="phu">'+(o.phu||'')+chipNhom(x)+chipAI(x)+'</div></div></div>';
+  return '<div class="dong"><div class="gioc">'+(o.gio?e(o.gio):'<span class="muted nho">'+(x.ngay||x.lap?'cả ngày':'chưa có giờ')+'</span>')+'</div><div class="nd" data-act="sua" data-id="'+e(x.id)+'"><div class="ten">'+(o.icon||'')+e(o.ten)+'</div><div class="phu">'+(o.phu||'')+chipNhom(x)+chipAI(x)+'</div></div></div>';
 }
 function rong(t){return '<div class="trong">'+t+'</div>'}
 function nhanhHtml(goiY){return '<div class="the nhanh"><div class="hang"><input id="nhanhO" placeholder="'+e(goiY||'Thêm nhanh: Gọi đại lý mai 9h')+'" autocomplete="off" enterkeyhint="done"><button class="nut" id="nhanhNut">Thêm</button></div><div class="doan" id="nhanhDoan"></div></div>'}
@@ -419,19 +419,19 @@ function veHomNay(){
   s+='</div><div>';
   if(cq.length||D.choDuyet.length) s+='<div class="the"><h3>⚖️ Chờ chị quyết<span class="sp"></span><button class="nut rong nho" data-tab="cho-quyet">Xem '+(cq.length+D.choDuyet.length)+'</button></h3>'+
     D.choDuyet.slice(0,2).map(a=>'<div class="dong"><div class="nd" data-tab="cho-quyet"><div class="ten">🤖 '+e(a.tomTat)+'</div><div class="phu"><span>Phòng Agent đề xuất</span></div></div></div>').join('')+
-    cq.slice(0,4).map(x=>dongViec(x)).join('')+'</div>';
-  s+='<div class="the"><h3>🗓 7 ngày tới</h3>'+sapToi(h,7)+'</div>';
-  if(kh.length) s+='<div class="the"><h3>🎯 Kế hoạch đang chạy<span class="sp"></span><button class="nut rong nho" data-tab="ke-hoach">Xem</button></h3>'+kh.slice(0,6).map(khGon).join('')+'</div>';
+    cq.slice(0,3).map(x=>dongViec(x)).join('')+'</div>';
+  s+='<div class="the"><h3>🗓 7 ngày tới<span class="sp"></span><button class="nut rong nho" data-tab="lich">Xem lịch</button></h3>'+sapToi(h,7,true)+'</div>';
+  if(kh.length) s+='<div class="the"><h3>🎯 Kế hoạch đang chạy<span class="sp"></span><button class="nut rong nho" data-tab="ke-hoach">Xem '+kh.length+'</button></h3>'+kh.slice(0,3).map(khGon).join('')+'</div>';
   s+='<div class="the" id="tbThe"><h3>🔔 Nhắc việc trên điện thoại</h3><div class="nho muted" id="tbTT">'+(D.may?'Đang bật trên '+D.may+' máy của chị. Việc có giờ sẽ được nhắc trước (mặc định 30 phút); 7:30 sáng báo việc hôm nay, 21:00 báo việc chưa xong.':'Chưa có máy nào bật nhắc việc.')+'</div><div class="hang" style="margin-top:8px"><button class="nut nho" id="tbBat">Bật trên máy này</button></div></div>';
   s+='</div></div>';
   return s;
 }
-function sapToi(tu,n){
-  let s='',co=false;
+function sapToi(tu,n,gon){ // gon (trang Hôm nay): chỉ việc, chờ quyết, lịch hẹn 1 lần — bỏ lịch lặp lại, mốc kế hoạch; mỗi ngày tối đa 3 dòng
+  let s='',co=false;const toiDa=gon?3:6;
   for(let i=1;i<=n;i++){
-    const ng=cong(tu,i),ds=suKien(ng,true);
+    const ng=cong(tu,i),ds=suKien(ng,true).filter(o=>!gon||(!o.x.lap&&['kh','hoc','mt'].indexOf(o.x.loai)<0));
     if(!ds.length) continue;co=true;
-    s+='<div class="nhomt">'+e(THU_TEN[thu(ng)])+' '+dm(ng)+'</div>'+ds.slice(0,6).map(dongLich).join('')+(ds.length>6?'<div class="trong">+'+(ds.length-6)+' mục nữa</div>':'');
+    s+='<div class="nhomt">'+e(THU_TEN[thu(ng)])+' '+dm(ng)+'</div>'+ds.slice(0,toiDa).map(dongLich).join('')+(ds.length>toiDa?'<div class="trong">+'+(ds.length-toiDa)+' mục nữa</div>':'');
   }
   return co?s:rong('Chưa có gì trong '+n+' ngày tới.');
 }
@@ -452,14 +452,16 @@ function veViec(){
   if(TIM){const t=boDau(TIM);ds=ds.filter(x=>boDau(x.ten+' '+(x.ghiChu||'')).indexOf(t)>=0)}
   const mot=ds.filter(x=>!x.lap),lap=ds.filter(x=>x.lap&&mo(x));
   const g=[['Quá hạn',mot.filter(x=>mo(x)&&x.ngay&&x.ngay<h).sort(theoNgay),'do'],['Hôm nay',mot.filter(x=>mo(x)&&x.ngay===h).sort(theoGio)],['Ngày mai',mot.filter(x=>mo(x)&&x.ngay===mai).sort(theoGio)],
-    ['7 ngày tới',mot.filter(x=>mo(x)&&x.ngay>mai&&x.ngay<=tuan).sort(theoNgay)],['Sau này',mot.filter(x=>mo(x)&&x.ngay>tuan).sort(theoNgay)],['Chưa có ngày',mot.filter(x=>mo(x)&&!x.ngay).sort((a,b)=>(b.uuTien||0)-(a.uuTien||0))],
+    ['7 ngày tới',mot.filter(x=>mo(x)&&x.ngay>mai&&x.ngay<=tuan).sort(theoNgay)],['Sau này',mot.filter(x=>mo(x)&&x.ngay>tuan).sort(theoNgay),'',1],['Chưa có ngày',mot.filter(x=>mo(x)&&!x.ngay).sort((a,b)=>(b.uuTien||0)-(a.uuTien||0))],
     ['Việc lặp lại',lap.sort(theoGio)]];
   const xong=mot.filter(x=>x.tt==='xong').sort((a,b)=>(b.xongLuc||'').localeCompare(a.xongLuc||'')).slice(0,30);
   let s='<div class="tieu"><h2>✅ Việc cần làm</h2></div>'+nhanhHtml('Thêm việc: Họp đội thứ 2 8h')+
     '<div class="the" style="padding:10px 12px"><input id="timO" placeholder="🔍 Tìm việc…" value="'+e(TIM)+'" style="width:100%;border:0;background:transparent;outline:0"></div>'+
     locHtml(['lanest','kenh','hoc','gd','banthan','khac'])+'<div class="the">';
   let co=false;
-  g.forEach(n=>{if(!n[1].length) return;co=true;s+='<div class="nhomt'+(n[2]?' '+n[2]:'')+'">'+n[0]+' ('+n[1].length+')</div>'+n[1].map(x=>dongViec(x,n[0]==='Việc lặp lại'?h:null,n[0]==='Hôm nay'||n[0]==='Ngày mai')).join('')});
+  // 11/11/2026 chị Lê thấy nhiều việc quá: nhóm "Sau này" gập lại (đang tìm thì mở sẵn), mở rồi thì giữ mở khi trang vẽ lại
+  g.forEach(n=>{if(!n[1].length) return;co=true;const cac=n[1].map(x=>dongViec(x,n[0]==='Việc lặp lại'?h:null,n[0]==='Hôm nay'||n[0]==='Ngày mai')).join('');
+    s+=n[3]&&!TIM?'<details'+(window.MO_SAU?' open':'')+' ontoggle="window.MO_SAU=this.open"><summary class="nhomt" style="cursor:pointer">'+n[0]+' ('+n[1].length+') · bấm để xem</summary>'+cac+'</details>':'<div class="nhomt'+(n[2]?' '+n[2]:'')+'">'+n[0]+' ('+n[1].length+')</div>'+cac});
   if(!co) s+=rong(TIM?'Không tìm thấy việc nào.':'Chưa có việc nào. Gõ vào ô ở trên để thêm.');
   if(xong.length) s+='<details style="margin-top:10px"><summary class="nhomt" style="cursor:pointer">Đã xong gần đây ('+xong.length+')</summary>'+xong.map(x=>dongViec(x)).join('')+'</details>';
   return s+'</div>';
@@ -560,7 +562,9 @@ function veHoc(){
 // ---------- GIA ĐÌNH ----------
 function veGiaDinh(){
   const h=HN(),ds=D.ds.filter(x=>x.nhom==='gd');
-  const viec=ds.filter(x=>x.loai==='viec'&&mo(x)).sort(theoNgay),lich=ds.filter(x=>x.loai==='lich'&&mo(x)&&(x.lap||!x.ngay||x.ngay>=h)).sort(theoNgay);
+  // lịch lặp hằng tuần (giờ học của con) xếp theo thứ trong tuần T2 → CN rồi theo giờ, lịch 1 lần xếp sau theo ngày
+  const thuDau=x=>x.lap==='tuan'?Math.min.apply(null,(x.thuLap&&x.thuLap.length?x.thuLap:[thu(x.ngay||h)]).map(t=>t||7)):9;
+  const viec=ds.filter(x=>x.loai==='viec'&&mo(x)).sort(theoNgay),lich=ds.filter(x=>x.loai==='lich'&&mo(x)&&(x.lap||!x.ngay||x.ngay>=h)).sort((a,b)=>thuDau(a)-thuDau(b)||theoNgay(a,b));
   const khac=ds.filter(x=>x.loai!=='viec'&&x.loai!=='lich'&&mo(x));
   let s='<div class="tieu"><h2>👨‍👩‍👧 Gia đình & con</h2></div>'+nhanhHtml('Thêm việc nhà: Họp phụ huynh thứ 7 8h');
   s+='<div class="luoi"><div class="the"><h3>✅ Việc nhà, việc của con</h3>'+(viec.length?viec.map(x=>dongViec(x)).join(''):rong('Chưa có việc nào. Lịch học của con, khám bệnh, sinh nhật… chị thêm ở đây.'))+'</div>';
