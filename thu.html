@@ -2409,7 +2409,8 @@ function chotXuat1pHtml(x, r) {
   if (!x.xuat1p || !x.xuat1p.length) return '';
   return '<div style="margin:8px 0;padding:8px 10px;border-radius:10px;background:#E3F1E8;border:1px solid #b9dcc6"><b style="color:#006B3F">📦 Đã gửi trước 1 phần (' + x.xuat1p.length + ' lần) · phần còn lại vẫn nằm kho</b>' +
     x.xuat1p.map(function (l, i) { return '<div style="font-size:13px;margin-top:4px">' + (i + 1) + '. ' + e(l.luc) + ' · <b>' + e(l.ai) + '</b>: ' + l.dong.map(function (d) { return e(d.sp) + (d.ct ? ' (' + e(d.ct) + ')' : '') + ' ×' + soSL(d.sl); }).join(', ') +
-      (l.cod != null ? ' · <b style="color:#B42318">COD lần này ' + tien(l.cod) + 'đ</b>' : '') + (l.ghiChu ? ' · <i>' + e(l.ghiChu) + '</i>' : '') + '</div>'; }).join('') +
+      (l.cod != null ? ' · <b style="color:#B42318">COD lần này ' + tien(l.cod) + 'đ</b>' : '') + (l.ghiChu ? ' · <i>' + e(l.ghiChu) + '</i>' : '') +
+      (r.ghiDuyet ? ' <button class="nut nho phu" data-x1pngay="' + i + '" style="width:auto;padding:1px 8px;font-size:12px">📅 Sửa ngày gửi</button>' : '') + '</div>'; }).join('') +
     (r.ghiDuyet ? '<button class="nut phu rong" id="chBoX1p" style="margin-top:6px;font-size:13px;padding:6px">↶ Bỏ lần gửi gần nhất (bấm nhầm)</button>' : '') + '</div>';
 }
 function moXuat1Phan(x) {
@@ -2419,6 +2420,7 @@ function moXuat1Phan(x) {
     '<table style="width:100%;font-size:14px"><tr><th style="text-align:left">Sản phẩm</th><th class="s">Còn chưa gửi</th><th class="s" style="width:90px">Gửi lần này</th></tr>' +
     ds.map(function (d, i) { return '<tr><td>' + e(d.sp) + (d.ct ? '<div style="color:#8a5f00;font-weight:700">↳ ' + e(d.ct) + '</div>' : '') + '</td><td class="s">' + soSL(d.con) + (d.dv ? ' ' + e(d.dv) : '') + '</td><td><input data-x1p="' + i + '" inputmode="decimal" placeholder="0"' + (d.con > 0 ? '' : ' disabled') + ' style="padding:6px;text-align:right"></td></tr>'; }).join('') + '</table>' +
     (r.ghiDuyet ? '<label for="x1pCod">COD thu lần gửi này (để trống nếu không đổi)</label><input id="x1pCod" inputmode="numeric" placeholder="VD: 600.000"><small class="muted">Chỉ ghi chú cho đối soát ship. Muốn đổi COD / tổng đơn trong Sổ bán hàng thì bấm <b>✏️ Sửa đơn</b> sau khi lưu.</small>' : '<p class="muted" style="margin:8px 0 0">Lưu xong app báo kế toán kiểm lại COD.</p>') +
+    (r.ghiDuyet ? '<label for="x1pNgay">Ngày gửi thực tế</label><input id="x1pNgay" type="date" value="' + e(r.homNay || '') + '" max="' + e(r.homNay || '') + '"><small class="muted">Ghi lại lần gửi đã đi hôm trước thì chọn đúng ngày đi.</small>' : '') +
     '<label for="x1pGc">Ghi chú (thiếu hàng gì, khi nào gửi nốt…)</label><input id="x1pGc" placeholder="VD: thiếu vị gừng, chờ mẻ chưng thứ 3">' +
     '<div class="hang" style="gap:8px;margin-top:12px"><button class="nut rong" id="x1pHuy" style="flex:1">Huỷ</button><button class="nut vang" id="x1pOk" style="flex:1">✓ Lưu xuất 1 phần</button></div>');
   $('x1pHuy').onclick = function () { dongHop(); moChotThe(x); };
@@ -2427,7 +2429,7 @@ function moXuat1Phan(x) {
     document.querySelectorAll('[data-x1p]').forEach(function (o) { var d = ds[o.dataset.x1p], v = Number(String(o.value || '').replace(',', '.')); if (!o.value.trim()) return; if (!(v > 0)) { loi = 'Số lượng không hợp lệ: ' + d.sp; return; } if (v > d.con + 1e-9) { loi = d.sp + (d.ct ? ' (' + d.ct + ')' : '') + ': chỉ còn ' + soSL(d.con) + ' chưa gửi.'; return; } dong.push({ sp: d.sp, sl: v, ct: d.ct }); });
     if (loi) { bao(loi, true); return; } if (!dong.length) { bao('Nhập số lượng gửi lần này.', true); return; }
     var cod = $('x1pCod') && $('x1pCod').value.trim() ? docTien($('x1pCod').value) : null;
-    goi('chotXuat1Phan', [TK, x.khoa, dong, cod, $('x1pGc').value.trim()], function (r2) { chotNhan(r2); dongHop(); bao((x.ma || x.khach) + ' · đã xuất 1 phần' + (r2.canhBao ? ' · ' + r2.canhBao : ''));
+    goi('chotXuat1Phan', [TK, x.khoa, dong, cod, $('x1pGc').value.trim(), $('x1pNgay') ? $('x1pNgay').value : ''], function (r2) { chotNhan(r2); dongHop(); bao((x.ma || x.khach) + ' · đã xuất 1 phần' + (r2.canhBao ? ' · ' + r2.canhBao : ''));
       var y = chotTim(x.khoa); if (y && r2.ghiDuyet) moChotThe(y); });
   };
 }
@@ -2567,6 +2569,13 @@ function moChotThe(x) {
   if ($('chBo')) $('chBo').onclick = function () { chotBo(x); };
   if ($('chSua')) $('chSua').onclick = function () { moSuaChot(x); };
   if ($('chX1p')) $('chX1p').onclick = function () { moXuat1Phan(x); };
+  document.querySelectorAll('[data-x1pngay]').forEach(function (b) { b.onclick = function () {
+    var l = x.xuat1p[b.dataset.x1pngay], cu = l.ngay.slice(8, 10) + '/' + l.ngay.slice(5, 7) + '/' + l.ngay.slice(0, 4);
+    var v = prompt('Lần gửi này thật ra đi ngày nào? (ngày/tháng/năm)\nSố lượng giữ nguyên, báo cáo xuất kho tính sang ngày mới.', cu); if (v == null) return;
+    var m = /^\s*(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{4}))?\s*$/.exec(v); if (!m) { bao('Ghi ngày dạng 07/11/2026.', true); return; }
+    var ng = (m[3] || l.ngay.slice(0, 4)) + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+    goi('chotDoiNgayX1p', [TK, x.khoa, Number(b.dataset.x1pngay), ng], function (r2) { chotNhan(r2); dongHop(); bao('Đã sửa ngày gửi sang ' + v.trim()); var y = chotTim(x.khoa); if (y) moChotThe(y); });
+  }; });
   if ($('chBoX1p')) $('chBoX1p').onclick = function () { if (!confirm('Bỏ lần gửi gần nhất? Hàng của lần đó trả lại kho.')) return; goi('chotBoXuat1Phan', [TK, x.khoa], function (r2) { chotNhan(r2); dongHop(); bao('Đã bỏ lần xuất 1 phần gần nhất'); }); };
   if ($('chHuy')) $('chHuy').onclick = function () { var ly = prompt('Huỷ đơn ' + (x.ma || '') + ' của ' + x.khach + '?' + (x.khoa.indexOf('KT:') === 0 ? ' Đơn trong Sổ bán hàng sẽ bị huỷ (công nợ trừ lại' + (x.tt === 'Đã xuất kho' ? ', hoàn tồn kho' : '') + '), mã đơn không cấp lại.' : ' Đơn phòng KD sẽ bị huỷ.') + '\nGhi lý do huỷ:'); if (ly == null) return; goi('chotHuyDon', [TK, x.khoa, ly], function (r2) { chotNhan(r2); dongHop(); bao('Đã huỷ đơn ' + (x.ma || x.khach) + '.'); }); };
   if ($('chSuaKD')) $('chSuaKD').onclick = function () { goi('dsDon', [TK, { ky: 'ngay', ngay: x.ngay, q: x.maNguon }], function (d) { var o = d.ds.filter(function (y) { return y.ma === x.maNguon; })[0]; if (!o) { bao('Không mở được đơn phòng KD.', true); return; } dongHop(); SUA = o; TAB = 'len'; veNav(); veLenDon(); window.scrollTo(0, 0); }); };
