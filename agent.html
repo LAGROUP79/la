@@ -101,6 +101,7 @@ td.gio{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
 .dx .nut button:disabled{opacity:.5;cursor:default}
 .dx .trangthai{font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:10px;background:var(--lenh-soft);color:var(--lenh);max-width:200px}
 .dx .trangthai.xong{background:var(--on-soft);color:var(--on)}
+.gs-xong{display:block;margin:10px auto 0;border:0;background:none;color:var(--on);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 10px}
 .dx .ghi{font-size:12px;color:var(--muted);margin-top:4px}
 .gs-trong{font-size:14px;color:var(--on);font-weight:600;padding:6px 2px}
 @media (max-width:760px){.dx{grid-template-columns:1fr}.dx .nut{flex-direction:row;min-width:0}.dx .nut button{flex:1}}
@@ -301,14 +302,15 @@ function veGiamSat(ds){
     .map(a=>({tuDong:true,ma:a.ma,phong:a.phong,muc:a.st==='loi'?'do':'vang',tomTat:a.ten+' — '+TT[a.st].nhan.toLowerCase(),huong:huongTuDong(a)}));
   const thu=t=>({cho:0,xemlai:1,duyet:2,danglam:3,xong:4,bo:5}[t]??0);
   const mo=dx.filter(x=>x.tt!=='xong'&&x.tt!=='bo').sort((a,b)=>thu(a.tt)-thu(b.tt)||(a.muc==='do'?-1:1));
-  const xong=dx.filter(x=>x.tt==='xong'||x.tt==='bo').slice(-3);
+  const xongHet=dx.filter(x=>x.tt==='xong'||x.tt==='bo'),xong=gsMoXong?xongHet.slice(-10):[];
   const tatCa=mo.concat(tuPhat).concat(xong);
   const ph={};D.phong.forEach(p=>ph[p.ma]=p.ten);const ten={};D.agent.forEach(a=>ten[a.ma]=a.ten);
   const choChi=mo.filter(x=>x.tt==='cho').length,soLoi=mo.length+tuPhat.length;
   const gs=D.agent.find(a=>a.ma==='tro-ly-giam-sat');
   document.getElementById('gsMoTa').textContent=(gs&&gs.cuoi?'Lượt soát gần nhất '+truoc(gs.cuoi.luc)+' · ':'Chưa có lượt soát nào · ')+'soát '+ds.filter(a=>a.kieu==='tu').length+' việc tự chạy ở '+D.phong.length+' phòng';
   const dem=document.getElementById('gsDem');dem.className='gs-dem'+(soLoi?'':' ok');dem.textContent=soLoi?(choChi?choChi+' việc chờ chị duyệt · ':'')+soLoi+' vấn đề':'Mọi phòng đang ổn';
-  if(!tatCa.length){document.getElementById('gsDs').innerHTML='<div class="gs-trong">✅ Không có lỗi nào cần chị xử lý.</div>';return}
+  const nutXong=xongHet.length?'<button class="gs-xong" id="gsXong">'+(gsMoXong?'▲ Ẩn việc đã xong':'▼ Xem '+Math.min(xongHet.length,10)+' việc đã xử lý xong')+'</button>':'';
+  if(!tatCa.length){document.getElementById('gsDs').innerHTML='<div class="gs-trong">✅ Không có lỗi nào cần chị xử lý.</div>'+nutXong;return}
   document.getElementById('gsDs').innerHTML=tatCa.map(x=>{
     const c=x.muc==='do'?'--loi':'--tre',dong=x.tt==='xong'||x.tt==='bo';
     let nut;
@@ -319,9 +321,11 @@ function veGiamSat(ds){
       '<div class="ph">'+esc(ph[x.phong]||x.phong||'')+(ten[x.ma]?' · '+esc(ten[x.ma]):'')+(x.luc?' · '+esc(truoc(x.luc)):'')+'</div>'+
       (x.ghiChuChi?'<div class="ghi">Chị ghi: '+esc(x.ghiChuChi)+'</div>':'')+(x.ketQua?'<div class="ghi">Kết quả: '+esc(x.ketQua)+'</div>':'')+'</div></div>'+
       '<div class="huong"><b>Hướng xử lý</b>'+esc(x.huong||'—')+'</div><div class="nut">'+nut+'</div></div>';
-  }).join('');
+  }).join('')+nutXong;
 }
+let gsMoXong=false;
 document.getElementById('gsDs').addEventListener('click',e=>{
+  if(e.target.closest('#gsXong')){gsMoXong=!gsMoXong;ve();return}
   const b=e.target.closest('button[data-dx]');if(!b)return;
   let ghi='';if(b.dataset.qd==='xemlai'){ghi=prompt('Chị muốn trợ lý xem xét lại thế nào? (có thể để trống)','');if(ghi===null)return}
   b.disabled=true;document.getElementById('trangThai').textContent='Đang lưu quyết định…';
