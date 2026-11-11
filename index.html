@@ -520,7 +520,7 @@ function veHome() {
   $('noiDung').innerHTML = '<div class="chao"><div class="luoi2"><div><small>Xin chào</small><br><b>' + e(H.me.ten) + '</b><br><small>' + e(H.me.vai) + (H.me.team ? ' · ' + e(H.me.team) : '') + '</small></div>' + chao + '</div>' +
     (k.kpi ? '<div class="phong"><small>Tháng ' + H.homNay.slice(5, 7) + ' của bạn: ' + tien(k.dat) + ' / ' + tien(k.kpi) + 'đ · ' + (k.pt || 0) + '%</small>' + thanh(k.pt) + '</div>' : '') +
     (ph ? '<div class="phong"><small>Doanh thu ' + e(ph.ten) + ' tháng ' + H.homNay.slice(5, 7) + '</small><br><b class="vang" style="font-size:20px">' + tien(ph.dt) + 'đ</b>' +
-      '<small> · ' + ph.soDon + ' đơn · hôm nay ' + tien(ph.homNay) + 'đ</small>' + (ph.kpi ? '<br><small>Target ' + tien(ph.kpi) + 'đ · đạt ' + ph.pt + '%</small>' + thanh(ph.pt) : '') + '</div>' : '') + '</div>' +
+      '<small> · ' + ph.soDon + ' đơn · hôm nay ' + tien(ph.homNay) + 'đ</small>' + (ph.kpi ? '<br><small>Target ' + tien(ph.kpi) + 'đ · đạt ' + ph.pt + '%</small>' + thanh(ph.pt) : '') + '</div>' : '') + '</div>' + loiNhanHtml() +
     (H.me.admin ? '' : '<h3 class="nhom">CỦA TÔI</h3><div class="oclon bon">' + o.filter(function (x) { return ['cc', 'np', 'cv', 'hs'].indexOf(x[0]) >= 0; }).map(function (x) {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
@@ -536,12 +536,25 @@ function veHome() {
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +
       '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00: báo cáo ngày (số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, kiểm kho). Trong ngày: <b>Đơn chờ duyệt</b> khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn. Bật trên từng máy muốn nhận.</p>' +
       '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><button class="nut rong" id="tbThu" style="width:auto">Gửi thử ngay</button></div>' +
-      '<small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('TCKT') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn chờ duyệt</b>' +
+      '<small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('TCKT') < 0 && H.me.phongVao.indexOf('KHO') < 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Nhận lời nhắn trên điện thoại</b>' +
+      '<p class="muted" style="margin:4px 0 8px">Phòng Nhân sự gửi lời khen, lời nhắc riêng cho bạn. Bật thông báo để điện thoại báo ngay khi có lời nhắn (bật 1 lần trên máy của bạn).</p>' +
+      '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('TCKT') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn chờ duyệt</b>' +
       '<p class="muted" style="margin:4px 0 8px">Khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn, điện thoại hiện thông báo <b>Đơn chờ duyệt</b>: khách, hàng, tổng số hũ. Bật trên điện thoại của mình (bật 1 lần).</p>' +
       '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('KHO') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn mới cần soạn</b>' +
       '<p class="muted" style="margin:4px 0 8px">Khi kế toán duyệt đơn sang <b>Đơn mới</b>, điện thoại hiện thông báo: mã đơn, khách, hàng, số lượng. Mỗi bạn kho bật trên điện thoại của mình (bật 1 lần).</p>' +
       '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : '');
   if ($('tbBat')) tbGanNut();
+  document.querySelectorAll('[data-lnxem]').forEach(function (b) { b.onclick = function () { goi('nsDaXemLoiNhan', [TK, b.dataset.lnxem], function (r) { H.loiNhan = r.loiNhan; veHome(); }, true); }; });
+}
+function loiNhanHtml() {
+  var ds = H.loiNhan || []; if (!ds.length) return '';
+  var moi = ds.filter(function (x) { return !x.xem; }).length;
+  return '<div class="the" style="margin-top:12px;border:2px solid ' + (moi ? '#D89A12' : '#e3e7ea') + '"><b>💌 Lời nhắn từ Phòng Nhân sự</b>' + (moi ? ' <span class="chip" style="background:#FFF3D9;color:#8a5f00">' + moi + ' chưa đọc</span>' : '') +
+    ds.map(function (x) { var khen = x.loai === 'khen';
+      return '<div style="margin-top:8px;padding:10px;border-radius:10px;background:' + (khen ? '#E3F1E8' : '#FFF3D9') + (x.xem ? ';opacity:.75' : '') + '"><b style="color:' + (khen ? '#006B3F' : '#8a5f00') + '">' + e(x.tieuDe) + '</b>' +
+        '<div style="font-size:14px;line-height:1.55;margin-top:4px;white-space:pre-wrap">' + e(x.noiDung) + '</div>' +
+        '<div class="hang" style="justify-content:space-between;align-items:center;margin-top:6px"><small class="muted">' + e(ngayDu(x.gui.slice(0, 10))) + ' ' + e(x.gui.slice(11, 16)) + '</small>' +
+        (x.xem ? '<small class="muted">✓ Đã đọc</small>' : '<button class="nut nho" data-lnxem="' + e(x.ma) + '" style="width:auto;padding:4px 12px">' + (khen ? '❤️ Cảm ơn, đã đọc' : '✓ Đã đọc, em ghi nhận') + '</button>') + '</div></div>'; }).join('') + '</div>';
 }
 var TB_KHOA = 'BNvCUndYQ2vsqjRGtB1d3V3WLunBg1Ma4q3zIUb29Ihycw6mno1K5lThNItSrcGdv433H77d7HF-6jROnggN938';
 function tbKhoa() { var s = TB_KHOA.replace(/-/g, '+').replace(/_/g, '/'), b = atob(s + '==='.slice((s.length + 3) % 4)), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
@@ -2966,6 +2979,10 @@ function veNsBc() {
       '<p class="muted" style="margin:8px 0 0">Số lấy thẳng từ chấm công, nghỉ phép, việc giao và ghi chú CSKH trong app, tính tới ' + e(r.luc) + '. Không có lương, SĐT, CCCD.</p></div>' +
     '<div class="the"><h3 style="margin-top:0">🤖 AI Phòng Nhân sự đang phụ trách</h3>' + ['chat-luong-nhan-su', 'chat-luong-cong-viec', 'van-hoa-nhan-su'].map(oAI).join('') +
       ((r.deXuat || []).length ? '<h4 style="margin:10px 0 4px">Đề xuất đang chờ xử lý</h4>' + r.deXuat.map(function (x) { return '<div style="font-size:13px;margin:4px 0">' + (x.muc === 'do' ? '🔴' : '🟡') + ' ' + e(x.tomTat) + (x.huong ? '<div class="muted" style="font-size:12.5px">→ ' + e(x.huong) + '</div>' : '') + '</div>'; }).join('') : '') + '</div>' +
+    ((r.loiNhan || []).length ? '<div class="the"><h3 style="margin-top:0">💌 Lời nhắn AI gửi nhân viên (14 ngày)</h3><p class="muted" style="margin:0 0 4px;font-size:12.5px">Khen / nhắc riêng từng bạn, hiện trên trang chủ app của bạn đó + thông báo điện thoại nếu máy đã bật. Hẹn giờ thì tới giờ mới hiện.</p>' +
+      r.loiNhan.map(function (x) { var hen = x.gui > r.luc.slice(0, 16);
+        return '<div style="font-size:13px;margin:6px 0;padding:6px 8px;border-radius:8px;background:' + (x.loai === 'khen' ? '#E3F1E8' : '#FFF3D9') + '"><b>' + (x.loai === 'khen' ? '👏 ' : '💬 ') + e(x.ten) + '</b> · ' + e(x.tieuDe) +
+          '<div style="margin-top:2px">' + e(x.noiDung) + '</div><div class="muted" style="font-size:11.5px;margin-top:2px">' + (hen ? '⏳ Hẹn gửi ' : 'Gửi ') + e(x.gui) + ' · ' + (hen ? 'chưa tới giờ' : x.xem ? '✓ Bạn đã đọc ' + e(x.xem) : 'chưa đọc') + (x.day && !hen ? ' · ' + e(x.day.replace(/^[\d\- :]+· /, '')) : '') + '</div></div>'; }).join('') + '</div>' : '') +
     '<div class="the"><h3 style="margin-top:0">Hiệu suất từng người (' + ds.length + ')</h3><p class="muted" style="margin:0 0 4px;font-size:12.5px">Người cần chú ý xếp trước: vắng, đi trễ, việc quá hạn, bị trả lại, AI ghi "cần nhắc".</p>' +
       (r.nsLoi ? '<p style="color:#B42318">Chưa đọc được chấm công: ' + e(r.nsLoi) + '</p>' : '') + (r.cvLoi ? '<p style="color:#B42318">Chưa đọc được việc giao: ' + e(r.cvLoi) + '</p>' : '') + ds.map(dongNguoi).join('') + '</div>' +
     (cv.quaHan.length ? '<div class="the"><h3 style="margin-top:0">⏰ Việc đang quá hạn (' + cv.soQuaHan + ')</h3>' + cv.quaHan.map(function (x) { return '<div style="font-size:13px;margin:4px 0">• <b>' + e(x.nguoi) + '</b>: ' + e(x.viec) + ' <span style="color:#B42318">· quá ' + x.quaNgay + ' ngày</span> <span class="muted">(giao: ' + e(x.giao) + ')</span></div>'; }).join('') + '</div>' : '') +
