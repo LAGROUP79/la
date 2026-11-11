@@ -2536,7 +2536,8 @@ function moChotThe(x) {
     (r.ghiDuyet && laKD && cho ? '<button class="nut" id="chSuaKD" style="margin-top:10px">✏️ Sửa đơn phòng KD</button>' : '') +
     (x.doiGoc && r.ghiDuyet ? '<button class="nut vang" id="chLay" style="margin-top:10px">↻ Cập nhật theo đơn gốc</button>' : '') +
     (cho && r.ghiDuyet && laKD ? '<button class="nut phu rong" id="chBo" style="margin-top:10px">Bỏ thẻ này (trùng với đơn đã nhập sổ)</button>' : '') +
-    (r.ghiDuyet ? '<button class="nut do rong" id="chHuy" style="margin-top:10px">🗑 Huỷ đơn</button>' : '') +
+    (r.ghiDuyet && !x.xuat1p ? '<button class="nut do rong" id="chHuy" style="margin-top:10px">🗑 Huỷ đơn</button>' : '') +
+    (r.ghiDuyet && x.xuat1p ? '<div style="margin-top:10px;font-size:13px;color:#8a5f00">Đơn đã gửi 1 phần: muốn huỷ thì bấm "Bỏ lần gửi gần nhất" cho tới hết các lần gửi trước.</div>' : '') +
     (x.ls ? '<details style="margin-top:10px"><summary class="muted">Lịch sử chuyển bước</summary><div class="muted" style="font-size:12.5px;line-height:1.6;margin-top:4px">' + x.ls.split('\n').reverse().map(function (l) { return e(l); }).join('<br>') + '</div></details>' : '') +
     '<button class="nut phu" id="chDong" style="margin-top:12px">Đóng</button>');
   $('chDong').onclick = dongHop;
