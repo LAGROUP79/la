@@ -3710,6 +3710,28 @@ function chotKho() {
     bao('Đã hoàn tất kiểm kho hôm nay' + (x.khop ? ' · ' + x.khop + ' mã để trống ghi khớp sổ.' : '.'));
   });
 }
+function kpBang(t) {
+  var kiem = t.loai === 'kiem', coTien = t.dong.some(function (d) { return d.tien; });
+  var dau = '<tr><th>Hàng</th><th class="s">' + (kiem ? 'Đếm được' : 'Số lượng') + '</th><th class="s">Trước → Sau</th>' + (kiem ? '<th class="s">Chênh</th>' : '') + (coTien ? '<th class="s">Tiền</th>' : '') + '</tr>';
+  function dong(d) {
+    return '<tr><td>' + e(d.ten) + '</td><td class="s">' + soSL(d.sl) + '</td><td class="s muted">' + soSL(d.truoc) + ' → ' + soSL(d.sau) + '</td>' +
+      (kiem ? '<td class="s' + (d.chenh ? ' am' : '') + '">' + (d.chenh > 0 ? '+' : '') + soSL(d.chenh) + '</td>' : '') + (coTien ? '<td class="s">' + (d.tien ? tien(d.tien) + 'đ' + (d.lai != null ? '<br><small>lãi ' + tien(d.lai) + 'đ</small>' : '') : '') + '</td>' : '') + '</tr>';
+  }
+  var nhom = [], gom = {};
+  t.dong.forEach(function (d) { var k = d.nhomCon || ''; if (!gom[k]) { gom[k] = []; nhom.push(k); } gom[k].push(d); });
+  var cot = 3 + (kiem ? 1 : 0) + (coTien ? 1 : 0);
+  var tong = '';
+  if (nhom.length > 1 || nhom[0]) {
+    tong = '<div class="hang" style="flex-wrap:wrap;gap:6px;margin:6px 0">' + nhom.map(function (k) {
+      var a = gom[k], sl = a.reduce(function (s, d) { return s + (Number(d.sl) || 0); }, 0), ch = a.reduce(function (s, d) { return s + (Number(d.chenh) || 0); }, 0);
+      return '<span class="chip" style="background:#E3F1E8;color:#006B3F">' + e(k || 'Khác') + ': ' + a.length + ' mã · ' + soSL(sl) + (kiem && ch ? ' (chênh ' + (ch > 0 ? '+' : '') + soSL(ch) + ')' : '') + '</span>';
+    }).join('') + '</div>';
+  }
+  var than = nhom.map(function (k) {
+    return (nhom.length > 1 || k ? '<tr><td colspan="' + cot + '" style="background:#F2F7F3;font-weight:700;color:#006B3F">' + e(k || 'Khác') + '</td></tr>' : '') + gom[k].map(dong).join('');
+  }).join('');
+  return tong + '<div class="cuon"><table>' + dau + than + '</table></div>';
+}
 function napKp(ngay) { goiDoc('khoPhieuNgay', [TK, ngay || (KP && KP.ngay) || H.homNay], veKp); }
 function veKp(r) {
   KP = r;
@@ -3717,10 +3739,7 @@ function veKp(r) {
     (r.ds.map(function (t) {
       return '<div class="don"><div class="dau"><span class="ma">' + e(t.gio) + ' · ' + e(KH_LOAI[t.loai] || t.loai) + (t.lyDo && t.loai !== 'kiem' ? ' · ' + e(t.lyDo) : '') + '</span>' +
         '<span class="chip ' + (t.huy ? 'huy' : t.loai === 'kiem' ? 'gui' : t.loai === 'nhap' ? 'giao' : 'cho') + '">' + (t.huy ? 'Đã huỷ' : e(t.nhom)) + '</span></div>' +
-        '<div class="muted">' + e(t.nv) + ' · ' + e(t.id) + (t.ghiChu ? ' · ' + e(t.ghiChu) : '') + '</div><div class="cuon"><table>' + t.dong.map(function (d) {
-          return '<tr><td>' + e(d.ten) + '</td><td class="s">' + soSL(d.sl) + '</td><td class="s muted">' + soSL(d.truoc) + ' → ' + soSL(d.sau) + '</td>' +
-            (t.loai === 'kiem' ? '<td class="s' + (d.chenh ? ' am' : '') + '">' + (d.chenh > 0 ? '+' : '') + soSL(d.chenh) + '</td>' : '') + (d.tien ? '<td class="s">' + tien(d.tien) + 'đ' + (d.lai != null ? '<br><small>lãi ' + tien(d.lai) + 'đ</small>' : '') + '</td>' : '') + '</tr>';
-        }).join('') + '</table></div>' + (t.huyDuoc ? '<button class="nut do nho" data-khhuy="' + e(t.id) + '">Huỷ phiếu</button>' : '') + '</div>';
+        '<div class="muted">' + e(t.nv) + ' · ' + e(t.id) + (t.ghiChu ? ' · ' + e(t.ghiChu) : '') + '</div>' + kpBang(t) + (t.huyDuoc ? '<button class="nut do nho" data-khhuy="' + e(t.id) + '">Huỷ phiếu</button>' : '') + '</div>';
     }).join('') || '<div class="the"><p class="muted" style="margin:0">Ngày này chưa có phiếu nào.</p></div>');
   $('kpNgay').onchange = function () { napKp(this.value); };
 }
