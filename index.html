@@ -456,6 +456,7 @@ function veNav() {
     }).join('') + '</div>' +
     (H.me.crm ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '') +
     '<div class="navPhong"><small>CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button>' +
+    '<button data-tab="sotay" class="' + (TAB === 'sotay' ? 'on' : '') + '" style="--dam:#006B3F"><i></i>Sổ tay văn hóa</button>' +
     (H.me.xemChot ? '<button data-tab="chot" class="' + (TAB === 'chot' ? 'on' : '') + '" style="--dam:#8a5f00"><i></i>Duyệt đơn (chỉ xem)</button>' : '') + '</div>';
 }
 var PHONG_HT = '';
@@ -483,14 +484,14 @@ function chuyenTab(t) {
   if (t === 'chot' && H.me.xemChot) can = null;
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
   if ((t === 'crm' || t === 'crmm') && !H.me.crm) { bao('Bạn chưa có quyền xem CRM. Vui lòng liên hệ Admin (anh Thanh / chị Lê).', true); return; }
-  if (t === 'crm' || t === 'crmm' || t === 'cskh' || (t === 'chot' && H.me.xemChot)) PHONG_HT = '';
+  if (t === 'crm' || t === 'crmm' || t === 'cskh' || t === 'sotay' || (t === 'chot' && H.me.xemChot)) PHONG_HT = '';
   if (t.indexOf('p_') === 0) PHONG_HT = t.slice(2); else if (t === 'home') PHONG_HT = '';
   if (t !== 'len') SUA = null; TAB = t; veNav(); veTab(); window.scrollTo(0, 0);
 }
 function veTab() {
   if (TAB.indexOf('p_') === 0) return vePhong(TAB.slice(2));
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
-    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
+    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, sotay: veSoTay, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); }, nsbc: napNsBc,
     kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, knx: veKnx, bct: veBaoCaoTC, chot: function () { napChot(); }, kbx: function () { napKbx(); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
   (m[TAB] || veHome)();
@@ -530,6 +531,7 @@ function veHome() {
     (H.me.ts ? '<h3 class="nhom">RIÊNG CỦA CHỊ</h3><div class="oclon bon"><button data-tab="cn" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.cv || '') + '</span><b>TRÌNH CÁ NHÂN</b><span>Việc, lịch, kế hoạch, chờ quyết, báo cáo, tài sản · nhắc giờ lên điện thoại</span></button>' +
       '<button data-tab="ts" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.bc || '') + '</span><b>TÀI SẢN CÁ NHÂN</b><span>Cơ cấu tài sản, công nợ theo tháng · chỉ mình chị xem</span></button></div>' : '') +
     '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
+      '<button data-tab="sotay" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.hs || IC_O.cskh) + '</span><b>SỔ TAY VĂN HÓA</b><span>6 giá trị cốt lõi, được làm / không được làm, nội quy công ty</span></button>' +
       (H.me.xemChot ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>' +
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +
       '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00: báo cáo ngày (số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, kiểm kho). Trong ngày: <b>Đơn chờ duyệt</b> khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn. Bật trên từng máy muốn nhận.</p>' +
@@ -1645,6 +1647,93 @@ function bamKhach(b) {
 
 var CSKH = null, CSKH_TAB = 'traloi', CSKH_Q = '', CSKH_LINK = 'https:' + '/' + '/claude.ai/artifact/3sBYFHH72ZcUJXGR3BqcjP';
 function wwwWeb(s) { return String(s == null ? '' : s).replace(/(^|[^\w.\/@-])lanest\.com\.vn/g, '$1www.lanest.com.vn'); }
+var SO_TAY = {
+  suMenh: 'Lanest lan toả tinh hoa yến sào Việt, minh bạch từ nguồn gốc, chân thật từ giá trị, vì sức khoẻ cộng đồng.',
+  tamNhin: 'Lanest trở thành thương hiệu yến sào uy tín hàng đầu Việt Nam, từng bước vươn tầm quốc tế.',
+  thu: ['Kính gửi toàn thể Cán bộ – Nhân viên Công ty TNHH Yến Sào Lanest. Sổ tay này ra đời với mong muốn cùng đội ngũ Lanest xây dựng một nền văn hóa doanh nghiệp bài bản — nơi mỗi hành động, dù nhỏ nhất, cũng phản ánh đúng tinh thần Tận Tâm – Chất Lượng – Uy Tín – Trách Nhiệm – Phát Triển – Hiệu Quả. Sổ tay chuyển các giá trị văn hóa thành những hành vi cụ thể để mỗi thành viên Lanest có thể hiểu, thực hành và tự đánh giá trong công việc hằng ngày.',
+    'Với một sản phẩm gắn liền với sức khỏe và niềm tin của khách hàng như tổ yến, mỗi chúng ta không chỉ đang bán một sản phẩm, mà đang gìn giữ một lời cam kết. Sáu giá trị trong sổ tay này không phải là khẩu hiệu để treo tường, mà là kim chỉ nam cho cách chúng ta làm việc, phục vụ khách hàng và đồng hành cùng nhau mỗi ngày.',
+    'Ban Lãnh đạo tin rằng khi mỗi cá nhân hiểu rõ và thực hành đúng các giá trị này, Lanest sẽ không chỉ phát triển bền vững mà còn trở thành một thương hiệu được khách hàng, đại lý và đối tác tin tưởng lựa chọn lâu dài.'],
+  ungXu: ['Tôn trọng khách hàng, đồng đội, đối tác và các quy định của Công ty.', 'Nói đúng sự thật, làm đúng cam kết và chủ động báo cáo khi có vấn đề.', 'Đặt chất lượng và lợi ích lâu dài lên trên sự tiện lợi trước mắt.', 'Không đùn đẩy trách nhiệm; tập trung vào giải pháp và kết quả.', 'Luôn học hỏi, cải tiến và sử dụng nguồn lực Công ty một cách hiệu quả.'],
+  giaTri: [
+    { ten: 'TẬN TÂM', mau: ['#FDEBDD', '#C8742B'], icon: '💛', tuyenBo: 'Tôi phục vụ khách hàng vượt sự mong đợi.', dinhNghia: 'Làm việc bằng sự chân thành, chu đáo và luôn hướng đến giá trị tốt nhất cho khách hàng, đồng đội và tổ chức.',
+      lam: ['Chủ động tìm hiểu nhu cầu và hỗ trợ khách hàng, đại lý đến khi vấn đề được giải quyết.', 'Làm việc chu đáo, không làm cho xong hoặc đối phó.', 'Chủ động hỗ trợ đồng đội khi công việc chung cần.', 'Chăm sóc khách hàng sau bán — hỏi thăm, nhắc lịch dùng sản phẩm, xử lý phản hồi.'],
+      khong: ['Thờ ơ với nhu cầu, phản hồi hoặc khó khăn của khách hàng, đại lý.', 'Làm qua loa, đối phó, chỉ để hoàn thành nhiệm vụ.', 'Đùn đẩy khách hàng hoặc công việc cho người khác.', 'Biết vấn đề nhưng mặc kệ vì cho rằng “không phải việc của tôi”.'],
+      quyChe: ['Căn cứ theo Quy trình và Quy chế chăm sóc khách hàng.', 'Căn cứ theo Quy trình tiếp nhận, phản hồi và xử lý yêu cầu khiếu nại.', 'Căn cứ theo quy tắc phối hợp và hỗ trợ nội bộ.'],
+      tuVan: 'Tôi đã thực sự nghĩ cho khách hàng và người nhận giá trị chưa?' },
+    { ten: 'CHẤT LƯỢNG', mau: ['#E3F1E8', '#006B3F'], icon: '🏅', tuyenBo: 'Tôi luôn nâng cao chất lượng sản phẩm và dịch vụ. Tôi đặt chất lượng làm tiêu chuẩn trong mọi việc mình làm.', dinhNghia: 'Luôn cam kết với chất lượng sản phẩm, dịch vụ và chất lượng công việc, chuẩn hóa từ nguyên liệu đến tay người dùng.',
+      lam: ['Tuân thủ tiêu chuẩn, quy trình sơ chế – tinh chế – đóng gói – bảo quản trong từng công việc.', 'Kiểm tra, đối chiếu trước khi bàn giao sản phẩm hoặc kết quả công việc.', 'Phát hiện sai sót phải xử lý hoặc báo cáo ngay.', 'Chủ động đề xuất cải tiến để sản phẩm, dịch vụ ngày càng tốt hơn.'],
+      khong: ['Xuất hoặc bàn giao sản phẩm không đạt tiêu chuẩn.', 'Biết có lỗi nhưng vẫn cho qua hoặc che giấu.', 'Bỏ bước kiểm tra để làm nhanh hơn.', 'Chấp nhận tư duy “như vậy là được rồi” khi chưa đạt chuẩn.'],
+      quyChe: ['Căn cứ theo quy định và tiêu chuẩn kiểm soát chất lượng.', 'Căn cứ theo quy trình sản xuất và kiểm nghiệm.', 'Căn cứ theo quy trình kho vận, đóng hàng và bảo quản.'],
+      tuVan: 'Việc này đã đạt tiêu chuẩn chưa?' },
+    { ten: 'UY TÍN', mau: ['#E4EDF9', '#1F5F9E'], icon: '🤝', tuyenBo: 'Tôi giữ uy tín như giữ mạng.', dinhNghia: 'Nói đúng sự thật, giữ lời và bảo vệ niềm tin mà khách hàng, đồng đội và đối tác dành cho Lanest.',
+      lam: ['Cung cấp thông tin trung thực, rõ ràng, minh bạch về nguồn gốc, thành phần sản phẩm.', 'Khi tư vấn, dùng từ “hỗ trợ” thay vì “công dụng” khi nói về tác dụng của yến, đúng định hướng truyền thông công ty.', 'Báo giá, chính sách chiết khấu cho đại lý rõ ràng, nhất quán.', 'Nếu không thể giữ cam kết, chủ động báo sớm và đưa ra phương án xử lý.'],
+      khong: ['Cung cấp thông tin sai, phóng đại hoặc che giấu thông tin quan trọng.', 'Hứa để lấy lòng khách hàng nhưng không thực hiện được.', 'Tự ý thay đổi giá, chính sách đại lý mà không thông báo.', 'Đổ lỗi hoặc né tránh khi không thực hiện đúng lời hứa.'],
+      quyChe: ['Căn cứ theo quy chế bán hàng và chính sách giá.', 'Căn cứ theo quy định chăm sóc khách hàng.'],
+      tuVan: 'Tôi đã giữ đúng điều mình cam kết chưa?' },
+    { ten: 'TRÁCH NHIỆM', mau: ['#FDE7E7', '#B42318'], icon: '🎯', tuyenBo: 'Tôi luôn chịu trách nhiệm 100%.', dinhNghia: 'Chủ động nhận việc, theo việc đến cùng và chịu trách nhiệm về kết quả.',
+      lam: ['Nhận việc phải hiểu rõ kết quả cần đạt, thời hạn và trách nhiệm.', 'Chủ động theo công việc đến khi hoàn tất; có khó khăn phải báo sớm.', 'Sai thì nhận, sửa và rút kinh nghiệm.', 'Bảo quản, sử dụng tài sản, hàng hóa công ty đúng mục đích.'],
+      khong: ['Đùn đẩy trách nhiệm; chờ nhắc mới làm.', 'Biết không kịp tiến độ nhưng không báo.', 'Sai nhưng tìm lý do hoặc người khác để đổ lỗi.', 'Nói “đã làm rồi” trong khi kết quả cuối cùng chưa đạt.'],
+      quyChe: ['Căn cứ vào nội quy lao động.', 'Căn cứ theo quy trình giao việc và báo cáo nghiệm thu.', 'Căn cứ theo quy định phân quyền và trách nhiệm (RACI).', 'Căn cứ theo quy trình báo cáo và xử lý sai sót.'],
+      tuVan: 'Tôi đã theo việc đến kết quả cuối cùng chưa?' },
+    { ten: 'PHÁT TRIỂN', mau: ['#F1E8FB', '#8A4FD1'], icon: '🌱', tuyenBo: 'Tôi luôn học hỏi và phát triển để phục vụ khách hàng tốt hơn.', dinhNghia: 'Luôn luôn học hỏi, cải tiến và giúp bản thân cùng đồng đội tiến bộ.',
+      lam: ['Chủ động học hỏi kiến thức, kỹ năng mới về sản phẩm, quy trình vận hành.', 'Tiếp nhận phản hồi với tinh thần cầu thị.', 'Sau mỗi sai sót phải rút ra bài học và cải tiến.', 'Sẵn sàng chia sẻ kiến thức, hướng dẫn đồng đội mới.'],
+      khong: ['Từ chối học cái mới vì “trước giờ vẫn làm vậy”.', 'Phản ứng phòng thủ khi được góp ý.', 'Lặp lại cùng một lỗi nhưng không thay đổi.', 'Giấu nghề, không chia sẻ kiến thức cần thiết cho đội ngũ.'],
+      quyChe: ['Chính sách đào tạo và phát triển nhân sự.', 'Căn cứ Quy chế đánh giá năng lực hiệu suất.', 'Lộ trình công danh và tiêu chuẩn thăng tiến.'],
+      tuVan: 'Hôm nay tôi tốt hơn hôm qua ở điểm nào?' },
+    { ten: 'HIỆU QUẢ', mau: ['#FFF3D9', '#8A5F00'], icon: '⚡', tuyenBo: 'Tôi luôn tìm giải pháp để đạt hiệu quả cao.', dinhNghia: 'Làm đúng việc, đúng cách, tối ưu nguồn lực và tạo ra kết quả thực chất.',
+      lam: ['Làm việc theo mục tiêu và kết quả cần đạt; ưu tiên việc tạo giá trị lớn.', 'Tuân thủ và cải tiến quy trình để tiết kiệm thời gian, chi phí, nguồn lực.', 'Đo lường công việc bằng số liệu, KPI khi phù hợp.', 'Báo cáo dựa trên số liệu, kết quả thực tế — không hình thức, đối phó.'],
+      khong: ['Làm nhiều nhưng không tạo ra kết quả.', 'Làm việc không có mục tiêu hoặc không biết ưu tiên.', 'Lãng phí thời gian, nguyên vật liệu và nguồn lực công ty.', 'Chạy theo tốc độ hoặc chi phí thấp mà đánh đổi chất lượng.'],
+      quyChe: ['Quy chế KPI và đánh giá hiệu suất.', 'Căn cứ quy trình lập kế hoạch, báo cáo công việc.', 'Căn cứ quy trình cải tiến và chuẩn hóa công việc.'],
+      tuVan: 'Kết quả tạo ra có xứng đáng với nguồn lực đã bỏ ra không?' }],
+  noiQuy: [
+    { ten: '1. Thời gian, chế độ làm việc', y: ['Thời gian làm việc: từ thứ 2 đến thứ 7.', 'Nữ: sáng 7h30 đến 11h00; chiều 13h30 đến 18h00.', 'Nam: sáng 8h00 đến 11h30; chiều 13h30 đến 18h00.', '(Đảm bảo nhận hàng, xuất hàng xong trước khi về.) Yêu cầu có mặt tại vị trí làm việc đúng giờ để chuẩn bị công việc.', 'Đến muộn quá 15 phút sẽ bị phạt 50k; nếu đi muộn quá 3 lần/tháng trừ thêm 100k.', 'Xin nghỉ phép phải báo trước cho Quản lý, Giám đốc 02 ngày và phải được sự đồng ý của Quản lý, Giám đốc. Các trường hợp nghỉ dài ngày phải viết đơn trước 01 tuần để công ty sắp xếp nhân sự.', 'Được hưởng 200% lương giờ làm vào ngày nghỉ.', 'Nghỉ ốm cần báo cho Quản lý, Giám đốc và nghỉ không quá 03 ngày. Nghỉ bệnh đi viện cần có giấy điều trị của bệnh viện.', 'Được nghỉ làm đám hiếu, hỉ theo luật định.', 'Được nghỉ Lễ, Tết theo lịch Nhà nước.', 'Xin nghỉ việc phải gửi đơn trước 30 ngày; nghỉ không thông báo sẽ không được thanh toán lương, thưởng và các chế độ từ công ty.'] },
+    { ten: '2. Tác phong và đạo đức', nhom: [['Tác phong', ['Trang phục chỉnh tề, lịch sự, áo đồng phục của công ty.', 'Nhanh nhẹn trong công việc, chuẩn xác, cẩn thận tỉ mỉ.', 'Tuân thủ thời gian làm việc, chấp hành các yêu cầu của Quản lý, Giám đốc Công ty.', 'Không tự ý rời vị trí làm việc trong giờ làm.', 'Không sử dụng điện thoại làm việc riêng trong giờ làm, trừ trường hợp giải quyết công việc chung của công ty.', 'Không hút thuốc tại khu vực làm việc. Phát hiện sai phạm phạt 50k/lần.']],
+      ['Đạo đức', ['Yêu cầu trung thực, thật thà trong làm việc.', 'Thân thiện hòa đồng, nói chuyện nhỏ nhẹ, lịch sự với khách hàng, đồng nghiệp, tôn trọng Quản lý, Giám đốc.', 'Không nói bậy, nói tục, lớn tiếng quát nạt, văn tục, chửi thề.', 'Tinh thần trách nhiệm cao trong công việc.', 'Nghiêm cấm các hành vi trái đạo đức trong công việc, đối với quản lý và đồng nghiệp như đánh nhau, cãi nhau, đe dọa gây thương tích… Phát hiện sẽ phạt theo quy định công ty hoặc báo cơ quan chức năng.']]] },
+    { ten: '3. An toàn, vệ sinh lao động', y: ['Tuân thủ yêu cầu quy định của Công ty về vệ sinh an toàn trong lao động.', 'Kiểm tra, vệ sinh khu vực làm việc, đảm bảo không chập điện, cháy nổ, mất vệ sinh ảnh hưởng đến tài sản và quá trình làm việc.', 'Nói chuyện cười đùa trong thời gian làm việc quá trớn ảnh hưởng công việc (bị Quản lý, Giám đốc nhắc nhở lúc đó không chuyển biến) phạt 50k/lần.', 'Trước khi về cần vệ sinh, sắp xếp gọn khu vực làm việc, kiểm soát, phân loại hàng hóa hoặc theo yêu cầu của Quản lý, Giám đốc.', 'Kiểm tra hệ thống nước (ngắt), điện (tắt), máy (dừng hoạt động), cửa (khóa) trước khi ra về.', 'Phát hiện cháy nổ cần báo ngay cho Quản lý, Giám đốc và người xung quanh, cơ quan chức năng biết để phối hợp bảo toàn tính mạng công nhân viên và tài sản cá nhân, tài sản Công ty.', 'Không mang các chất cấm, gây nghiện, gây nổ vào trong Công ty. Phát hiện sẽ bị giao cho cơ quan chức năng.'] },
+    { ten: '4. Quản lý tài sản cá nhân, tài sản công ty', y: ['Tuân thủ quy định công ty.', 'Để đồ dùng, phương tiện cá nhân đúng nơi quy định, đảm bảo gọn gàng ngăn nắp, an toàn, phòng ngừa mất cắp.', 'Nhắc nhở đồng nghiệp trong việc bảo quản đồ tư trang cá nhân.', 'Sử dụng tài sản chung của công ty cần cẩn thận, đảm bảo hiệu quả, tiết kiệm sức lực, an toàn, tránh hỏng hóc máy móc, trang thiết bị của công ty.', 'Thực hiện tiết kiệm thời gian, tiết kiệm nguyên vật liệu, tiết kiệm nước, tiết kiệm điện trong sản xuất.', 'Tái sử dụng các loại bao bì, vật liệu nếu có thể, đảm bảo thẩm mỹ, vệ sinh an toàn thực phẩm.', 'Không được mang hàng hóa, sản phẩm, nguyên vật liệu, phụ kiện… của công ty ra khỏi nơi làm việc nếu không được phép của Quản lý, Giám đốc. Phát hiện phạt theo mức độ thiệt hại, nặng có thể báo cơ quan chức năng.', 'Sắp xếp hàng hóa, phụ kiện gọn gàng đúng nơi quy định.'] },
+    { ten: '5. Yêu cầu khác', y: ['Chấp hành các yêu cầu của Quản lý và Giám đốc trong phạm vi đạo đức, công việc. Trong thời gian làm việc tại công ty, vi phạm nội quy ngoài trừ tiền (Công ty thu) thì cũng sẽ được tính và xem xét trong lương thưởng.'] }],
+  camKet: 'Tôi đã đọc, hiểu rõ và cam kết thực hiện nghiêm túc các giá trị văn hóa của Công ty TNHH Yến Sào Lanest được trình bày trong sổ tay này, trong suốt quá trình làm việc tại công ty.'
+};
+var ST_MUC = 'gt', ST_GT = 0;
+function veSoTay() {
+  var s = SO_TAY, muc = [['gt', '💎 6 giá trị'], ['ux', '🤝 Ứng xử'], ['tv', '🪞 Tự vấn'], ['nq', '📋 Nội quy'], ['tt', '✉️ Thư & cam kết']];
+  var h = quayLai() + '<h2 class="tieude">Sổ tay văn hóa Lanest</h2>' +
+    '<div class="chao" style="margin-bottom:12px"><div style="position:relative;z-index:1"><small>CÔNG TY TNHH YẾN SÀO LANEST · BAN HÀNH THÁNG 8/2026</small>' +
+    '<div style="margin-top:8px"><small>SỨ MỆNH</small><div style="font-size:15px;line-height:1.5">' + e(s.suMenh) + '</div></div>' +
+    '<div style="margin-top:8px"><small>TẦM NHÌN</small><div style="font-size:15px;line-height:1.5">' + e(s.tamNhin) + '</div></div></div></div>' +
+    '<div class="tab2" style="flex-wrap:wrap;margin-bottom:12px">' + muc.map(function (x) { return '<button data-stmuc="' + x[0] + '" class="' + (ST_MUC === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>';
+  if (ST_MUC === 'gt') {
+    h += '<div class="st-gt">' + s.giaTri.map(function (g, i) { return '<button data-stgt="' + i + '" class="' + (ST_GT === i ? 'on' : '') + '" style="--n:' + g.mau[0] + ';--d:' + g.mau[1] + '"><span>' + g.icon + '</span><b>' + e(g.ten) + '</b></button>'; }).join('') + '</div>';
+    var g = s.giaTri[ST_GT];
+    h += '<div class="the" style="border-top:5px solid ' + g.mau[1] + '"><div style="font-size:13px;color:' + g.mau[1] + ';font-weight:700">0' + (ST_GT + 1) + ' · ' + e(g.ten) + '</div>' +
+      '<div style="font-size:18px;font-weight:700;margin:6px 0 10px;color:' + g.mau[1] + '">“' + e(g.tuyenBo) + '”</div>' +
+      '<p style="margin:0 0 12px;line-height:1.6"><b>Định nghĩa:</b> ' + e(g.dinhNghia) + '</p>' +
+      '<div class="st-2cot"><div class="st-lam"><h4>✓ ĐƯỢC LÀM</h4>' + g.lam.map(function (x) { return '<div>✓ ' + e(x) + '</div>'; }).join('') + '</div>' +
+      '<div class="st-khong"><h4>✗ KHÔNG ĐƯỢC LÀM</h4>' + g.khong.map(function (x) { return '<div>✗ ' + e(x) + '</div>'; }).join('') + '</div></div>' +
+      '<h4 style="margin:14px 0 6px">Quy chế áp dụng</h4>' + g.quyChe.map(function (x) { return '<div class="muted" style="margin:3px 0">• ' + e(x) + '</div>'; }).join('') +
+      '<div style="margin-top:12px;padding:10px 12px;border-radius:10px;background:' + g.mau[0] + '"><b>Tự hỏi cuối ngày:</b> ' + e(g.tuVan) + '</div>' +
+      '<div class="hang" style="justify-content:space-between;margin-top:12px"><button class="nut phu nho" data-stgt="' + ((ST_GT + 5) % 6) + '" style="width:auto">‹ ' + e(s.giaTri[(ST_GT + 5) % 6].ten) + '</button><button class="nut phu nho" data-stgt="' + ((ST_GT + 1) % 6) + '" style="width:auto">' + e(s.giaTri[(ST_GT + 1) % 6].ten) + ' ›</button></div></div>' +
+      '<div class="the"><h3 style="margin-top:0">Tuyên bố phẩm giá</h3>' + s.giaTri.map(function (x) { return '<div style="margin:8px 0;padding-left:10px;border-left:4px solid ' + x.mau[1] + '"><b style="color:' + x.mau[1] + '">' + e(x.ten) + '</b> – ' + e(x.tuyenBo) + '</div>'; }).join('') + '</div>';
+  }
+  if (ST_MUC === 'ux') h += '<div class="the"><h3 style="margin-top:0">Nguyên tắc ứng xử chung</h3>' + s.ungXu.map(function (x, i) { return '<div class="st-so"><i>' + (i + 1) + '</i><span>' + e(x) + '</span></div>'; }).join('') + '</div>';
+  if (ST_MUC === 'tv') h += '<div class="the"><h3 style="margin-top:0">6 câu tự vấn của Lanest</h3><p class="muted" style="margin-top:0">Trước khi kết thúc một ngày làm việc, mỗi thành viên Lanest có thể tự hỏi:</p>' +
+    s.giaTri.map(function (x) { return '<div style="margin:8px 0;padding:10px 12px;border-radius:10px;background:' + x.mau[0] + '"><b style="color:' + x.mau[1] + '">' + x.icon + ' ' + e(x.ten.charAt(0) + x.ten.slice(1).toLowerCase()) + ':</b> ' + e(x.tuVan) + '</div>'; }).join('') + '</div>';
+  if (ST_MUC === 'nq') h += '<p class="muted" style="margin:0 0 8px">Yêu cầu dành cho tất cả cán bộ, công nhân viên đang làm việc hưởng lương cứng tại Công ty. Bấm từng mục để xem.</p>' +
+    s.noiQuy.map(function (m, i) {
+      var than = m.y ? '<ul>' + m.y.map(function (x) { return '<li>' + e(x) + '</li>'; }).join('') + '</ul>' : m.nhom.map(function (n) { return '<h4 style="margin:10px 0 4px">' + e(n[0]) + '</h4><ul>' + n[1].map(function (x) { return '<li>' + e(x) + '</li>'; }).join('') + '</ul>'; }).join('');
+      return '<details class="the st-nq"' + (i === 0 ? ' open' : '') + '><summary><b>' + e(m.ten) + '</b></summary>' + than + '</details>';
+    }).join('') + '<p class="muted" style="text-align:right">Giám đốc đã ký</p>';
+  if (ST_MUC === 'tt') h += '<div class="the"><h3 style="margin-top:0">Thư Ban Lãnh đạo</h3>' + s.thu.map(function (p) { return '<p style="line-height:1.65">' + e(p) + '</p>'; }).join('') + '<p><i>Trân trọng,<br><b>Ban Lãnh đạo Công ty TNHH Yến Sào Lanest</b></i></p></div>' +
+    '<div class="the" style="border:2px solid #006B3F"><h3 style="margin-top:0;color:#006B3F">Cam kết văn hóa</h3><p class="muted">Văn hóa được tạo nên bởi những lựa chọn và hành vi lặp lại mỗi ngày. Mỗi thành viên Lanest có trách nhiệm hiểu, thực hành và cùng nhau gìn giữ các giá trị văn hóa này.</p><p style="line-height:1.65;font-weight:600">“' + e(s.camKet) + '”</p><p class="muted" style="margin-bottom:0">— ' + e(H.me.ten) + '</p></div>';
+  h += '<p style="text-align:center;color:#006B3F;font-weight:700;letter-spacing:.5px;margin:16px 0">TẬN TÂM · CHẤT LƯỢNG · UY TÍN<br>TRÁCH NHIỆM · PHÁT TRIỂN · HIỆU QUẢ</p>';
+  $('noiDung').innerHTML = '<style>.st-gt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.st-gt button{border:2px solid transparent;background:var(--n);color:var(--d);border-radius:12px;padding:10px 4px;cursor:pointer;font-size:12.5px}.st-gt button span{display:block;font-size:22px}.st-gt button.on{border-color:var(--d);box-shadow:0 2px 8px rgba(0,0,0,.12)}' +
+    '.st-2cot{display:grid;grid-template-columns:1fr;gap:10px}@media(min-width:720px){.st-2cot{grid-template-columns:1fr 1fr}.st-gt{grid-template-columns:repeat(6,1fr)}}' +
+    '.st-lam,.st-khong{border-radius:10px;padding:10px 12px}.st-lam{background:#E3F1E8}.st-khong{background:#FDE7E7}.st-lam h4{color:#006B3F;margin:0 0 6px}.st-khong h4{color:#B42318;margin:0 0 6px}.st-lam div,.st-khong div{margin:6px 0;line-height:1.5;font-size:14px}' +
+    '.st-so{display:flex;gap:10px;align-items:flex-start;margin:10px 0;line-height:1.5}.st-so i{flex:none;width:26px;height:26px;border-radius:50%;background:#006B3F;color:#fff;font-style:normal;display:flex;align-items:center;justify-content:center;font-weight:700}' +
+    '.st-nq summary{cursor:pointer;font-size:15px;color:#006B3F}.st-nq ul{margin:8px 0 0;padding-left:20px}.st-nq li{margin:6px 0;line-height:1.55}</style>' + h;
+  document.querySelectorAll('[data-stmuc]').forEach(function (b) { b.onclick = function () { ST_MUC = b.dataset.stmuc; veSoTay(); window.scrollTo(0, 0); }; });
+  document.querySelectorAll('[data-stgt]').forEach(function (b) { b.onclick = function () { ST_GT = Number(b.dataset.stgt); veSoTay(); }; });
+}
 function napCskh() { goiDoc('cskhDuLieu', [TK], function (r) { (r.ds || []).forEach(function (x) { x.noiDung = wwwWeb(x.noiDung); x.tieuDe = wwwWeb(x.tieuDe); }); CSKH = r; veCskh(); }); }
 function cskhSach(t) { return String(t || '').split('\n').filter(function (l) { return !/^\((Lưu ý nội bộ|Nội bộ)/i.test(l.trim()); }).join('\n').trim(); }
 var CSKH_SO = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
