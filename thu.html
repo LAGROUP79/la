@@ -445,8 +445,8 @@ function chotMoDich() {
 }
 if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (ev) { if (ev.data && ev.data.moUrl && /mo=chot/.test(ev.data.moUrl)) moTuThongBao(ev.data.moUrl); else if (ev.data && ev.data.moUrl && /mo=tb/.test(ev.data.moUrl) && H) { PHONG_HT = ''; chuyenTab('tb'); } else if (ev.data && ev.data.moUrl && /ca-nhan\.html/.test(ev.data.moUrl)) location.href = ev.data.moUrl; });
 function veNav() {
-  var t = [['home', '⌂', 'Trang chủ'], ['tb', '🔔', 'Thông báo'], ['cc', '◷', 'Chấm công'], ['cv', '✓', 'Công việc'], ['np', '✉', 'Xin nghỉ']];
-  var sl = { cv: ((H.viec || {}).chuaXong || 0) + ((H.viec || {}).canDuyet || 0) + ((H.viec || {}).chot || 0) + (H.dxXuLy || 0), np: H.choDuyet, tb: H.tbMoi };
+  var t = [['home', '⌂', 'Trang chủ'], ['tb', '🔔', 'Thông báo'], ['cc', '◷', 'Chấm công'], ['cv', '✓', 'Công việc'], ['toi', '☺', 'Tôi']];
+  var sl = { cv: ((H.viec || {}).chuaXong || 0) + ((H.viec || {}).canDuyet || 0) + ((H.viec || {}).chot || 0) + (H.dxXuLy || 0), toi: (H.choDuyet || 0) + ((H.canLam || {}).ktChua ? 1 : 0) + ((H.canLam || {}).ckChua ? 1 : 0), tb: H.tbMoi };
   $('thanhNav').innerHTML = t.map(function (x) {
     var dem = sl[x[0]] ? '<span class="dem">' + sl[x[0]] + '</span>' : '';
     return '<button data-tab="' + x[0] + '" class="' + (TAB === x[0] && !PHONG_HT ? 'on' : '') + '"><b>' + x[1] + '</b>' + x[2] + dem + '</button>';
@@ -455,15 +455,15 @@ function veNav() {
       var vao = H.me.phongVao.indexOf(p.ma) >= 0, m = MAU_P[p.ma] || ['#eee', '#888', '#555'];
       return '<button data-tab="p_' + p.ma + '" class="' + (PHONG_HT === p.ma ? 'on' : '') + (vao ? '' : ' khoa') + '" style="--dam:' + m[1] + '"><i></i>' + e(tenPhong(p.ma).replace(/^PHÒNG /, '')) + (vao ? '' : ' 🔒') + '</button>';
     }).join('') + '</div>' +
-    (H.me.crm ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '') +
+    (H.me.crm && H.me.phongVao.indexOf('KD') < 0 ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '') +
     '<div class="navPhong"><small>CẨM NANG VÀ CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button>' +
     '<button data-tab="sotay" class="' + (TAB === 'sotay' ? 'on' : '') + '" style="--dam:#006B3F"><i></i>Sổ tay văn hóa</button>' +
     '<button data-tab="ktkt" class="' + (TAB === 'ktkt' ? 'on' : '') + '" style="--dam:#1F5F9E"><i></i>Kiểm tra kiến thức</button>' +
-    (H.me.xemChot ? '<button data-tab="chot" class="' + (TAB === 'chot' ? 'on' : '') + '" style="--dam:#8a5f00"><i></i>Duyệt đơn (chỉ xem)</button>' : '') + '</div>';
+    (H.me.xemChot && H.me.phongVao.indexOf('KD') < 0 ? '<button data-tab="chot" class="' + (TAB === 'chot' ? 'on' : '') + '" style="--dam:#8a5f00"><i></i>Duyệt đơn (chỉ xem)</button>' : '') + '</div>';
 }
 var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT', 'HCNS'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
-  p_VH: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
+  p_VH: ['VH'], bchub: ['VH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'], nsbc: ['HCNS'],
   kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], knx: ['KHO'], chot: ['KHO', 'TCKT', 'VH'], kbx: ['KHO', 'TCKT', 'VH'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'], xl: ['TCKT'], sb: ['TCKT', 'VH'], bct: ['TCKT', 'VH'] };
 function tenPhong(ma) { return ((H.phongBan || []).filter(function (p) { return p.ma === ma; })[0] || {}).ten || ma; }
@@ -486,14 +486,14 @@ function chuyenTab(t) {
   if (t === 'chot' && H.me.xemChot) can = null;
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
   if ((t === 'crm' || t === 'crmm') && !H.me.crm) { bao('Bạn chưa có quyền xem CRM. Vui lòng liên hệ Admin (anh Thanh / chị Lê).', true); return; }
-  if (t === 'crm' || t === 'crmm' || t === 'cskh' || t === 'sotay' || t === 'ktkt' || (t === 'chot' && H.me.xemChot)) PHONG_HT = '';
+  if (((t === 'crm' || t === 'crmm' || (t === 'chot' && H.me.xemChot)) && PHONG_HT !== 'KD') || t === 'cskh' || t === 'sotay' || t === 'ktkt' || t === 'toi') PHONG_HT = '';
   if (t.indexOf('p_') === 0) PHONG_HT = t.slice(2); else if (t === 'home') PHONG_HT = '';
   if (t !== 'len') SUA = null; TAB = t; veNav(); veTab(); window.scrollTo(0, 0);
 }
 function veTab() {
   if (TAB.indexOf('p_') === 0) return vePhong(TAB.slice(2));
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
-    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, sotay: veSoTay, ktkt: napKtt, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
+    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, sotay: veSoTay, ktkt: napKtt, toi: veToi, bchub: veBcHub, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); }, nsbc: napNsBc,
     kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, knx: veKnx, bct: veBaoCaoTC, chot: function () { napChot(); }, kbx: function () { napKbx(); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
   (m[TAB] || veHome)();
@@ -521,13 +521,14 @@ function veHome() {
   var mau = MAU_O = { cc: ['#E2F3EE', '#18946F', '#0F5A43'], cv: ['#E7EBFC', '#4C63D9', '#2C3C93'], np: ['#F1E8FB', '#8A4FD1', '#57308A'], bc: ['#E5F4E3', '#3F9B3A', '#276224'],
     th: ['#FFF3D9', '#D89A12', '#8A5F00'], len: ['#FFE9E1', '#E5643A', '#9C3A1A'], ds: ['#FCEFC4', '#B8862B', '#6E4E0E'], ton: ['#E1F1FA', '#2B8CC4', '#175A80'],
     kh: ['#FCE6EE', '#D24C7E', '#8C2A50'], cd: ['#ECEFF1', '#5F7480', '#37474F'], hs: ['#FDEBDD', '#C8742B', '#7A4210'], dy: ['#E6F6F4', '#1E9A8A', '#0F5E54'], crm: ['#E4EEF7', '#3D6FA8', '#21456E'], crmm: ['#E6F4EA', '#2E8B57', '#1B5E3A'], cskh: ['#FFF3E0', '#D9822B', '#8A4B0F'] };
-  $('noiDung').innerHTML = chaoHtml() +
+  var coKD = H.me.phongVao.indexOf('KD') >= 0;
+  $('noiDung').innerHTML = chaoHtml() + canLamHtml() +
     (H.me.admin ? '' : '<h3 class="nhom">CỦA TÔI</h3><div class="oclon bon">' + o.filter(function (x) { return ['cc', 'np', 'cv', 'hs'].indexOf(x[0]) >= 0; }).map(function (x) {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
     }).join('') + '</div>') +
     '<h3 class="nhom">PHÒNG BAN</h3><div class="pbLuoi">' + H.phongBan.filter(function (p) { return H.me.phongVao.indexOf(p.ma) >= 0; }).map(function (p) { return thePhong(p.ma); }).join('') + '</div>' +
-    (H.me.crm ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
+    (H.me.crm && !coKD ? '<h3 class="nhom">CRM KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="crm" style="--nen:' + mau.crm[0] + ';--dam:' + mau.crm[1] + ';--dam2:' + mau.crm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH CŨ</b><span>Khách lẻ, đại lý: tình trạng mua, công nợ</span></button>' +
       '<button data-tab="crmm" style="--nen:' + mau.crmm[0] + ';--dam:' + mau.crmm[1] + ';--dam2:' + mau.crmm[2] + '"><span class="ico">' + IC_O.crm + '</span><b>CRM KHÁCH MỚI</b><span>Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý</span></button>' +
       '<button data-tab="bd" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + IC_O.crm + '</span><b>BẢN ĐỒ ĐẠI LÝ</b><span>Đại lý theo tỉnh, vùng còn trống, đại lý chậm mua</span></button></div>' : '') +
     (H.me.ts ? '<h3 class="nhom">RIÊNG CỦA CHỊ</h3><div class="oclon bon"><button data-tab="cn" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.cv || '') + '</span><b>TRÌNH CÁ NHÂN</b><span>Việc, lịch, kế hoạch, chờ quyết, báo cáo, tài sản · nhắc giờ lên điện thoại</span></button>' +
@@ -535,20 +536,58 @@ function veHome() {
     '<h3 class="nhom">CẨM NANG VÀ CSKH</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
       '<button data-tab="sotay" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.hs || IC_O.cskh) + '</span><b>SỔ TAY VĂN HÓA</b><span>6 giá trị cốt lõi, được làm / không được làm, nội quy công ty</span></button>' +
       '<button data-tab="ktkt" style="--nen:#E4EDF9;--dam:#1F5F9E;--dam2:#163F6B"><span class="ico">' + (IC_O.cv || IC_O.cskh) + '</span><b>KIỂM TRA KIẾN THỨC</b><span>10 câu trắc nghiệm mỗi tuần về Sổ tay và Cẩm nang CSKH</span></button>' +
-      (H.me.xemChot ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>' +
-    (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +
-      '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00: báo cáo ngày (số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, kiểm kho). Trong ngày: <b>Đơn chờ duyệt</b> khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn. Bật trên từng máy muốn nhận.</p>' +
-      '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><button class="nut rong" id="tbThu" style="width:auto">Gửi thử ngay</button></div>' +
-      '<small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('TCKT') < 0 && H.me.phongVao.indexOf('KHO') < 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Nhận thông báo trên điện thoại</b>' +
-      '<p class="muted" style="margin:4px 0 8px">Thông báo chung, việc mới được giao, đề xuất được duyệt, lời nhắn Phòng Nhân sự: bật để điện thoại báo ngay (bật 1 lần trên máy của bạn).</p>' +
-      '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('TCKT') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn chờ duyệt</b>' +
-      '<p class="muted" style="margin:4px 0 8px">Khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn, điện thoại hiện thông báo <b>Đơn chờ duyệt</b>: khách, hàng, tổng số hũ. Bật trên điện thoại của mình (bật 1 lần).</p>' +
-      '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : H.me.phongVao.indexOf('KHO') >= 0 ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo đơn mới cần soạn</b>' +
-      '<p class="muted" style="margin:4px 0 8px">Khi kế toán duyệt đơn sang <b>Đơn mới</b>, điện thoại hiện thông báo: mã đơn, khách, hàng, số lượng. Mỗi bạn kho bật trên điện thoại của mình (bật 1 lần).</p>' +
-      '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : '');
-  if ($('tbBat')) tbGanNut();
+      (H.me.xemChot && !coKD ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>';
   document.querySelectorAll('[data-lnxem]').forEach(function (b) { b.onclick = function () { goi('nsDaXemLoiNhan', [TK, b.dataset.lnxem], function (r) { H.loiNhan = r.loiNhan; H.tbMoi = r.tbMoi; luuH(); veNav(); veHome(); }, true); }; });
 }
+function oLon(ds) {
+  return '<div class="oclon bon">' + ds.map(function (x) { var m = x[4] || ['#ECEFF1', '#5F7480', '#37474F'];
+    return '<button data-tab="' + x[0] + '"' + (x[5] ? ' data-clmuc="' + x[5] + '" data-cltab="' + x[0] + '"' : '') + ' style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[3]] || IC_O.hs || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[6] ? '<i>' + e(x[6]) + '</i>' : '') + '</button>'; }).join('') + '</div>';
+}
+function veToi() {
+  var cl = H.canLam || {}, M = MAU_O || {};
+  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Của tôi</h2>' +
+    '<div class="the" style="padding:12px 14px"><b style="font-size:17px">' + e(H.me.ten) + '</b><br><small class="muted">' + e(H.me.vai) + (H.me.team ? ' · ' + e(H.me.team) : '') + '</small></div>' +
+    oLon([['hs', 'HỒ SƠ CỦA TÔI', 'Thông tin, văn bản, phiếu công, phiếu lương', 'hs', M.hs],
+      ['np', 'XIN NGHỈ', H.me.duyetCC ? 'Gửi đơn · duyệt đơn nghỉ, chấm công' : 'Gửi đơn nghỉ, xem kết quả duyệt', 'np', M.np, '', H.choDuyet ? H.choDuyet + ' chờ duyệt' : ''],
+      ['cc', 'CHẤM CÔNG', 'Chấm vào, chấm ra, bảng công tháng', 'cc', M.cc],
+      ['sotay', 'CAM KẾT VĂN HÓA', 'Đọc Sổ tay văn hóa và xác nhận cam kết', 'hs', ['#E3F1E8', '#006B3F', '#004D2C'], 'tt', cl.ckChua ? 'Chưa ký' : ''],
+      ['ktkt', 'KIỂM TRA KIẾN THỨC', '10 câu mỗi tuần · xem điểm các tuần', 'cv', ['#E4EDF9', '#1F5F9E', '#163F6B'], '', cl.ktChua ? 'Tuần này chưa làm' : ''],
+      ['tb', 'THÔNG BÁO', 'Tin của bạn · bật thông báo trên điện thoại', 'cskh', ['#FFF3E0', '#D9822B', '#8A4B0F'], '', H.tbMoi ? H.tbMoi + ' chưa đọc' : '']]);
+}
+function veBcHub() {
+  var M = MAU_O || {}, ds = [['bct', 'BÁO CÁO KẾ TOÁN', 'Doanh thu, lãi, công nợ, doanh số KD, thưởng, kho, Excel', 'bc', M.bc],
+    ['bc', 'DOANH THU PHÒNG KD', 'Tổng phòng, ngành hàng, từng NV, % target', 'bc', M.bc],
+    ['kb', 'BÁO CÁO KHO NGÀY', 'Nhập, xuất, kiểm kho, đối soát với đơn kế toán', 'ton', M.ton],
+    ['kbx', 'BÁO CÁO XUẤT KHO', 'Đơn xuất trong ngày, gửi 1 phần, gửi nốt', 'ds', M.ds],
+    ['nsbc', 'BÁO CÁO NHÂN SỰ', 'Chấm công, công việc, cam kết, nhận xét của AI', 'hs', ['#F1E8FB', '#8A4FD1', '#57308A']],
+    ['ktkt', 'KẾT QUẢ KIỂM TRA KIẾN THỨC', 'Điểm từng bạn theo tuần, ai chưa làm', 'cv', ['#E4EDF9', '#1F5F9E', '#163F6B']],
+    ['ag', 'PHÒNG ĐIỀU HÀNH AGENT', 'Các trợ lý AI: con nào chạy ổn, con nào cần xem', 'bc', ['#E4EDF9', '#1F5F9E', '#163F6B']],
+    ['nk', 'NHẬT KÝ HỆ THỐNG', 'Ai làm gì, lúc nào', 'ds', M.cd]];
+  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo</h2><p class="muted" style="margin:0 0 10px">Mọi báo cáo của công ty ở một chỗ.</p>' + oLon(ds);
+}
+function canLamHtml() {
+  var v = H.viec || {}, cl = H.canLam || {}, c = H.cc || {}, ds = [];
+  var vao = (c.evs || []).some(function (x) { return x.loai === 'Vào'; });
+  if (!H.me.admin && !c.loi && !vao) ds.push(['cc', '', '◷', 'Chưa chấm công vào hôm nay', '#B42318']);
+  if (v.chot) ds.push(['chot', '', '📦', v.chot + (H.me.admin || H.me.phongVao.indexOf('TCKT') >= 0 ? ' đơn chờ duyệt' : ' đơn mới cần soạn'), '#8a5f00']);
+  if (v.chuaXong) ds.push(['cv', 'viec', '✓', v.chuaXong + ' việc được giao chưa xong', '#4C63D9']);
+  if (v.canDuyet) ds.push(['cv', 'viec', '☑', v.canDuyet + ' việc chờ bạn duyệt', '#4C63D9']);
+  if (H.dxXuLy) ds.push(['cv', 'dx', '💡', H.dxXuLy + ' đề xuất cần xử lý', '#8A4FD1']);
+  if (H.choDuyet) ds.push(['np', '', '✉', H.choDuyet + ' yêu cầu nghỉ / chấm công chờ duyệt', '#8A4FD1']);
+  if (H.choSoan) ds.push(['ds', '', '🧾', H.choSoan + ' đơn KD chờ soạn', '#B8862B']);
+  if (cl.ktChua) ds.push(['ktkt', '', '📝', 'Làm bài kiểm tra kiến thức tuần này', '#1F5F9E']);
+  if (cl.ckChua) ds.push(['sotay', 'tt', '✍️', 'Đọc Sổ tay và ký cam kết văn hóa', '#006B3F']);
+  if (!ds.length) return '<div class="the" style="padding:10px 14px;margin-top:-4px"><b style="color:#006B3F">✅ Hôm nay bạn không còn việc tồn.</b></div>';
+  return '<div class="the" style="margin-top:-4px"><b>📋 Việc cần làm hôm nay</b>' + ds.map(function (x) {
+    return '<button class="cl-dong" data-cltab="' + x[0] + '" data-clmuc="' + x[1] + '"><span style="color:' + x[4] + '">' + x[2] + '</span><span>' + e(x[3]) + '</span><span class="muted">›</span></button>';
+  }).join('') + '<style>.cl-dong{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;border-top:1px solid var(--vien);background:none;padding:10px 2px;font-size:14.5px;cursor:pointer;color:var(--chu)}.cl-dong span:nth-child(2){flex:1}</style></div>';
+}
+document.addEventListener('click', function (ev) {
+  var b = ev.target.closest && ev.target.closest('[data-cltab]'); if (!b) return;
+  ev.stopPropagation(); var t = b.dataset.cltab, m = b.dataset.clmuc;
+  if (t === 'cv' && m) CV_MUC = m; if (t === 'sotay' && m) ST_MUC = m;
+  PHONG_HT = ''; chuyenTab(t);
+}, true);
 var CHAO_CHUC = ['Chúc bạn một ngày làm việc thật vui và hiệu quả 🌿', 'Cảm ơn bạn đã cùng Lanest giữ chữ tín mỗi ngày 💛', 'Mỗi việc nhỏ làm tận tâm là một khách hàng tin mình hơn 🌱', 'Nghỉ tay uống ly nước, rồi mình làm tiếp nha ☕', 'Cùng nhau làm tốt, cùng nhau đi xa ✨'];
 function chaoHtml() {
   var gio = Number(String(H.gio || '').slice(0, 2)) || new Date().getHours();
@@ -598,7 +637,7 @@ function veThongBao(r) {
       '<div class="muted" style="white-space:pre-wrap">' + e(g.noiDung.slice(0, 200)) + '</div><small class="muted">' + e(ngayDu(g.gui.slice(0, 10))) + ' ' + e(g.gui.slice(11, 16)) + (g.chua.length ? ' · chưa đọc: ' + e(g.chua.join(', ')) : '') + '</small></div>';
   }).join('') + '</div>';
   h += '<div class="the" style="margin-top:14px"><b>🔔 Nhận thông báo trên điện thoại</b><p class="muted" style="margin:4px 0 8px">Có thông báo mới, việc mới, đề xuất được duyệt… điện thoại báo ngay. Bật 1 lần trên máy của bạn.</p>' +
-    '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>';
+    '<div class="hang" style="gap:8px;flex-wrap:wrap"><button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button>' + (H.me.admin ? '<button class="nut rong" id="tbThu" style="width:auto">Gửi thử báo cáo 21h</button>' : '') + '</div><small class="muted" id="tbTT"></small></div>';
   $('noiDung').innerHTML = h;
   if ($('tbBat')) tbGanNut();
   if ($('tbSoan')) $('tbSoan').onclick = moSoanThongBao;
@@ -2557,7 +2596,7 @@ var IC_P = (function () {
 var MO_TA_P = { VH: 'Phân quyền, nhật ký hệ thống, điều hành agent AI', HCNS: 'Hồ sơ nhân viên, văn bản, công, lương, duyệt yêu cầu', TCKT: 'Sổ bán hàng, công nợ, doanh thu, thưởng, đối chiếu kho', KD: 'Bán hàng, đơn hàng, doanh thu, Target, giá & thưởng', KHO: 'Chốt đơn, kiểm kho, nhập, xuất, báo cáo ngày' };
 function phongNhanh(ma) {
   var me = H.me, kg = me.phongGhi.indexOf('KHO') >= 0;
-  var m = { VH: [['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký'], me.ag && ['ag', 'Agent AI']],
+  var m = { VH: [me.admin && ['bchub', 'Báo cáo'], ['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký'], me.ag && ['ag', 'Agent AI']],
     HCNS: [me.nsQL && ['ns_nv', 'Nhân viên'], me.xemLuong && ['nsbc', 'Báo cáo'], me.xemLuong && ['ns_luong', 'Bảng lương'], me.duyetCC && ['np', 'Duyệt yêu cầu'], me.nsQL && ['ns_np', 'Nghỉ phép']],
     TCKT: [['sb', 'Sổ bán hàng'], ['chot', 'Chốt đơn'], ['bct', 'Báo cáo']],
     KD: me.mk ? [['ton', 'Tồn kho']] : [['len', 'Bán hàng'], ['ds', 'Đơn hàng'], ['bc', 'Doanh số KD']],
@@ -2585,7 +2624,7 @@ function vePhong(ma) {
     if (ma === 'KD') { if (!LOC.ky) LOC.ky = 'thang'; goiNen('don|' + JSON.stringify(LOC), 'dsDon', [TK, LOC]); }
   }, 300);
   var o = [], ghi = H.me.phongGhi.indexOf(ma) >= 0, ghiChu = '';
-  if (ma === 'VH') { o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']]; if (H.me.ag) o.push(['ag', 'PHÒNG ĐIỀU HÀNH AGENT', 'Các trợ lý AI và việc tự động: con nào chạy ổn, con nào cần xem', 'bc']); }
+  if (ma === 'VH') { o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']]; if (H.me.admin) o.unshift(['bchub', 'BÁO CÁO', 'Mọi báo cáo ở một chỗ: kế toán, doanh thu, kho, xuất kho, nhân sự, kiểm tra, agent', 'bc']); if (H.me.ag) o.push(['ag', 'PHÒNG ĐIỀU HÀNH AGENT', 'Các trợ lý AI và việc tự động: con nào chạy ổn, con nào cần xem', 'bc']); }
   if (ma === 'HCNS') {
     if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds']);
     if (H.me.xemLuong) o.push(['nsbc', 'BÁO CÁO', 'Tổng hợp nhân sự, hiệu suất từng người · AI Phòng Nhân sự theo dõi, nhận xét', 'bc']);
@@ -2603,6 +2642,8 @@ function vePhong(ma) {
     if (H.me.admin) o.push(['cd:kpi', 'TARGET', 'Target cả phòng, giao trưởng phòng, chia thành viên', 'cd'], ['cd:gt', 'GIÁ & THƯỞNG', 'Giá niêm yết, mức thưởng từng sản phẩm', 'th'], ['cd:ctkm', 'CHƯƠNG TRÌNH BÁN HÀNG', 'Giá khuyến mãi, giảm %, quà tặng theo đợt (Tết, 8/3…), tự hết hạn', 'len'], ['cd:team', 'TEAM', 'Danh sách team kinh doanh', 'kh']);
     else if (H.me.chiaKpi) o.push(['cd:kpi', 'CHIA TARGET', 'Target team và từng thành viên', 'cd']);
     if (H.me.giaoViec) o.push(['cv', 'GIAO VIỆC', 'Giao việc cho team', 'cv']);
+    if (H.me.crm) o.push(['crm', 'CRM KHÁCH CŨ', 'Khách lẻ, đại lý: tình trạng mua, công nợ', 'crm'], ['crmm', 'CRM KHÁCH MỚI', 'Khách đang tư vấn: nhập, theo dõi, chuyển sang đại lý', 'crm'], ['bd', 'BẢN ĐỒ ĐẠI LÝ', 'Đại lý theo tỉnh, vùng còn trống, đại lý chậm mua', 'crm']);
+    if (H.me.xemChot) o.push(['chot', 'DUYỆT ĐƠN (CHỈ XEM)', 'Đơn chờ duyệt và đơn đang đi kho, không hiện giá', 'ds']);
   }
   if (ma === 'KHO') {
     o = [['chot', 'CHỐT ĐƠN', 'Đơn trong ngày: duyệt → ghi → soạn → đóng → tạo mã → xuất kho', 'ds'], ['kk', 'KIỂM KHO CUỐI NGÀY', 'Hũ, tinh, thô mỗi ngày · phụ kiện thứ 7 · khớp sổ để trống', 'dy'],
@@ -4767,7 +4808,7 @@ function bamKho(b) {
 
 document.addEventListener('click', function (ev) {
   var b = ev.target.closest('button'); if (!b) return;
-  if (b.dataset.tab) { if (b.dataset.pb) PHONG_HT = b.dataset.pb; else if (b.closest('#thanhNav') && /^(home|tb|cc|cv|np)$/.test(b.dataset.tab)) PHONG_HT = ''; chuyenTab(b.dataset.tab); return; }
+  if (b.dataset.tab) { if (b.dataset.pb) PHONG_HT = b.dataset.pb; else if (b.closest('#thanhNav') && /^(home|tb|cc|cv|np|toi)$/.test(b.dataset.tab)) PHONG_HT = ''; chuyenTab(b.dataset.tab); return; }
   if (b.dataset.cvmuc) { CV_MUC = b.dataset.cvmuc; if (CV_MUC === 'dx') napDeXuat(); else if (CV) veCongViec(CV); else napCongViec(); return; }
   if (b.dataset.cc) { moChamCong(b.dataset.cc); return; }
   if (b.id === 'nutThoat') { if (confirm('Thoát khỏi app?')) thoat(); return; }
