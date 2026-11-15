@@ -422,7 +422,7 @@ function thoat(imLang) {
   $('app').classList.add('an'); $('dangNhap').classList.remove('an'); dongHop(); napTen();
 }
 function vaoApp(home) {
-  H = home; luuH(); $('dangNhap').classList.add('an'); $('app').classList.remove('an');
+  H = home; luuH(); ST_CK = null; $('dangNhap').classList.add('an'); $('app').classList.remove('an');
   $('hdTen').textContent = H.me.ten + (H.me.admin ? ' · Admin' : H.me.vaiPhong.length ? ' · ' + H.me.vaiPhong.map(function (v) { return v.vai; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ') : '');
   PHONG_HT = ''; chuyenTab('home'); setTimeout(taiSan, 800);
   if (/[?&]mo=chot/.test(location.search)) { moTuThongBao(location.search); try { history.replaceState(null, '', location.pathname); } catch (x) {} }
@@ -1694,14 +1694,28 @@ var SO_TAY = {
     { ten: '5. Yêu cầu khác', y: ['Chấp hành các yêu cầu của Quản lý và Giám đốc trong phạm vi đạo đức, công việc. Trong thời gian làm việc tại công ty, vi phạm nội quy ngoài trừ tiền (Công ty thu) thì cũng sẽ được tính và xem xét trong lương thưởng.'] }],
   camKet: 'Tôi đã đọc, hiểu rõ và cam kết thực hiện nghiêm túc các giá trị văn hóa của Công ty TNHH Yến Sào Lanest được trình bày trong sổ tay này, trong suốt quá trình làm việc tại công ty.'
 };
-var ST_MUC = 'gt', ST_GT = 0;
+var ST_MUC = 'gt', ST_GT = 0, ST_CK = null;
+function ckHtml() {
+  if (!ST_CK) return '<p class="muted">Đang tải trạng thái cam kết…</p>';
+  var h = ST_CK.luc ? '<div style="padding:10px 12px;border-radius:10px;background:#E3F1E8;color:#006B3F;font-weight:700">✅ Bạn đã đọc và cam kết lúc ' + e(ngVN(ST_CK.luc.slice(0, 10))) + ' ' + e(ST_CK.luc.slice(11, 16)) + '</div>' :
+    '<button class="nut" id="stCamKet" style="margin-top:4px">✍️ Tôi đã đọc và cam kết</button>';
+  if (ST_CK.ds) {
+    var da = ST_CK.ds.filter(function (x) { return x.luc; }), chua = ST_CK.ds.filter(function (x) { return !x.luc; });
+    h += '<div style="margin-top:14px"><b>Theo dõi cam kết: ' + da.length + '/' + ST_CK.ds.length + ' bạn đã cam kết</b>' +
+      (chua.length ? '<div style="margin-top:6px;color:#B42318;font-size:14px">Chưa cam kết: ' + chua.map(function (x) { return e(x.ten); }).join(', ') + '</div>' : '<div style="margin-top:6px;color:#006B3F">Tất cả đã cam kết 🎉</div>') +
+      (da.length ? '<div class="muted" style="margin-top:6px;font-size:13px">Đã cam kết: ' + da.map(function (x) { return e(x.ten) + ' (' + e(ngVN(x.luc.slice(0, 10))) + ')'; }).join(', ') + '</div>' : '') + '</div>';
+  }
+  return h;
+}
 function veSoTay() {
+  if (!ST_CK) goi('soTayCamKet', [TK, false], function (r) { ST_CK = r; if (TAB === 'sotay') veSoTay(); }, true, function () {});
   var s = SO_TAY, muc = [['gt', '💎 6 giá trị'], ['ux', '🤝 Ứng xử'], ['tv', '🪞 Tự vấn'], ['nq', '📋 Nội quy'], ['tt', '✉️ Thư & cam kết']];
   var h = quayLai() + '<h2 class="tieude">Sổ tay văn hóa Lanest</h2>' +
     '<div class="chao" style="margin-bottom:12px"><div style="position:relative;z-index:1"><small>CÔNG TY TNHH YẾN SÀO LANEST · BAN HÀNH THÁNG 8/2026</small>' +
     '<div style="margin-top:8px"><small>SỨ MỆNH</small><div style="font-size:15px;line-height:1.5">' + e(s.suMenh) + '</div></div>' +
     '<div style="margin-top:8px"><small>TẦM NHÌN</small><div style="font-size:15px;line-height:1.5">' + e(s.tamNhin) + '</div></div></div></div>' +
-    '<div class="tab2" style="flex-wrap:wrap;margin-bottom:12px">' + muc.map(function (x) { return '<button data-stmuc="' + x[0] + '" class="' + (ST_MUC === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>';
+    '<div class="tab2" style="flex-wrap:wrap;margin-bottom:12px">' + muc.map(function (x) { return '<button data-stmuc="' + x[0] + '" class="' + (ST_MUC === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+    (ST_CK && !ST_CK.luc && ST_MUC !== 'tt' ? '<div class="the" style="border:2px solid #D89A12;padding:10px 12px"><b>✍️ Bạn chưa xác nhận cam kết văn hóa.</b> <span class="muted">Đọc hết sổ tay rồi vào tab <b>Thư &amp; cam kết</b> bấm xác nhận nhé.</span> <button class="nut nho" data-stmuc="tt" style="width:auto;margin-top:6px">Đến phần cam kết ›</button></div>' : '');
   if (ST_MUC === 'gt') {
     h += '<div class="st-gt">' + s.giaTri.map(function (g, i) { return '<button data-stgt="' + i + '" class="' + (ST_GT === i ? 'on' : '') + '" style="--n:' + g.mau[0] + ';--d:' + g.mau[1] + '"><span>' + g.icon + '</span><b>' + e(g.ten) + '</b></button>'; }).join('') + '</div>';
     var g = s.giaTri[ST_GT];
@@ -1724,7 +1738,7 @@ function veSoTay() {
       return '<details class="the st-nq"' + (i === 0 ? ' open' : '') + '><summary><b>' + e(m.ten) + '</b></summary>' + than + '</details>';
     }).join('') + '<p class="muted" style="text-align:right">Giám đốc đã ký</p>';
   if (ST_MUC === 'tt') h += '<div class="the"><h3 style="margin-top:0">Thư Ban Lãnh đạo</h3>' + s.thu.map(function (p) { return '<p style="line-height:1.65">' + e(p) + '</p>'; }).join('') + '<p><i>Trân trọng,<br><b>Ban Lãnh đạo Công ty TNHH Yến Sào Lanest</b></i></p></div>' +
-    '<div class="the" style="border:2px solid #006B3F"><h3 style="margin-top:0;color:#006B3F">Cam kết văn hóa</h3><p class="muted">Văn hóa được tạo nên bởi những lựa chọn và hành vi lặp lại mỗi ngày. Mỗi thành viên Lanest có trách nhiệm hiểu, thực hành và cùng nhau gìn giữ các giá trị văn hóa này.</p><p style="line-height:1.65;font-weight:600">“' + e(s.camKet) + '”</p><p class="muted" style="margin-bottom:0">— ' + e(H.me.ten) + '</p></div>';
+    '<div class="the" style="border:2px solid #006B3F"><h3 style="margin-top:0;color:#006B3F">Cam kết văn hóa</h3><p class="muted">Văn hóa được tạo nên bởi những lựa chọn và hành vi lặp lại mỗi ngày. Mỗi thành viên Lanest có trách nhiệm hiểu, thực hành và cùng nhau gìn giữ các giá trị văn hóa này.</p><p style="line-height:1.65;font-weight:600">“' + e(s.camKet) + '”</p><p class="muted">— ' + e(H.me.ten) + '</p>' + ckHtml() + '</div>';
   h += '<p style="text-align:center;color:#006B3F;font-weight:700;letter-spacing:.5px;margin:16px 0">TẬN TÂM · CHẤT LƯỢNG · UY TÍN<br>TRÁCH NHIỆM · PHÁT TRIỂN · HIỆU QUẢ</p>';
   $('noiDung').innerHTML = '<style>.st-gt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.st-gt button{border:2px solid transparent;background:var(--n);color:var(--d);border-radius:12px;padding:10px 4px;cursor:pointer;font-size:12.5px}.st-gt button span{display:block;font-size:22px}.st-gt button.on{border-color:var(--d);box-shadow:0 2px 8px rgba(0,0,0,.12)}' +
     '.st-2cot{display:grid;grid-template-columns:1fr;gap:10px}@media(min-width:720px){.st-2cot{grid-template-columns:1fr 1fr}.st-gt{grid-template-columns:repeat(6,1fr)}}' +
@@ -1733,6 +1747,10 @@ function veSoTay() {
     '.st-nq summary{cursor:pointer;font-size:15px;color:#006B3F}.st-nq ul{margin:8px 0 0;padding-left:20px}.st-nq li{margin:6px 0;line-height:1.55}</style>' + h;
   document.querySelectorAll('[data-stmuc]').forEach(function (b) { b.onclick = function () { ST_MUC = b.dataset.stmuc; veSoTay(); window.scrollTo(0, 0); }; });
   document.querySelectorAll('[data-stgt]').forEach(function (b) { b.onclick = function () { ST_GT = Number(b.dataset.stgt); veSoTay(); }; });
+  if ($('stCamKet')) $('stCamKet').onclick = function () {
+    if (!confirm('Bạn xác nhận đã đọc, hiểu rõ và cam kết thực hiện các giá trị văn hóa của Lanest?')) return;
+    goi('soTayCamKet', [TK, true], function (r) { ST_CK = r; veSoTay(); bao('Cảm ơn bạn đã cam kết cùng Lanest 💛'); });
+  };
 }
 function napCskh() { goiDoc('cskhDuLieu', [TK], function (r) { (r.ds || []).forEach(function (x) { x.noiDung = wwwWeb(x.noiDung); x.tieuDe = wwwWeb(x.tieuDe); }); CSKH = r; veCskh(); }); }
 function cskhSach(t) { return String(t || '').split('\n').filter(function (l) { return !/^\((Lưu ý nội bộ|Nội bộ)/i.test(l.trim()); }).join('\n').trim(); }
@@ -3185,7 +3203,11 @@ function veNsBc() {
     '\n\n' + Object.keys(moi).map(function (ma) { return '🤖 ' + NSBC_TEN[ma] + ':\n' + (moi[ma].tong || ''); }).join('\n\n') +
     '\n\nTỪNG NGƯỜI:\n' + ds.map(function (o) { var c = o.cc, v = o.cv; return '• ' + o.ten + (c ? ' · công ' + soSL(c.thang.cong) + '/' + soSL(c.thang.congChuan) + ', trễ 7 ngày ' + c.tre7 + ', vắng ' + c.vang7 : '') +
       (v ? ' · việc 30 ngày: xong ' + v.xong30 + '/' + v.giao30 + ', đúng hạn ' + (v.tyLeDungHan == null ? '—' : v.tyLeDungHan + '%') + ', quá hạn ' + v.treMo : '') + o.nx.map(function (x) { return '\n   ' + (NSBC_MUC[x.muc] || NSBC_MUC.binhThuong)[0] + ': ' + x.nhanXet; }).join(''); }).join('\n');
+  var ck = r.camKet || [], ckDa = ck.filter(function (x) { return x.luc; }), ckChua = ck.filter(function (x) { return !x.luc; });
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo nhân sự</h2>' +
+    (ck.length ? '<div class="the"><div class="hang" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><b>✍️ Cam kết văn hóa: ' + ckDa.length + '/' + ck.length + ' bạn</b><button class="nut nho phu" data-tab="sotay" style="width:auto">Mở Sổ tay ›</button></div>' +
+      (ckChua.length ? '<div style="margin-top:6px;color:#B42318;font-size:14px">Chưa cam kết: ' + ckChua.map(function (x) { return e(x.ten); }).join(', ') + '</div>' : '<div style="margin-top:6px;color:#006B3F">Tất cả đã cam kết 🎉</div>') +
+      (ckDa.length ? '<div class="muted" style="margin-top:4px;font-size:13px">Đã cam kết: ' + ckDa.map(function (x) { return e(x.ten) + ' (' + e(ngVN(x.luc.slice(0, 10))) + ')'; }).join(', ') + '</div>' : '') + '</div>' : '') +
     '<div class="the"><div class="o"><div><small>Nhân sự đang làm</small><b>' + th.soNV + '</b></div>' +
       (hn ? '<div><small>Hôm nay đã chấm vào</small><b>' + hn.daCham + '/' + hn.tong + '</b></div><div><small>Nghỉ hôm nay</small><b>' + hn.nghi + '</b></div>' : '') +
       '<div><small>Việc đang quá hạn</small><b style="' + mau(cv.soQuaHan > 0) + '">' + (cv.soQuaHan || 0) + '</b></div></div>' +
