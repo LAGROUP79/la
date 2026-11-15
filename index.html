@@ -455,8 +455,9 @@ function veNav() {
       return '<button data-tab="p_' + p.ma + '" class="' + (PHONG_HT === p.ma ? 'on' : '') + (vao ? '' : ' khoa') + '" style="--dam:' + m[1] + '"><i></i>' + e(tenPhong(p.ma).replace(/^PHÒNG /, '')) + (vao ? '' : ' 🔒') + '</button>';
     }).join('') + '</div>' +
     (H.me.crm ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '') +
-    '<div class="navPhong"><small>CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button>' +
+    '<div class="navPhong"><small>CẨM NANG VÀ CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button>' +
     '<button data-tab="sotay" class="' + (TAB === 'sotay' ? 'on' : '') + '" style="--dam:#006B3F"><i></i>Sổ tay văn hóa</button>' +
+    '<button data-tab="ktkt" class="' + (TAB === 'ktkt' ? 'on' : '') + '" style="--dam:#1F5F9E"><i></i>Kiểm tra kiến thức</button>' +
     (H.me.xemChot ? '<button data-tab="chot" class="' + (TAB === 'chot' ? 'on' : '') + '" style="--dam:#8a5f00"><i></i>Duyệt đơn (chỉ xem)</button>' : '') + '</div>';
 }
 var PHONG_HT = '';
@@ -484,14 +485,14 @@ function chuyenTab(t) {
   if (t === 'chot' && H.me.xemChot) can = null;
   if (can && !can.some(function (m) { return H.me.phongVao.indexOf(m) >= 0; })) { baoKhongQuyen(can); return; }
   if ((t === 'crm' || t === 'crmm') && !H.me.crm) { bao('Bạn chưa có quyền xem CRM. Vui lòng liên hệ Admin (anh Thanh / chị Lê).', true); return; }
-  if (t === 'crm' || t === 'crmm' || t === 'cskh' || t === 'sotay' || (t === 'chot' && H.me.xemChot)) PHONG_HT = '';
+  if (t === 'crm' || t === 'crmm' || t === 'cskh' || t === 'sotay' || t === 'ktkt' || (t === 'chot' && H.me.xemChot)) PHONG_HT = '';
   if (t.indexOf('p_') === 0) PHONG_HT = t.slice(2); else if (t === 'home') PHONG_HT = '';
   if (t !== 'len') SUA = null; TAB = t; veNav(); veTab(); window.scrollTo(0, 0);
 }
 function veTab() {
   if (TAB.indexOf('p_') === 0) return vePhong(TAB.slice(2));
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
-    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, sotay: veSoTay, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
+    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, sotay: veSoTay, ktkt: napKtt, np: napNghiPhep, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); }, nsbc: napNsBc,
     kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, knx: veKnx, bct: veBaoCaoTC, chot: function () { napChot(); }, kbx: function () { napKbx(); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
   (m[TAB] || veHome)();
@@ -530,8 +531,9 @@ function veHome() {
       '<button data-tab="bd" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + IC_O.crm + '</span><b>BẢN ĐỒ ĐẠI LÝ</b><span>Đại lý theo tỉnh, vùng còn trống, đại lý chậm mua</span></button></div>' : '') +
     (H.me.ts ? '<h3 class="nhom">RIÊNG CỦA CHỊ</h3><div class="oclon bon"><button data-tab="cn" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.cv || '') + '</span><b>TRÌNH CÁ NHÂN</b><span>Việc, lịch, kế hoạch, chờ quyết, báo cáo, tài sản · nhắc giờ lên điện thoại</span></button>' +
       '<button data-tab="ts" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.bc || '') + '</span><b>TÀI SẢN CÁ NHÂN</b><span>Cơ cấu tài sản, công nợ theo tháng · chỉ mình chị xem</span></button></div>' : '') +
-    '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
+    '<h3 class="nhom">CẨM NANG VÀ CSKH</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
       '<button data-tab="sotay" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.hs || IC_O.cskh) + '</span><b>SỔ TAY VĂN HÓA</b><span>6 giá trị cốt lõi, được làm / không được làm, nội quy công ty</span></button>' +
+      '<button data-tab="ktkt" style="--nen:#E4EDF9;--dam:#1F5F9E;--dam2:#163F6B"><span class="ico">' + (IC_O.cv || IC_O.cskh) + '</span><b>KIỂM TRA KIẾN THỨC</b><span>10 câu trắc nghiệm mỗi tuần về Sổ tay và Cẩm nang CSKH</span></button>' +
       (H.me.xemChot ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>' +
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +
       '<p class="muted" style="margin:4px 0 8px">Mỗi tối 21:00: báo cáo ngày (số đơn, doanh thu, lãi gộp, tiền thu, khách nợ, kiểm kho). Trong ngày: <b>Đơn chờ duyệt</b> khi Phòng KD lên đơn hoặc có người nhập đơn ở Chốt đơn. Bật trên từng máy muốn nhận.</p>' +
@@ -1750,6 +1752,58 @@ function veSoTay() {
   if ($('stCamKet')) $('stCamKet').onclick = function () {
     if (!confirm('Bạn xác nhận đã đọc, hiểu rõ và cam kết thực hiện các giá trị văn hóa của Lanest?')) return;
     goi('soTayCamKet', [TK, true], function (r) { ST_CK = r; veSoTay(); bao('Cảm ơn bạn đã cam kết cùng Lanest 💛'); });
+  };
+}
+var KTT = null, KTT_TL = [];
+function napKtt() { goiDoc('kiemTra', [TK], veKtt); }
+function veKtt(r) {
+  KTT = r; if (TAB !== 'ktkt') return;
+  var h = quayLai() + '<h2 class="tieude">Kiểm tra kiến thức</h2>' +
+    '<div class="chao" style="margin-bottom:12px"><div style="position:relative;z-index:1"><small>BÀI KIỂM TRA TUẦN ' + e(r.tuan.replace(/^\d{4}-W/, '')) + '</small><br><b>10 câu trắc nghiệm</b>' +
+    '<div style="margin-top:6px;font-size:14px;color:#F2FAEE">5 câu Sổ tay văn hóa · 5 câu Cẩm nang CSKH. Mỗi tuần làm 1 lần, đề mỗi lần khác nhau. Nộp xong xem ngay điểm và đáp án.</div></div></div>';
+  if (r.daNop) {
+    var d = r.daNop, mauD = d.diem >= 8 ? '#006B3F' : d.diem >= 5 ? '#8a5f00' : '#B42318';
+    h += '<div class="the" style="text-align:center"><div class="muted">Điểm tuần này</div><div style="font-size:44px;font-weight:800;color:' + mauD + '">' + soSL(d.diem) + '<small style="font-size:20px">/10</small></div>' +
+      '<div>' + d.dung + '/' + d.xemLai.length + ' câu đúng · nộp ' + e(ngVN(d.nop.slice(0, 10))) + ' ' + e(d.nop.slice(11, 16)) + '</div>' +
+      '<div class="muted" style="margin-top:6px">' + (d.diem >= 8 ? 'Tuyệt vời! Giữ phong độ nha 🎉' : d.diem >= 5 ? 'Khá rồi, xem lại các câu sai bên dưới nhé 💪' : 'Đọc lại Sổ tay và Cẩm nang CSKH rồi tuần sau làm tốt hơn nha 🌱') + '</div></div>' +
+      '<h3 class="nhom">XEM LẠI BÀI LÀM</h3>' + d.xemLai.map(function (c, i) {
+        var ok = c.chon === c.dung;
+        return '<div class="don" style="border-left:4px solid ' + (ok ? '#006B3F' : '#B42318') + '"><div class="muted" style="font-size:12px">Câu ' + (i + 1) + ' · ' + e(c.nhom) + '</div><b>' + e(c.q) + '</b>' +
+          c.a.map(function (a, k) { var st = k === c.dung ? 'background:#E3F1E8;color:#006B3F;font-weight:700' : k === c.chon ? 'background:#FDE7E7;color:#B42318;text-decoration:line-through' : '';
+            return '<div style="margin:5px 0;padding:6px 10px;border-radius:8px;' + st + '">' + (k === c.dung ? '✓ ' : k === c.chon ? '✗ ' : '○ ') + e(a) + '</div>'; }).join('') +
+          (c.chon < 0 ? '<div style="color:#B42318;font-size:13px">Bạn chưa chọn đáp án câu này.</div>' : '') +
+          '<div class="muted" style="font-size:13px;margin-top:4px">📖 ' + e(c.g) + '</div></div>';
+      }).join('');
+  } else if (r.dangLam) {
+    var b = r.dangLam; if (KTT_TL.length !== b.cau.length) KTT_TL = b.cau.map(function () { return null; });
+    h += b.cau.map(function (c, i) {
+      return '<div class="don"><div class="muted" style="font-size:12px">Câu ' + (i + 1) + '/' + b.cau.length + ' · ' + e(c.nhom) + '</div><b style="font-size:15px">' + e(c.q) + '</b>' +
+        c.a.map(function (a, k) { var on = KTT_TL[i] === k;
+          return '<button class="ktt-da' + (on ? ' on' : '') + '" data-kttc="' + i + '" data-kttk="' + k + '">' + 'ABCD'.charAt(k) + '. ' + e(a) + '</button>'; }).join('') + '</div>';
+    }).join('') +
+      '<button class="nut vang rong" id="kttNop" style="margin:8px 0 14px">📤 Nộp bài (' + KTT_TL.filter(function (x) { return x != null; }).length + '/' + b.cau.length + ' câu đã chọn)</button>';
+  } else {
+    h += '<div class="the" style="text-align:center"><p style="margin-top:0">Tuần này bạn chưa làm bài.</p><button class="nut vang" id="kttBd" style="width:auto;padding:10px 26px">▶ Bắt đầu làm bài</button>' +
+      '<p class="muted" style="margin-bottom:6px;font-size:13px">Nên đọc lại trước khi làm:</p><div class="hang" style="justify-content:center;gap:8px"><button class="nut nho phu" data-tab="sotay" style="width:auto">Sổ tay văn hóa</button><button class="nut nho phu" data-tab="cskh" style="width:auto">Cẩm nang CSKH</button></div></div>';
+  }
+  if (r.lichSu.length) h += '<div class="the"><h3 style="margin-top:0">Điểm các tuần của bạn</h3><div class="hang" style="flex-wrap:wrap;gap:6px">' + r.lichSu.map(function (x) {
+    return '<span class="chip" style="background:' + (x.diem >= 8 ? '#E3F1E8;color:#006B3F' : x.diem >= 5 ? '#FFF3D9;color:#8a5f00' : '#FDE7E7;color:#B42318') + '">Tuần ' + e(x.tuan.replace(/^\d{4}-W/, '')) + ': ' + soSL(x.diem) + '/10</span>'; }).join('') + '</div></div>';
+  if (r.quanLy) {
+    var q = r.quanLy, nay = r.tuan, chua = q.nguoi.filter(function (n) { return n.diem[nay] == null; });
+    h += '<div class="the"><h3 style="margin-top:0">📊 Kết quả nhân viên</h3><p style="margin:0 0 8px">' + (q.nguoi.length - chua.length) + '/' + q.nguoi.length + ' bạn đã làm bài tuần này' +
+      (chua.length ? ' · <span style="color:#B42318">chưa làm: ' + chua.map(function (n) { return e(n.ten); }).join(', ') + '</span>' : '') + '</p>' +
+      '<div class="cuon"><table><tr><th>Nhân viên</th>' + q.tuans.map(function (t) { return '<th class="s">T' + e(t.replace(/^\d{4}-W/, '')) + '</th>'; }).join('') + '<th class="s">TB</th></tr>' +
+      q.nguoi.map(function (n) { return '<tr><td>' + e(n.ten) + '<div class="muted" style="font-size:12px">' + e(n.boPhan || '') + '</div></td>' + q.tuans.map(function (t) { var v = n.diem[t];
+        return '<td class="s" style="' + (v == null ? 'color:#aaa' : v >= 8 ? 'color:#006B3F;font-weight:700' : v >= 5 ? 'color:#8a5f00' : 'color:#B42318;font-weight:700') + '">' + (v == null ? '—' : soSL(v)) + '</td>'; }).join('') +
+        '<td class="s"><b>' + (n.tb == null ? '—' : soSL(n.tb)) + '</b></td></tr>'; }).join('') + '</table></div></div>';
+  }
+  $('noiDung').innerHTML = '<style>.ktt-da{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border:1.5px solid var(--vien);border-radius:10px;background:#fff;font-size:14.5px;line-height:1.45;cursor:pointer;color:var(--chu)}.ktt-da.on{border-color:#006B3F;background:#E3F1E8;color:#006B3F;font-weight:700}</style>' + h;
+  if ($('kttBd')) $('kttBd').onclick = function () { KTT_TL = []; goi('kiemTraBatDau', [TK], function (x) { veKtt(x); window.scrollTo(0, 0); }); };
+  document.querySelectorAll('[data-kttc]').forEach(function (b) { b.onclick = function () { KTT_TL[Number(b.dataset.kttc)] = Number(b.dataset.kttk); var y = window.scrollY; veKtt(KTT); window.scrollTo(0, y); }; });
+  if ($('kttNop')) $('kttNop').onclick = function () {
+    var thieu = KTT_TL.filter(function (x) { return x == null; }).length;
+    if (!confirm(thieu ? 'Còn ' + thieu + ' câu chưa chọn. Vẫn nộp bài?' : 'Nộp bài? Mỗi tuần chỉ làm 1 lần.')) return;
+    goi('kiemTraNop', [TK, KTT.dangLam.ma, KTT_TL], function (x) { KTT_TL = []; veKtt(x); window.scrollTo(0, 0); bao('Đã nộp bài: ' + soSL(x.daNop.diem) + '/10 điểm'); });
   };
 }
 function napCskh() { goiDoc('cskhDuLieu', [TK], function (r) { (r.ds || []).forEach(function (x) { x.noiDung = wwwWeb(x.noiDung); x.tieuDe = wwwWeb(x.tieuDe); }); CSKH = r; veCskh(); }); }
