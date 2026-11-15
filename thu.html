@@ -530,7 +530,6 @@ function veHome() {
       '<button data-tab="bd" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + IC_O.crm + '</span><b>BẢN ĐỒ ĐẠI LÝ</b><span>Đại lý theo tỉnh, vùng còn trống, đại lý chậm mua</span></button></div>' : '') +
     (H.me.ts ? '<h3 class="nhom">RIÊNG CỦA CHỊ</h3><div class="oclon bon"><button data-tab="cn" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.cv || '') + '</span><b>TRÌNH CÁ NHÂN</b><span>Việc, lịch, kế hoạch, chờ quyết, báo cáo, tài sản · nhắc giờ lên điện thoại</span></button>' +
       '<button data-tab="ts" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.bc || '') + '</span><b>TÀI SẢN CÁ NHÂN</b><span>Cơ cấu tài sản, công nợ theo tháng · chỉ mình chị xem</span></button></div>' : '') +
-    (H.me.ag ? '<h3 class="nhom">TRỢ LÝ AI</h3><div class="oclon bon"><button data-tab="ag" style="--nen:#E4EDF9;--dam:#1F5F9E;--dam2:#163F6B"><span class="ico">' + (IC_O.bc || '') + '</span><b>PHÒNG ĐIỀU HÀNH AGENT</b><span>Các trợ lý AI và việc tự động: con nào chạy ổn, con nào cần xem</span></button></div>' : '') +
     '<h3 class="nhom">CHĂM SÓC KHÁCH HÀNG</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
       (H.me.xemChot ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>' +
     (H.me.admin ? '<div class="the" style="margin-top:14px"><b>🔔 Thông báo trên điện thoại</b>' +
@@ -2394,10 +2393,10 @@ var IC_P = (function () {
     KHO: s('<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>'),
   };
 })();
-var MO_TA_P = { VH: 'Phân quyền, nhật ký hệ thống', HCNS: 'Hồ sơ nhân viên, văn bản, công, lương, duyệt yêu cầu', TCKT: 'Sổ bán hàng, công nợ, doanh thu, thưởng, đối chiếu kho', KD: 'Bán hàng, đơn hàng, doanh thu, Target, giá & thưởng', KHO: 'Chốt đơn, kiểm kho, nhập, xuất, báo cáo ngày' };
+var MO_TA_P = { VH: 'Phân quyền, nhật ký hệ thống, điều hành agent AI', HCNS: 'Hồ sơ nhân viên, văn bản, công, lương, duyệt yêu cầu', TCKT: 'Sổ bán hàng, công nợ, doanh thu, thưởng, đối chiếu kho', KD: 'Bán hàng, đơn hàng, doanh thu, Target, giá & thưởng', KHO: 'Chốt đơn, kiểm kho, nhập, xuất, báo cáo ngày' };
 function phongNhanh(ma) {
   var me = H.me, kg = me.phongGhi.indexOf('KHO') >= 0;
-  var m = { VH: [['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký']],
+  var m = { VH: [['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký'], me.ag && ['ag', 'Agent AI']],
     HCNS: [me.nsQL && ['ns_nv', 'Nhân viên'], me.xemLuong && ['nsbc', 'Báo cáo'], me.xemLuong && ['ns_luong', 'Bảng lương'], me.duyetCC && ['np', 'Duyệt yêu cầu'], me.nsQL && ['ns_np', 'Nghỉ phép']],
     TCKT: [['sb', 'Sổ bán hàng'], ['chot', 'Chốt đơn'], ['bct', 'Báo cáo']],
     KD: me.mk ? [['ton', 'Tồn kho']] : [['len', 'Bán hàng'], ['ds', 'Đơn hàng'], ['bc', 'Doanh số KD']],
@@ -2425,7 +2424,7 @@ function vePhong(ma) {
     if (ma === 'KD') { if (!LOC.ky) LOC.ky = 'thang'; goiNen('don|' + JSON.stringify(LOC), 'dsDon', [TK, LOC]); }
   }, 300);
   var o = [], ghi = H.me.phongGhi.indexOf(ma) >= 0, ghiChu = '';
-  if (ma === 'VH') o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']];
+  if (ma === 'VH') { o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']]; if (H.me.ag) o.push(['ag', 'PHÒNG ĐIỀU HÀNH AGENT', 'Các trợ lý AI và việc tự động: con nào chạy ổn, con nào cần xem', 'bc']); }
   if (ma === 'HCNS') {
     if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds']);
     if (H.me.xemLuong) o.push(['nsbc', 'BÁO CÁO', 'Tổng hợp nhân sự, hiệu suất từng người · AI Phòng Nhân sự theo dõi, nhận xét', 'bc']);
