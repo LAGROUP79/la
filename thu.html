@@ -519,11 +519,7 @@ function veHome() {
   var mau = MAU_O = { cc: ['#E2F3EE', '#18946F', '#0F5A43'], cv: ['#E7EBFC', '#4C63D9', '#2C3C93'], np: ['#F1E8FB', '#8A4FD1', '#57308A'], bc: ['#E5F4E3', '#3F9B3A', '#276224'],
     th: ['#FFF3D9', '#D89A12', '#8A5F00'], len: ['#FFE9E1', '#E5643A', '#9C3A1A'], ds: ['#FCEFC4', '#B8862B', '#6E4E0E'], ton: ['#E1F1FA', '#2B8CC4', '#175A80'],
     kh: ['#FCE6EE', '#D24C7E', '#8C2A50'], cd: ['#ECEFF1', '#5F7480', '#37474F'], hs: ['#FDEBDD', '#C8742B', '#7A4210'], dy: ['#E6F6F4', '#1E9A8A', '#0F5E54'], crm: ['#E4EEF7', '#3D6FA8', '#21456E'], crmm: ['#E6F4EA', '#2E8B57', '#1B5E3A'], cskh: ['#FFF3E0', '#D9822B', '#8A4B0F'] };
-  var chao = (H.me.mk || H.me.phongGhi.indexOf('KD') < 0 ? '' : '<div><small>Target hôm nay</small><br><b class="vang">' + (k.kpi ? (hn && hn.laLam ? tien(hn.chiTieu) + 'đ' : 'Nghỉ CN') : 'Chưa chia') + '</b><br><small>đã bán ' + tien(hn ? hn.dt : 0) + 'đ</small></div>');
-  $('noiDung').innerHTML = '<div class="chao"><div class="luoi2"><div><small>Xin chào</small><br><b>' + e(H.me.ten) + '</b><br><small>' + e(H.me.vai) + (H.me.team ? ' · ' + e(H.me.team) : '') + '</small></div>' + chao + '</div>' +
-    (k.kpi ? '<div class="phong"><small>Tháng ' + H.homNay.slice(5, 7) + ' của bạn: ' + tien(k.dat) + ' / ' + tien(k.kpi) + 'đ · ' + (k.pt || 0) + '%</small>' + thanh(k.pt) + '</div>' : '') +
-    (ph ? '<div class="phong"><small>Doanh thu ' + e(ph.ten) + ' tháng ' + H.homNay.slice(5, 7) + '</small><br><b class="vang" style="font-size:20px">' + tien(ph.dt) + 'đ</b>' +
-      '<small> · ' + ph.soDon + ' đơn · hôm nay ' + tien(ph.homNay) + 'đ</small>' + (ph.kpi ? '<br><small>Target ' + tien(ph.kpi) + 'đ · đạt ' + ph.pt + '%</small>' + thanh(ph.pt) : '') + '</div>' : '') + '</div>' + loiNhanHtml() +
+  $('noiDung').innerHTML = chaoHtml() +
     (H.me.admin ? '' : '<h3 class="nhom">CỦA TÔI</h3><div class="oclon bon">' + o.filter(function (x) { return ['cc', 'np', 'cv', 'hs'].indexOf(x[0]) >= 0; }).map(function (x) {
       var m = mau[x[0]] || mau.cd;
       return '<button data-tab="' + x[0] + '" style="--nen:' + m[0] + ';--dam:' + m[1] + ';--dam2:' + m[2] + '"><span class="ico">' + (IC_O[x[0]] || '') + '</span><b>' + x[1] + '</b><span>' + e(x[2]) + '</span>' + (x[3] ? '<i>' + e(x[3]) + '</i>' : '') + '</button>';
@@ -549,6 +545,20 @@ function veHome() {
       '<button class="nut" id="tbBat" style="width:auto">Bật trên máy này</button><br><small class="muted" id="tbTT"></small></div>' : '');
   if ($('tbBat')) tbGanNut();
   document.querySelectorAll('[data-lnxem]').forEach(function (b) { b.onclick = function () { goi('nsDaXemLoiNhan', [TK, b.dataset.lnxem], function (r) { H.loiNhan = r.loiNhan; H.tbMoi = r.tbMoi; luuH(); veNav(); veHome(); }, true); }; });
+}
+var CHAO_CHUC = ['Chúc bạn một ngày làm việc thật vui và hiệu quả 🌿', 'Cảm ơn bạn đã cùng Lanest giữ chữ tín mỗi ngày 💛', 'Mỗi việc nhỏ làm tận tâm là một khách hàng tin mình hơn 🌱', 'Nghỉ tay uống ly nước, rồi mình làm tiếp nha ☕', 'Cùng nhau làm tốt, cùng nhau đi xa ✨'];
+function chaoHtml() {
+  var gio = Number(String(H.gio || '').slice(0, 2)) || new Date().getHours();
+  var buoi = gio < 11 ? 'Chào buổi sáng' : gio < 14 ? 'Chào buổi trưa' : gio < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+  var thu = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'][new Date(H.homNay + 'T12:00:00').getDay()];
+  var chuc = CHAO_CHUC[Number(H.homNay.slice(8, 10)) % CHAO_CHUC.length];
+  var ds = H.loiNhan || [], moi = H.tbMoi || ds.length;
+  var tb = ds.length ? '<div class="phong"><div class="hang" style="justify-content:space-between;align-items:center"><b style="font-size:15px">🔔 ' + moi + ' thông báo mới</b>' +
+    '<button class="nut nho" data-tab="tb" style="width:auto;flex:none;padding:4px 14px;background:#fff;color:#006B3F">Xem ›</button></div>' +
+    ds.slice(0, 3).map(function (x) { return '<div style="margin-top:6px;font-size:14px;line-height:1.45">• ' + e(x.tieuDe) + ' <small>· ' + e(ngVN(x.gui.slice(0, 10))) + ' ' + e(x.gui.slice(11, 16)) + '</small></div>'; }).join('') + '</div>' : '';
+  return '<div class="chao"><div style="position:relative;z-index:1"><small>' + buoi + ' · ' + thu + ', ' + e(ngayDu(H.homNay)) + '</small><br><b>' + e(H.me.ten) + '</b><br>' +
+    '<small>' + e(H.me.vai) + (H.me.team ? ' · ' + e(H.me.team) : '') + '</small>' +
+    '<div style="margin-top:8px;font-size:15px;color:#F2FAEE">' + chuc + '</div></div>' + tb + '</div>';
 }
 function loiNhanHtml() {
   var ds = H.loiNhan || []; if (!ds.length) return '';
