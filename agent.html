@@ -370,8 +370,9 @@ doiXem(XEM);
 
 const MAU_TT={on:0x3f8f22,tre:0xd99a1e,canh:0xd99a1e,xem:0xd99a1e,loi:0xd2483a,chua:0x9aa59d,lenh:0x2f6fb5,kh:0xc9d2cc};
 /* Bố cục: hàng sau CEO · Khách hàng · Marketing; hàng trước Nhân sự · Kinh doanh · Kế toán (SX/TK cũ giữ chỗ để máy chủ bản cũ vẫn vẽ được) */
-const VI_TRI={CEO:[-9,-4],KH:[0,-4],MKT:[9,-4],NS:[-9,4],KD:[0,4],KT:[9,4],TK:[0,-4],SX:[-9,4]};
-const SO_PHONG={KT:1,KD:2,NS:3,MKT:4,KH:5,CEO:6,SX:3,TK:5};
+/* 17/11/2026: 8 phòng theo bản đồ AI quản trị (thêm Công nghệ, Pháp lý) → 4 cột × 2 hàng */
+const VI_TRI={CEO:[-13.5,-4],KH:[-4.5,-4],MKT:[4.5,-4],CN:[13.5,-4],NS:[-13.5,4],KD:[-4.5,4],KT:[4.5,4],PL:[13.5,4],TK:[-4.5,-4],SX:[-13.5,4]};
+const SO_PHONG={KT:1,KD:2,NS:3,MKT:4,KH:5,CEO:6,CN:7,PL:8,SX:3,TK:5};
 const PW=8.4,PD=7.2;
 
 function chuNhan(chu,mau,coDot){
@@ -409,7 +410,7 @@ function dung(){
   const dat=new THREE.Mesh(new THREE.PlaneGeometry(160,160),new THREE.MeshStandardMaterial({color:0xcfe5d3,roughness:1}));dat.rotation.x=-Math.PI/2;dat.receiveShadow=true;sc.add(dat);
   const duong=hop(120,.04,4,0xd4d9d6);duong.position.set(0,.02,-11.5);duong.castShadow=false;sc.add(duong);
   for(let i=-55;i<56;i+=5){const v=hop(2,.05,.18,0xffffff);v.position.set(i,.03,-11.5);v.castShadow=false;sc.add(v)}
-  const san=hop(30,.12,19,0xf2f4f1);san.position.set(0,.06,0);sc.add(san);
+  const san=hop(39,.12,19,0xf2f4f1);san.position.set(0,.06,0);sc.add(san);
 
   /* Xưởng yến (sau đường) + kho thành phẩm: cảnh trang trí */
   const xuong=new THREE.Group();const tX=hop(16,3.2,8,0xeef1f3);tX.position.y=1.6;xuong.add(tX);
@@ -420,7 +421,7 @@ function dung(){
   const kho=hop(8,2.6,6,0xf6efe2);kho.position.set(11,1.3,-19);sc.add(kho);
   const maiKho=hop(8.6,.3,6.6,0xd7a86e);maiKho.position.set(11,2.75,-19);sc.add(maiKho);
   const nK=chuNhan('Kho thành phẩm','#B7791F',false);nK.position.set(11,3.8,-19);sc.add(nK);
-  [[-20,-6],[-20,0],[-20,6],[20,-6],[20,1],[20,7],[-16,13],[-8,13.5],[3,13],[12,13.5],[18,12.5],[-24,-16],[24,-16],[-14,-25],[2,-25],[20,-25],[-26,4],[26,-3]].forEach(p=>sc.add(cay(p[0],p[1],.8+Math.random()*.5)));
+  [[-23,-6],[-23,0],[-23,6],[23,-6],[23,1],[23,7],[-16,13],[-8,13.5],[3,13],[12,13.5],[18,12.5],[-24,-16],[24,-16],[-14,-25],[2,-25],[20,-25],[-28,4],[28,-3]].forEach(p=>sc.add(cay(p[0],p[1],.8+Math.random()*.5)));
 
   /* toà văn phòng: 6 phòng */
   const banDem=[],dongNguoi=[],denPhong=[],chips=[];
@@ -442,10 +443,10 @@ function dung(){
   const tenToa=chuNhan('Toà văn phòng Agent · Yến Sào Lanest','#006B3F',false);tenToa.position.set(0,.9,9.3);tenToa.scale.multiplyScalar(1.15);sc.add(tenToa);
 
   /* bàn + người cho từng agent */
-  const ODAT=[[-2.4,-1.3],[0,-1.3],[2.4,-1.3],[-2.4,1.4],[0,1.4],[2.4,1.4]];
+  const ODAT=[[-3,-1.3],[-1,-1.3],[1,-1.3],[3,-1.3],[-3,1.4],[-1,1.4],[1,1.4],[3,1.4]];
   const matDa=new THREE.MeshStandardMaterial({color:0xf1c9a5,roughness:.7});
   D.agent.forEach(a=>{
-    const ph=phong[a.phong];if(!ph)return;const i=ph.ghe.length;const o=ODAT[i%6];ph.ghe.push(a.ma);
+    const ph=phong[a.phong];if(!ph)return;const i=ph.ghe.length;const o=ODAT[i%8];ph.ghe.push(a.ma);
     const g=new THREE.Group();g.position.set(o[0],.22,o[1]);
     const ban=hop(1.5,.08,.75,0xffffff);ban.position.set(0,.72,.45);g.add(ban);
     [[-.65,.1],[.65,.1],[-.65,.8],[.65,.8]].forEach(c=>{const ch=hop(.06,.7,.06,0xb9c1bb);ch.position.set(c[0],.36,c[1]);g.add(ch)});
@@ -469,7 +470,7 @@ function dung(){
   const chipNoi=document.getElementById('chips3d');
   chipNoi.innerHTML='<button data-p="" class="on">Toàn cảnh</button>'+D.phong.slice().sort((a,b)=>SO_PHONG[a.ma]-SO_PHONG[b.ma]).map(p=>'<button data-p="'+p.ma+'" style="--pm:'+p.mau+'"><b>'+SO_PHONG[p.ma]+'</b>'+esc(p.ten)+'</button>').join('');
 
-  const S0={cam:new THREE.Vector3(26,30,40),tgt:new THREE.Vector3(0,0,-1)};
+  const S0={cam:new THREE.Vector3(32,36,48),tgt:new THREE.Vector3(0,0,-1)};
   cam.position.copy(S0.cam);
   let bay=null;
   function bayToi(pos,tgt){bay={bd:performance.now(),tu:cam.position.clone(),den:pos,tTu:ctl.target.clone(),tDen:tgt}}
