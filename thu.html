@@ -4365,7 +4365,8 @@ function docSoVN(s) { s = String(s || '').replace(/[\sđ]/g, ''); if (!s) return
 function napVat(thang) { if (thang) VAT.thang = thang; goi('hoaDonVat', [TK, VAT.thang], function (r) { VAT.r = r; VAT.thang = r.thang; veVat(); }); }
 function vatTim(ma) { return ((VAT.r || {}).ds || []).filter(function (x) { return x.ma === ma; })[0]; }
 function vatChip(tt) { var m = VAT_MAU[tt] || ['#eee', '#555']; return '<span class="chip" style="background:' + m[0] + ';color:' + m[1] + ';white-space:nowrap">' + e(tt) + '</span>'; }
-function vatLoc(x) { var l = VAT.loc; if (l === 'can') return x.tt === 'Chờ xuất' || x.tt === 'Đã nháp' || x.tt === 'Đã ký'; if (l === 'bs') return x.tt === 'Cần bổ sung'; if (l === 'gui') return x.tt === 'Đã gửi khách'; return true; }
+var VAT_LOC = [['can', 'Cần xử lý', 'Chờ xuất'], ['nhap', 'Đã nháp', 'Đã nháp'], ['ky', 'Đã ký', 'Đã ký'], ['gui', 'Đã gửi khách', 'Đã gửi khách'], ['bs', 'Cần bổ sung', 'Cần bổ sung'], ['het', 'Tất cả', '']];
+function vatLoc(x) { var l = VAT_LOC.filter(function (y) { return y[0] === VAT.loc; })[0]; return !l || !l[2] || x.tt === l[2]; }
 function vatDonHtml(d) {
   if (!d) return '<i>Không có bản chụp đơn.</i>';
   var nh = sbTachMa(d.nhan)[1];
@@ -4376,7 +4377,7 @@ function vatDonHtml(d) {
 function vatThe(x) {
   var dd = function (k, nhan) { var co = !!x[k]; return '<label class="chon" style="margin:0;font-size:13.5px"><input type="checkbox" data-vatdd="' + k + '" data-vatma="' + e(x.ma) + '"' + (co ? ' checked' : '') + (x.danhDauDuoc ? '' : ' disabled') + '> ' + nhan + (co ? ' <span class="muted">(' + e(x[k]) + ')</span>' : '') + '</label>'; };
   return '<div class="the" style="border-left:4px solid ' + (VAT_MAU[x.tt] || ['', '#888'])[1] + (x.tt === 'Đã huỷ' ? ';opacity:.6' : '') + '">' +
-    '<div class="hang" style="justify-content:space-between;align-items:flex-start;gap:8px"><b>' + (x.stt ? 'STT ' + x.stt + ' · ' : '') + 'Đơn ' + e(x.so || '—') + (x.ngayDon ? ' · ' + ngVN(x.ngayDon) : '') + '</b>' + vatChip(x.tt) + '</div>' +
+    '<div class="hang" style="justify-content:space-between;align-items:flex-start;gap:8px"><b>' + (x.stt ? 'STT ' + x.stt + ' · ' : '') + (x.tuSheet ? 'Từ sheet · ' + ngVN(x.ngay) : 'Đơn ' + e(x.so || '—') + (x.ngayDon ? ' · ' + ngVN(x.ngayDon) : '')) + '</b>' + vatChip(x.tt) + '</div>' +
     (x.ngay.slice(0, 7) < VAT.r.thang ? '<small style="color:#B42318">Gửi từ tháng trước, chưa xong</small>' : '') +
     '<div style="margin-top:6px;font-size:14px;line-height:1.55">' +
       '<div><span class="muted">Đại lý:</span> <b>' + e(x.daiLy) + '</b></div>' +
@@ -4419,7 +4420,7 @@ function vatCopy() {
 }
 function veVat() {
   var r = VAT.r; if (!r || TAB !== 'vat') return;
-  var d = r.dem || {}, t = r.tong, so = { can: (d['Chờ xuất'] || 0) + (d['Đã nháp'] || 0) + (d['Đã ký'] || 0), bs: d['Cần bổ sung'] || 0, gui: d['Đã gửi khách'] || 0, het: r.ds.length };
+  var d = r.dem || {}, t = r.tong;
   var h = quayLai() + '<h2 class="tieude">🧾 Hóa đơn VAT</h2>' +
     '<div class="the"><div class="hang" style="gap:10px;align-items:center"><label for="vatThang" style="margin:0">Tháng</label><input type="month" id="vatThang" value="' + e(r.thang) + '" style="max-width:170px"></div>' +
     '<small class="muted" style="display:block;margin-top:6px">' + (r.nguoiXuLy.length ? 'Kế toán thuế: <b>' + e(r.nguoiXuLy.join(', ')) + '</b>' : '<b style="color:#B42318">Chưa ai được giao vai Kế toán thuế.</b> Admin vào Phòng Vận hành → Phân quyền, chọn phòng Hóa đơn VAT.') + '</small>' +
@@ -4429,7 +4430,10 @@ function veVat() {
   if (VAT.xem === 'bang') h += vatBang();
   else if (VAT.xem === 'bc') h += coBc ? vatBcHtml(VAT.bc) : '<p class="muted">Đang tải báo cáo…</p>';
   else {
-    h += '<div class="tab2" style="flex-wrap:wrap">' + [['can', 'Cần xử lý'], ['bs', 'Cần bổ sung'], ['gui', 'Đã gửi khách'], ['het', 'Tất cả']].map(function (x) { return '<button data-vatloc="' + x[0] + '" class="' + (VAT.loc === x[0] ? 'on' : '') + '">' + x[1] + (so[x[0]] ? ' (' + so[x[0]] + ')' : '') + '</button>'; }).join('') + '</div>';
+    h += '<div class="tab2" style="flex-wrap:wrap">' + VAT_LOC.map(function (x) {
+      var n = x[2] ? d[x[2]] || 0 : r.ds.length, mau = x[2] ? (VAT_GD[x[2]] || ['#eda100'])[0] : '';
+      return '<button data-vatloc="' + x[0] + '" class="' + (VAT.loc === x[0] ? 'on' : '') + '">' + (mau ? '<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + mau + ';margin-right:6px;vertical-align:1px"></i>' : '') + x[1] + (n ? ' (' + n + ')' : '') + '</button>';
+    }).join('') + '</div>';
     var ds = r.ds.filter(vatLoc);
     h += ds.map(vatThe).join('') || '<p class="muted">Không có yêu cầu nào ở mục này.</p>';
   }
