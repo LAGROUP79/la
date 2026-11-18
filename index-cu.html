@@ -4332,14 +4332,15 @@ function vatThe(x) {
 }
 function vatDongBang(x) { return [x.stt, x.daiLy, x.khMst, x.diaChi, x.hang, x.dvt, soSL(x.sl), x.thanhTien ? tienLe(x.gia) : '', x.thanhTien ? tien(x.thanhTien) : '', x.nhap ? 'đã nháp' : '', ngayDu(x.ngay) + (x.ghiChu ? ' · ' + x.ghiChu : ''), x.ky ? 'TRUE' : 'FALSE', x.gui ? 'TRUE' : 'FALSE', x.vat ? tien(x.vat) : '', x.tong ? tien(x.tong) : '']; }
 function vatBangDs() { return VAT.r.ds.filter(function (x) { return x.stt; }).sort(function (a, b) { return a.stt - b.stt; }); }
+var VAT_THU_TU = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 13, 14, 9, 11, 12];
 function vatBang() {
   var ds = vatBangDs(), t = VAT.r.tong;
   if (!ds.length) return '<p class="muted">Tháng này chưa có hóa đơn nào.</p>';
   return '<div class="the"><div class="hang" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><b>XUẤT HÓA ĐƠN LANEST THÁNG ' + Number(VAT.r.thang.slice(5, 7)) + '</b><button class="nut vang" id="vatCopy" style="width:auto;padding:6px 14px">📋 Copy ' + ds.length + ' dòng dán sang sheet</button></div>' +
-    '<p class="muted" style="margin:6px 0">Bấm Copy, mở sheet XUẤT HÓA ĐƠN LANEST, bấm ô cột STT của dòng trống đầu tiên rồi Ctrl+V. Bản copy không kèm dòng tiêu đề.</p>' +
-    '<div class="cuon"><table style="font-size:12.5px"><tr>' + VAT_COT.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr>' +
-    ds.map(function (x) { var r = vatDongBang(x); return '<tr>' + r.map(function (c, i) { var v = i === 11 || i === 12 ? (c === 'TRUE' ? '✓' : '') : c; return '<td style="white-space:pre-line;vertical-align:top' + (i >= 6 && i !== 9 && i !== 10 ? ';text-align:right' : '') + '">' + e(v) + '</td>'; }).join('') + '</tr>'; }).join('') +
-    '<tr><td></td><td colspan="5"><b>Tổng tháng</b></td><td style="text-align:right"><b>' + soSL(t.sl) + '</b></td><td></td><td style="text-align:right"><b>' + tien(t.thanhTien) + '</b></td><td colspan="4"></td><td style="text-align:right"><b>' + tien(t.vat) + '</b></td><td style="text-align:right"><b>' + tien(t.tong) + '</b></td></tr></table></div></div>';
+    '<p class="muted" style="margin:6px 0">Bấm Copy, mở sheet XUẤT HÓA ĐƠN LANEST, bấm ô cột STT của dòng trống đầu tiên rồi Ctrl+V. Bản copy giữ đúng thứ tự cột của sheet, không kèm dòng tiêu đề.</p>' +
+    '<div class="cuon"><table style="font-size:12.5px"><tr>' + VAT_THU_TU.map(function (i) { return '<th>' + VAT_COT[i] + '</th>'; }).join('') + '</tr>' +
+    ds.map(function (x) { var r = vatDongBang(x); return '<tr>' + VAT_THU_TU.map(function (i) { var c = r[i], v = i === 9 || i === 11 || i === 12 ? (c === 'TRUE' || c === 'đã nháp' ? '✓' : '') : c; return '<td style="white-space:pre-line;vertical-align:top' + ([6, 7, 8, 13, 14].indexOf(i) >= 0 ? ';text-align:right' : [9, 11, 12].indexOf(i) >= 0 ? ';text-align:center' : '') + '">' + e(v) + '</td>'; }).join('') + '</tr>'; }).join('') +
+    '<tr><td></td><td colspan="5"><b>Tổng tháng</b></td><td style="text-align:right"><b>' + soSL(t.sl) + '</b></td><td></td><td style="text-align:right"><b>' + tien(t.thanhTien) + '</b></td><td></td><td style="text-align:right"><b>' + tien(t.vat) + '</b></td><td style="text-align:right"><b>' + tien(t.tong) + '</b></td><td colspan="3"></td></tr></table></div></div>';
 }
 function vatCopy() {
   var dong = vatBangDs().map(vatDongBang);
