@@ -2899,7 +2899,7 @@ function moChotThe(x) {
     }).join('') + '</div>' : '') +
     (r.ghi && x.khoa.indexOf('KT:') === 0 && i > 0 && i < 6 ? '<button class="nut phu" id="chX1p" style="margin-top:10px">📦 Xuất 1 phần (thiếu hàng, gửi trước)</button>' : '') +
     (r.ghiDuyet && x.khoa.indexOf('KT:') === 0 ? '<button class="nut" id="chSua" style="margin-top:10px">✏️ Sửa đơn' + (x.xuat1p ? ' / COD' : '') + '</button>' : '') +
-    (r.ghiDuyet && x.khoa.indexOf('KT:') === 0 ? '<button class="nut rong" id="chVat" style="margin-top:10px;color:#0F7A6B;border-color:#0F7A6B">🧾 XUẤT HĐ VAT</button>' : '') +
+    (r.ghiDuyet && x.khoa.indexOf('KT:') === 0 ? '<button class="nut rong" id="chVat" style="margin-top:10px;background:#0F7A6B;color:#fff">🧾 XUẤT HĐ VAT</button>' : '') +
     (r.ghiDuyet && laKD && cho ? '<button class="nut" id="chSuaKD" style="margin-top:10px">✏️ Sửa đơn phòng KD</button>' : '') +
     (x.doiGoc && r.ghiDuyet ? '<button class="nut vang" id="chLay" style="margin-top:10px">↻ Cập nhật theo đơn gốc</button>' : '') +
     (cho && r.ghiDuyet && laKD ? '<button class="nut phu rong" id="chBo" style="margin-top:10px">Bỏ thẻ này (trùng với đơn đã nhập sổ)</button>' : '') +
@@ -3091,12 +3091,13 @@ function moSuaChot(x) {
   goi('chotLayDon', [TK, x.khoa], function (r) {
     var d = r.don, k = r.khach.filter(function (y) { return y.ma === d.maKH; })[0];
     d.tenKH = k ? cnNhanKH(k) : d.tenKH; d.dong = d.dong.length ? d.dong : [{ sp: '', nhom: '', sl: '', gia: '', ct: '' }];
-    CN = { dm: r, tin: '', d: d, sua: d.maSo }; dongHop(); veNhapChot(); window.scrollTo(0, 0);
+    d.hdGoc = d.hdVat ? '' : d.hd || '';
+    CN = { dm: r, tin: '', d: d, sua: d.maSo, vatDaGoiY: !!d.hdVat, vatSt: d.hdVat ? { goc: 'tt', tienDon: 0 } : null }; dongHop(); veNhapChot(); window.scrollTo(0, 0);
   });
 }
 function moNhapChot() {
   goi('chotDmNhap', [TK], function (dm) {
-    CN = { dm: dm, tin: '', d: { ngay: dm.homNay, maDon: '', tenKH: '', maKH: '', nhan: { ten: '', sdt: '', dc: '' }, ghiChu: '', ship: '', ck: '', vat: '', dong: [{ sp: '', nhom: '', sl: '', gia: '', ct: '' }] } };
+    CN = { dm: dm, tin: '', d: { ngay: dm.homNay, maDon: '', tenKH: '', maKH: '', nhan: { ten: '', sdt: '', dc: '' }, ghiChu: '', ship: '', ck: '', vat: '', hdGoc: '', dong: [{ sp: '', nhom: '', sl: '', gia: '', ct: '' }] } };
     veNhapChot();
   });
 }
@@ -3130,11 +3131,12 @@ function veNhapChot() {
     ttKhoi('cn', d.thuTruocGhi != null ? d.thuTruocGhi : d.thuTruoc ? tien(d.thuTruoc) : '', d.thuHT, d.thuCOD, false) + '<div class="muted" style="font-size:12.5px">Hai khoản này trừ thẳng vào công nợ khách trong Sổ bán hàng.</div>' +
     '<label>Ghi chú thanh toán <small class="muted">(kho không thấy)</small></label><textarea id="cnGCTT" rows="2" placeholder="Đã cọc, thu COD, chuyển khoản, công nợ…">' + e(d.ghiChuTT || '') + '</textarea>' +
     '<label>Ghi chú khác <small class="muted">(kho thấy khi soạn đơn)</small></label><textarea id="cnGC" rows="2">' + e(d.ghiChu) + '</textarea>' +
-    '<label><input type="checkbox" id="cnCoHD" style="width:auto;min-height:0;margin-right:6px"' + (d.hd ? ' checked' : '') + '>Khách lấy hoá đơn (xuất HĐ)</label>' +
-    '<textarea id="cnHD" rows="3" class="' + (d.hd ? '' : 'an') + '" placeholder="Tên công ty, mã số thuế, địa chỉ, email nhận hoá đơn">' + e(d.hd || '') + '</textarea>' +
+    '<label><input type="checkbox" id="cnCoHD" style="width:auto;min-height:0;margin-right:6px"' + (cnCoHD() ? ' checked' : '') + '>Khách lấy hoá đơn (xuất HĐ VAT)</label>' +
+    (cnCoHD() ? cnVatHtml() : d.hdVat && d.hdVat.ma ? '<small class="muted">Đơn này đã có yêu cầu HĐ VAT (' + e(d.hdVat.tt) + '). Bỏ tick không huỷ yêu cầu, muốn huỷ thì vào Phòng Hóa đơn VAT.</small>' : '') +
     '<div class="tong"><span>Tổng đơn</span><span id="cnTong">0đ</span></div><div id="cnCanh"></div>' +
     '<button class="nut vang" id="cnLuu" style="margin-top:12px">' + (CN.sua ? 'Lưu sửa đơn' : 'Lưu → Chờ duyệt') + '</button></div>';
   $('noiDung').innerHTML = h;
+  cnVatGan();
   cnTinh();
   $('cnVe').onclick = function () { CN = null; if (TAB === 'cv') napCongViec(); else veChot(); window.scrollTo(0, 0); };
   $('cnKHMoi').onclick = function () {
@@ -3154,11 +3156,11 @@ function veNhapChot() {
   $('cnTin').onpaste = function (ev) { var it = [].filter.call((ev.clipboardData || {}).items || [], function (x) { return x.type.indexOf('image') === 0; })[0]; if (it) { ev.preventDefault(); cnOcr(it.getAsFile()); } };
   $('cnThem').onclick = function () { cnDocForm(); CN.d.dong.push({ sp: '', nhom: '', sl: '', gia: '', ct: '' }); veNhapChot(); };
   document.querySelectorAll('[data-cnxoa]').forEach(function (b) { b.onclick = function () { cnDocForm(); CN.d.dong.splice(+b.dataset.cnxoa, 1); if (!CN.d.dong.length) CN.d.dong.push({ sp: '', nhom: '', sl: '', gia: '', ct: '' }); veNhapChot(); }; });
-  $('noiDung').oninput = function (ev) { if (ev.target.dataset.cn || /^cn(Ship|Ck|KH|Truoc|Cod)$/.test(ev.target.id)) { cnDocForm(); cnTinh(); } };
+  $('noiDung').oninput = function (ev) { if (ev.target.dataset.cn || /^cn(Ship|Ck|KH|Truoc|Cod|NTen|NDc)$/.test(ev.target.id)) { cnDocForm(); cnTinh(); } };
   $('noiDung').onchange = function (ev) {
     var t = ev.target;
     if (t.dataset.cn === 'sp') { var b = t.closest('[data-cndong]'), nh = b.querySelector('[data-cn=nhom]'), g = b.querySelector('[data-cn=gia]'); if (!nh.value) nh.value = cnNhom(t.value); if (!g.value) { var gg = cnGiaKH(t.value); if (gg !== '') g.value = tien(gg); } }
-    if (t.id === 'cnCoHD') $('cnHD').classList.toggle('an', !t.checked);
+    if (t.id === 'cnCoHD') { cnDocForm(); if (t.checked && !(CN.d.hdVat && (CN.d.hdVat.khMst || CN.d.hdVat.hang))) CN.d.hdVat = Object.assign(CN.d.hdVat || {}, cnVatMoi()); veNhapChot(); return; }
     if (t.id === 'cnKH') { cnDocForm(); CN.d.dong.forEach(function (x, i) { if (x.sp && (x.gia === '' || x.gia == null)) { var gg = cnGiaKH(x.sp); if (gg !== '') { var o = document.querySelector('[data-cndong="' + i + '"] [data-cn=gia]'); if (o) o.value = tien(gg); } } }); }
     cnDocForm(); cnTinh();
   };
@@ -3170,7 +3172,9 @@ function cnDocForm() {
   var k = CN.dm.khach.filter(function (x) { return cnNhanKH(x) === d.tenKH || x.ten === d.tenKH; }); d.maKH = k.length === 1 ? k[0].ma : '';
   d.nhan = { ten: $('cnNTen').value.trim(), sdt: $('cnNSdt').value.trim(), dc: $('cnNDc').value.trim() };
   d.ship = $('cnShip').value; d.ck = $('cnCk').value; if ($('cnTruoc')) { d.thuTruocGhi = $('cnTruoc').value.trim(); d.thuHT = $('cnTruocHT').value; d.thuCOD = docTien($('cnCod').value); } d.ghiChu = $('cnGC').value; d.ghiChuTT = $('cnGCTT').value;
-  d.traShip = (document.querySelector('[name=cnTraShip]:checked') || {}).value || 'gui'; d.hd = $('cnCoHD').checked ? $('cnHD').value.trim() : '';
+  d.traShip = (document.querySelector('[name=cnTraShip]:checked') || {}).value || 'gui'; d.coHD = $('cnCoHD').checked;
+  if ($('cnvKh')) d.hdVat = Object.assign(d.hdVat || {}, vatFormDoc('cnv'));
+  d.hd = !d.coHD ? '' : $('cnvKh') ? [d.hdVat.khMst, d.hdVat.diaChi ? 'Địa chỉ: ' + d.hdVat.diaChi : '', d.hdVat.ghiChu].map(function (s) { return String(s || '').trim(); }).filter(Boolean).join('\n') : (d.hdGoc || d.hd || '');
   d.dong = [].map.call(document.querySelectorAll('[data-cndong]'), function (b) {
     var v = function (f) { return b.querySelector('[data-cn=' + f + ']').value; }, g = v('gia').trim();
     return { sp: v('sp').trim(), nhom: v('nhom'), sl: v('sl').trim(), gia: g === '' ? '' : docTien(g), ct: v('ct').trim() };
@@ -3186,6 +3190,7 @@ function cnTinh() {
   $('cnKHTT').innerHTML = k ? '✓ ' + e(k.ten) + (k.loai === 'Khách lẻ' ? ' · khách lẻ' : '') + (k.nhom ? ' · nhóm giá ' + e(k.nhom) : '') : d.tenKH ? '<span class="am">Chưa khớp khách nào — chọn đúng tên trong danh sách, hoặc bấm <b>+ Khách mới</b> để thêm ngay.</span>' : '';
   var canh = cnKiem();
   $('cnCanh').innerHTML = canh.length ? '<div class="goiy canh" style="margin-top:8px">' + canh.map(function (c) { return '⚠ ' + e(c); }).join('<br>') + '</div>' : '<div class="goiy" style="margin-top:8px">✓ Đơn đã đủ thông tin.</div>';
+  cnVatDongBo();
 }
 function cnNhanDien(tin) {
   if (!String(tin || '').trim()) { bao('Dán tin nhắn hoặc chọn ảnh trước.', true); return; }
@@ -3246,15 +3251,19 @@ function cnLuu() {
   var dong = d.dong.filter(function (x) { return x.sp; });
   if (!dong.length) { bao('Đơn chưa có dòng hàng.', true); return; }
   var thieu = dong.filter(function (x) { return !docSo(x.sl); }); if (thieu.length) { bao('Nhập số lượng cho: ' + thieu.map(function (x) { return x.sp; }).join(', '), true); return; }
+  var hdVat = d.coHD && $('cnvKh') ? vatFormDoc('cnv') : null;
+  if (hdVat && !vatFormKiem('cnv', hdVat)) return;
   var canh = cnKiem().filter(function (c) { return !/^Chưa có mã đơn/.test(c); });
   if (canh.length && !confirm('Còn ' + canh.length + ' điểm cần xem:\n- ' + canh.join('\n- ') + '\n\nVẫn lưu?')) return;
   var sua = CN.sua;
   cnTinh();
   var gui = { maSo: sua || '', thuTruoc: cocTien(d.thuTruocGhi, CN.tong || 0), thuHT: d.thuHT || 'Chuyển khoản', thuCOD: docTien(String(d.thuCOD || '')) || 0, ngay: d.ngay, maKH: d.maKH, maDon: d.maDon, nhan: d.nhan, ghiChu: d.ghiChu, ghiChuTT: d.ghiChuTT || '', ship: d.ship, ck: d.ck, traShip: d.traShip || 'gui', hd: d.hd || '',
     dong: dong.map(function (x) { return { sp: x.sp, nhom: x.nhom, sl: docSo(x.sl), gia: Number(x.gia) || 0, ct: x.ct }; }) };
+  if (hdVat) gui.hdVat = hdVat;
   goiTrung('chotNhapDon', function (bo) { gui.boQuaTrung = bo; return [TK, gui]; }, function (r) {
     var v = r.vuaNhap || {}; CN = null; CHOT = { r: r, q: '' }; if (TAB === 'cv') napCongViec(); else veChot(); window.scrollTo(0, 0);
     bao(sua ? 'Đã lưu sửa đơn ' + (v.soDon || '') + '.' : 'Đã lưu đơn ' + (v.soDon || '') + ' vào Sổ bán hàng và cột Chờ duyệt.');
+    if (v.vat) setTimeout(function () { bao('🧾 ' + v.vat, /^⚠/.test(v.vat)); }, 1500);
     if (v.canhBao) setTimeout(function () { bao('⚠ ' + v.canhBao, true); }, 2800);
   });
 }
@@ -4279,7 +4288,7 @@ function sbVeDon() {
         (d.vat ? '<div class="hang" style="justify-content:space-between;font-size:14px"><span>VAT</span><span>' + tien(d.vat) + '</span></div>' : '') + '</div>' +
         '<small class="muted">' + e(d.nguon) + ' · ' + e(d.nguoi) + (huy ? ' · <b class="am">' + e(d.tt) + '</b>' : '') + (d.ghiChuTT ? ' · 💳 ' + e(d.ghiChuTT) : '') + (d.ghiChu ? ' · ' + e(d.ghiChu) : '') + (SB.vat && SB.vat[d.ma] ? ' · <b style="color:#0F7A6B">🧾 HĐ VAT: ' + e(SB.vat[d.ma]) + '</b>' : '') + '</small>' +
         (!huy && SB.ghi ? '<div class="hang" style="gap:6px;margin-top:6px;flex-wrap:wrap"><button class="nut rong" data-suadon="' + e(d.ma) + '" style="width:auto;padding:4px 12px">Sửa</button><button class="nut rong" data-huydon="' + e(d.ma) + '" style="width:auto;padding:4px 12px">Huỷ</button>' +
-          '<button class="nut rong" data-vatdon="' + e(d.ma) + '" style="width:auto;padding:4px 12px;color:#0F7A6B;border-color:#0F7A6B">🧾 Xuất HĐ VAT</button></div>' : '') + '</div>';
+          '<button class="nut rong" data-vatdon="' + e(d.ma) + '" style="width:auto;padding:4px 12px;background:#0F7A6B;color:#fff">🧾 Xuất HĐ VAT</button></div>' : '') + '</div>';
     }).join('');
     document.querySelectorAll('[data-suadon]').forEach(function (b) { b.onclick = function () {
       var d = SB.don.filter(function (x) { return x.ma === b.dataset.suadon; })[0];
@@ -4456,68 +4465,88 @@ function veVat() {
     goi('vatHuy', [TK, b.dataset.vathuy, g, VAT.thang], function (r2) { VAT.r = r2; veVat(); bao('Đã huỷ yêu cầu.'); });
   }; });
 }
-function moXuatVat(maDon) { goi('vatMau', [TK, maDon], function (m) { moVatForm({ moi: true, maDon: maDon, don: m.don, f: m.mau, daGui: m.daGui, nguoiXuLy: m.nguoiXuLy, thue: m.thue }); }); }
+function moXuatVat(maDon) { goi('vatMau', [TK, maDon], function (m) { moVatForm({ moi: true, maDon: maDon, don: m.don, f: m.mau, daGui: m.daGui, nguoiXuLy: m.nguoiXuLy, thue: m.thue, khachCu: m.khachCu }); }); }
 function moSuaVat(x) {
   if (!x) return;
   moVatForm({ moi: false, x: x, don: x.don, guiLai: x.tt === 'Cần bổ sung' && x.cuaToi, xuLy: VAT.r.xuLy, thue: VAT.r.thue,
     f: { daiLy: x.daiLy, khMst: x.khMst, diaChi: x.diaChi, hang: x.hang, dvt: x.dvt, sl: x.sl, gia: x.gia, thanhTien: x.thanhTien, tong: x.tong, thue: x.thue, ghiChu: x.ghiChu, soHD: x.soHD, tienDon: x.tienDon } });
 }
+function vatFormHtml(p, f, thue, coSoHD, khachCu) {
+  return '<label for="' + p + 'DaiLy">TÊN ĐẠI LÝ</label><input id="' + p + 'DaiLy" value="' + e(f.daiLy || '') + '">' +
+    (khachCu && khachCu.length ? '<label for="' + p + 'Chon">Chọn khách đã xuất trước</label><select id="' + p + 'Chon"><option value="">— ' + khachCu.length + ' khách đã xuất của đại lý này —</option>' + khachCu.map(function (x, i) { return '<option value="' + i + '">' + e(String(x.khMst).split('\n')[0].slice(0, 70)) + '</option>'; }).join('') + '</select>' : '') +
+    '<label for="' + p + 'Kh">TÊN KHÁCH HÀNG + MÃ SỐ THUẾ</label><textarea id="' + p + 'Kh" rows="3" placeholder="- KH: …&#10;- Đơn vị: …&#10;- MST: …">' + e(f.khMst || '') + '</textarea>' +
+    '<small class="muted" id="' + p + 'TuNhan">' + (f.tuNhan ? 'Đang lấy theo người nhận trên đơn. Xuất cho đơn vị khác thì sửa lại.' : '') + '</small>' +
+    '<label for="' + p + 'Dc">ĐỊA CHỈ KHÁCH HÀNG</label><textarea id="' + p + 'Dc" rows="2">' + e(f.diaChi || '') + '</textarea>' +
+    '<label for="' + p + 'Hang">TÊN HÀNG HÓA</label><textarea id="' + p + 'Hang" rows="4" placeholder="70 đường phèn&#10;30 hạt sen">' + e(f.hang || '') + '</textarea>' +
+    (f.tron ? '<small style="color:#8a5f00">Đơn có cả hàng hũ và hàng kg: mỗi hóa đơn một loại, gửi 2 lần và sửa số lượng cho đúng.</small>' : '') +
+    '<div class="luoi2"><div><label for="' + p + 'Dvt">ĐƠN VỊ TÍNH</label><input id="' + p + 'Dvt" list="' + p + 'DvtDs" value="' + e(f.dvt || '') + '"><datalist id="' + p + 'DvtDs"><option value="hũ"><option value="kg"><option value="hộp"><option value="set"></datalist></div>' +
+      '<div><label for="' + p + 'Sl">SỐ LƯỢNG</label><input id="' + p + 'Sl" inputmode="decimal" value="' + (f.sl ? soSL(f.sl) : '') + '"></div></div>' +
+    '<div class="luoi2"><div><label for="' + p + 'Gia">GIÁ CHƯA VAT</label><input id="' + p + 'Gia" inputmode="decimal" value="' + (f.thanhTien ? tienLe(f.gia) : '') + '"></div>' +
+      '<div><label for="' + p + 'GiaVat">GIÁ ĐÃ GỒM VAT</label><input id="' + p + 'GiaVat" inputmode="decimal" value="' + (f.thanhTien && f.sl ? tienLe(Math.round(f.tong / f.sl * 100) / 100) : '') + '"></div></div>' +
+    '<small class="muted">Nhập 1 trong 2 ô giá, ô còn lại app tự tính theo thuế suất.</small>' +
+    '<div class="luoi2"><div><label for="' + p + 'Thue">THUẾ SUẤT VAT</label><select id="' + p + 'Thue">' + thue.map(function (t) { return '<option value="' + t + '"' + (Number(f.thue) === t ? ' selected' : '') + '>' + t + '%</option>'; }).join('') + '</select></div>' +
+      '<div><label for="' + p + 'VatTien">TIỀN VAT</label><input id="' + p + 'VatTien" readonly style="background:#EEF4EF"></div></div>' +
+    '<div class="luoi2"><div><label for="' + p + 'TT">THÀNH TIỀN (chưa VAT)</label><input id="' + p + 'TT" inputmode="numeric" value="' + (f.thanhTien ? tien(f.thanhTien) : '') + '"></div>' +
+      '<div><label for="' + p + 'Tong">TỔNG GIÁ TRỊ HĐ</label><input id="' + p + 'Tong" inputmode="numeric" value="' + (f.thanhTien ? tien(f.tong) : '') + '"></div></div>' +
+    '<p id="' + p + 'GoiY" class="muted" style="margin:4px 0"></p>' +
+    '<div id="' + p + 'DonKhung" style="font-size:13px;background:#FFF8E6;border-radius:8px;padding:8px 10px' + (f.tienDon ? '' : ';display:none') + '">Tiền hàng trên đơn: <b id="' + p + 'TienDon">' + tien(f.tienDon || 0) + 'đ</b><div id="' + p + 'GoiYDon" style="margin-top:4px;color:#52514e"></div>' +
+      '<div class="hang" style="gap:6px;margin-top:6px;flex-wrap:wrap"><button class="nut rong" id="' + p + 'LayTT" style="width:auto;padding:4px 10px">Làm thành tiền (chưa VAT)</button><button class="nut rong" id="' + p + 'LayTong" style="width:auto;padding:4px 10px">Làm tổng HĐ (đã gồm VAT)</button></div></div>' +
+    '<label for="' + p + 'Gc">GHI CHÚ</label><textarea id="' + p + 'Gc" rows="2">' + e(f.ghiChu || '') + '</textarea>' +
+    (coSoHD ? '<label for="' + p + 'SoHD">Số hóa đơn (ghi khi đã xuất)</label><input id="' + p + 'SoHD" value="' + e(f.soHD || '') + '">' : '');
+}
+function vatFormGan(p, st, goiY, coVatDon, khachCu) {
+  function tinh(nguon) {
+    if (nguon) st.goc = nguon;
+    var sl = docSo($(p + 'Sl').value), r = Number($(p + 'Thue').value) || 0, g = st.goc, tt = 0, tong = 0;
+    if (g === 'gia') { tt = Math.round(docSoVN($(p + 'Gia').value) * sl); tong = tt + Math.round(tt * r / 100); }
+    else if (g === 'giaVat') { tong = Math.round(docSoVN($(p + 'GiaVat').value) * sl); tt = Math.round(tong / (1 + r / 100)); }
+    else if (g === 'tt') { tt = Math.round(docSoVN($(p + 'TT').value)); tong = tt + Math.round(tt * r / 100); }
+    else if (g === 'tong') { tong = Math.round(docSoVN($(p + 'Tong').value)); tt = Math.round(tong / (1 + r / 100)); }
+    if (g && g !== 'gia') $(p + 'Gia').value = sl && tt ? tienLe(Math.round(tt / sl * 100) / 100) : '';
+    if (g && g !== 'giaVat') $(p + 'GiaVat').value = sl && tong ? tienLe(Math.round(tong / sl * 100) / 100) : '';
+    if (g && g !== 'tt') $(p + 'TT').value = tt ? tien(tt) : '';
+    if (g && g !== 'tong') $(p + 'Tong').value = tong ? tien(tong) : '';
+    $(p + 'VatTien').value = tt ? tien(tong - tt) : '';
+    $(p + 'GoiY').textContent = tt ? '' : 'Chưa có giá: để trống thì kế toán thuế điền sau.';
+  }
+  [['Gia', 'gia'], ['GiaVat', 'giaVat'], ['TT', 'tt'], ['Tong', 'tong'], ['Sl', ''], ['Thue', '']].forEach(function (q) { $(p + q[0]).addEventListener(q[0] === 'Thue' ? 'change' : 'input', function () { tinh(q[1]); }); });
+  $(p + 'LayTong').onclick = function () { $(p + 'Tong').value = tien(st.tienDon || 0); tinh('tong'); $(p + 'GoiYDon').textContent = 'Tổng HĐ bằng tiền hàng trên đơn (giá trên đơn đã gồm VAT).'; };
+  $(p + 'LayTT').onclick = function () { $(p + 'TT').value = tien(st.tienDon || 0); tinh('tt'); $(p + 'GoiYDon').textContent = 'Thành tiền chưa VAT bằng tiền hàng trên đơn, VAT cộng thêm.'; };
+  if ($(p + 'Chon')) $(p + 'Chon').onchange = function () {
+    var x = (khachCu || [])[this.value]; if (!x) return;
+    $(p + 'Kh').value = x.khMst; $(p + 'Dc').value = x.diaChi || ''; $(p + 'TuNhan').textContent = 'Lấy theo lần xuất ngày ' + ngayDu(x.ngay) + ', dò lại nếu khách đổi thông tin.';
+  };
+  tinh('');
+  if (goiY && st.tienDon) {
+    if (coVatDon) { $(p + 'TT').value = tien(st.tienDon); tinh('tt'); $(p + 'GoiYDon').textContent = 'Đã gợi ý theo đơn: đơn có ghi VAT riêng nên tiền hàng là thành tiền chưa VAT, VAT cộng thêm. Sửa lại nếu xuất khác.'; }
+    else { $(p + 'Tong').value = tien(st.tienDon); tinh('tong'); $(p + 'GoiYDon').textContent = 'Đã gợi ý theo đơn: tổng HĐ bằng tiền hàng trên đơn (giá trên đơn đã gồm VAT). Nếu giá trên đơn chưa gồm VAT, bấm "Làm thành tiền".'; }
+  }
+  return tinh;
+}
+function vatFormDoc(p) {
+  return { daiLy: $(p + 'DaiLy').value, khMst: $(p + 'Kh').value, diaChi: $(p + 'Dc').value, hang: $(p + 'Hang').value, dvt: $(p + 'Dvt').value, sl: docSo($(p + 'Sl').value), gia: docSoVN($(p + 'Gia').value),
+    thanhTien: Math.round(docSoVN($(p + 'TT').value)), tong: Math.round(docSoVN($(p + 'Tong').value)), thue: Number($(p + 'Thue').value) || 0, ghiChu: $(p + 'Gc').value, soHD: $(p + 'SoHD') ? $(p + 'SoHD').value : null };
+}
+function vatFormKiem(p, f2) {
+  if (String(f2.khMst || '').trim().length < 3) { bao('Ghi tên khách hàng + mã số thuế cho hóa đơn.', true); $(p + 'Kh').focus(); return false; }
+  if (!String(f2.hang || '').trim()) { bao('Ghi tên hàng hóa cho hóa đơn.', true); $(p + 'Hang').focus(); return false; }
+  if (!f2.sl) { bao('Ghi số lượng trên hóa đơn.', true); $(p + 'Sl').focus(); return false; }
+  return true;
+}
 function moVatForm(o) {
   var f = o.f, thue = o.thue || [8, 5, 10, 0];
-  VAT_F = { goc: f.thanhTien ? 'tt' : '' };
+  VAT_F = { goc: f.thanhTien ? 'tt' : '', tienDon: f.tienDon || 0 };
   moHop('<h3 style="margin:0;color:var(--xanh)">🧾 ' + (o.moi ? 'Xuất HĐ VAT' : 'Sửa hóa đơn VAT') + ' · Đơn ' + e((o.don && o.don.so) || (o.x && o.x.so) || '') + '</h3>' +
     (o.moi ? '<p class="muted" style="margin:4px 0 8px">Dò lại theo mẫu sheet XUẤT HÓA ĐƠN LANEST rồi bấm Gửi. Yêu cầu hiện ở Phòng Hóa đơn VAT cho kế toán thuế xử lý.</p>' : '') +
     (o.daGui && o.daGui.length ? '<p class="ch-canh doi">⚠ Đơn này đã gửi ' + o.daGui.length + ' yêu cầu: ' + o.daGui.map(function (y) { return e(y.tt + ' (' + y.guiLuc.slice(0, 16) + ' · ' + y.tenNV + (y.sl ? ' · ' + soSL(y.sl) + ' ' + y.dvt : '') + ')'); }).join('; ') + '. Chỉ gửi thêm khi xuất thêm hóa đơn khác.</p>' : '') +
     '<details' + (o.moi ? ' open' : '') + ' style="margin:6px 0 4px"><summary class="muted">Thông tin đơn hàng</summary><div style="font-size:13.5px;line-height:1.6;background:#F7F8F6;border-radius:8px;padding:8px 10px;margin-top:4px">' + vatDonHtml(o.don) + '</div></details>' +
-    '<label for="vDaiLy">TÊN ĐẠI LÝ</label><input id="vDaiLy" value="' + e(f.daiLy) + '">' +
-    '<label for="vKh">TÊN KHÁCH HÀNG + MÃ SỐ THUẾ</label><textarea id="vKh" rows="3" placeholder="- KH: …&#10;- Đơn vị: …&#10;- MST: …">' + e(f.khMst) + '</textarea>' +
-    (f.tuLanTruoc ? '<small class="muted">Lấy theo lần xuất trước của khách này (' + ngayDu(f.tuLanTruoc) + '), dò lại nếu khách đổi thông tin.</small>' : '') +
-    '<label for="vDc">ĐỊA CHỈ KHÁCH HÀNG</label><textarea id="vDc" rows="2">' + e(f.diaChi) + '</textarea>' +
-    '<label for="vHang">TÊN HÀNG HÓA</label><textarea id="vHang" rows="4" placeholder="70 đường phèn&#10;30 hạt sen">' + e(f.hang) + '</textarea>' +
-    (f.tron ? '<small style="color:#8a5f00">Đơn có cả hàng hũ và hàng kg: mỗi hóa đơn một loại, gửi 2 lần và sửa số lượng cho đúng.</small>' : '') +
-    '<div class="luoi2"><div><label for="vDvt">ĐƠN VỊ TÍNH</label><input id="vDvt" list="vDvtDs" value="' + e(f.dvt) + '"><datalist id="vDvtDs"><option value="hũ"><option value="kg"><option value="hộp"><option value="set"></datalist></div>' +
-      '<div><label for="vSl">SỐ LƯỢNG</label><input id="vSl" inputmode="decimal" value="' + (f.sl ? soSL(f.sl) : '') + '"></div></div>' +
-    '<div class="luoi2"><div><label for="vGia">GIÁ CHƯA VAT</label><input id="vGia" inputmode="decimal" value="' + (f.thanhTien ? tienLe(f.gia) : '') + '"></div>' +
-      '<div><label for="vGiaVat">GIÁ ĐÃ GỒM VAT</label><input id="vGiaVat" inputmode="decimal" value="' + (f.thanhTien && f.sl ? tienLe(Math.round(f.tong / f.sl * 100) / 100) : '') + '"></div></div>' +
-    '<small class="muted">Nhập 1 trong 2 ô giá, ô còn lại app tự tính theo thuế suất.</small>' +
-    '<div class="luoi2"><div><label for="vThue">THUẾ SUẤT VAT</label><select id="vThue">' + thue.map(function (t) { return '<option value="' + t + '"' + (Number(f.thue) === t ? ' selected' : '') + '>' + t + '%</option>'; }).join('') + '</select></div>' +
-      '<div><label for="vVatTien">TIỀN VAT</label><input id="vVatTien" readonly style="background:#EEF4EF"></div></div>' +
-    '<div class="luoi2"><div><label for="vTT">THÀNH TIỀN (chưa VAT)</label><input id="vTT" inputmode="numeric" value="' + (f.thanhTien ? tien(f.thanhTien) : '') + '"></div>' +
-      '<div><label for="vTong">TỔNG GIÁ TRỊ HĐ</label><input id="vTong" inputmode="numeric" value="' + (f.thanhTien ? tien(f.tong) : '') + '"></div></div>' +
-    '<p id="vGoiY" class="muted" style="margin:4px 0"></p>' +
-    (f.tienDon ? '<div style="font-size:13px;background:#FFF8E6;border-radius:8px;padding:8px 10px">Tiền hàng trên đơn: <b>' + tien(f.tienDon) + 'đ</b><div id="vGoiYDon" style="margin-top:4px;color:#52514e"></div><div class="hang" style="gap:6px;margin-top:6px;flex-wrap:wrap"><button class="nut rong" id="vLayTT" style="width:auto;padding:4px 10px">Làm thành tiền (chưa VAT)</button><button class="nut rong" id="vLayTong" style="width:auto;padding:4px 10px">Làm tổng HĐ (đã gồm VAT)</button></div></div>' : '') +
-    '<label for="vGc">GHI CHÚ</label><textarea id="vGc" rows="2">' + e(f.ghiChu) + '</textarea>' +
-    (o.xuLy ? '<label for="vSoHD">Số hóa đơn (ghi khi đã xuất)</label><input id="vSoHD" value="' + e(f.soHD || '') + '">' : '') +
+    vatFormHtml('v', f, thue, o.xuLy, o.khachCu) +
     '<div class="hang" style="margin-top:12px"><button class="nut phu" id="vDong">Đóng</button><button class="nut" id="vLuu">' + (o.moi ? '📤 Gửi kế toán thuế' : o.guiLai ? '📤 Lưu &amp; gửi lại' : '💾 Lưu') + '</button></div>');
-  function tinh(nguon) {
-    if (nguon) VAT_F.goc = nguon;
-    var sl = docSo($('vSl').value), r = Number($('vThue').value) || 0, g = VAT_F.goc, tt = 0, tong = 0;
-    if (g === 'gia') { tt = Math.round(docSoVN($('vGia').value) * sl); tong = tt + Math.round(tt * r / 100); }
-    else if (g === 'giaVat') { tong = Math.round(docSoVN($('vGiaVat').value) * sl); tt = Math.round(tong / (1 + r / 100)); }
-    else if (g === 'tt') { tt = Math.round(docSoVN($('vTT').value)); tong = tt + Math.round(tt * r / 100); }
-    else if (g === 'tong') { tong = Math.round(docSoVN($('vTong').value)); tt = Math.round(tong / (1 + r / 100)); }
-    if (g && g !== 'gia') $('vGia').value = sl && tt ? tienLe(Math.round(tt / sl * 100) / 100) : '';
-    if (g && g !== 'giaVat') $('vGiaVat').value = sl && tong ? tienLe(Math.round(tong / sl * 100) / 100) : '';
-    if (g && g !== 'tt') $('vTT').value = tt ? tien(tt) : '';
-    if (g && g !== 'tong') $('vTong').value = tong ? tien(tong) : '';
-    $('vVatTien').value = tt ? tien(tong - tt) : '';
-    $('vGoiY').textContent = tt ? '' : 'Chưa có giá: để trống thì kế toán thuế điền sau.';
-  }
-  [['vGia', 'gia'], ['vGiaVat', 'giaVat'], ['vTT', 'tt'], ['vTong', 'tong'], ['vSl', ''], ['vThue', '']].forEach(function (p) { $(p[0]).addEventListener(p[0] === 'vThue' ? 'change' : 'input', function () { tinh(p[1]); }); });
-  if ($('vLayTong')) $('vLayTong').onclick = function () { $('vTong').value = tien(f.tienDon); tinh('tong'); $('vGoiYDon').textContent = 'Tổng HĐ bằng tiền hàng trên đơn (giá trên đơn đã gồm VAT).'; };
-  if ($('vLayTT')) $('vLayTT').onclick = function () { $('vTT').value = tien(f.tienDon); tinh('tt'); $('vGoiYDon').textContent = 'Thành tiền chưa VAT bằng tiền hàng trên đơn, VAT cộng thêm.'; };
-  tinh('');
-  if (o.moi && !f.thanhTien && f.tienDon) {
-    if (o.don && o.don.vat) { $('vTT').value = tien(f.tienDon); tinh('tt'); $('vGoiYDon').textContent = 'Đã gợi ý theo đơn: đơn có ghi VAT riêng nên tiền hàng là thành tiền chưa VAT, VAT cộng thêm. Sửa lại nếu xuất khác.'; }
-    else { $('vTong').value = tien(f.tienDon); tinh('tong'); $('vGoiYDon').textContent = 'Đã gợi ý theo đơn: tổng HĐ bằng tiền hàng trên đơn (giá trên đơn đã gồm VAT). Nếu giá trên đơn chưa gồm VAT, bấm "Làm thành tiền".'; }
-  }
+  vatFormGan('v', VAT_F, o.moi && !f.thanhTien, !!(o.don && o.don.vat), o.khachCu);
   $('vDong').onclick = dongHop;
   $('vLuu').onclick = function () {
-    var f2 = { daiLy: $('vDaiLy').value, khMst: $('vKh').value, diaChi: $('vDc').value, hang: $('vHang').value, dvt: $('vDvt').value, sl: docSo($('vSl').value), gia: docSoVN($('vGia').value),
-      thanhTien: Math.round(docSoVN($('vTT').value)), tong: Math.round(docSoVN($('vTong').value)), thue: Number($('vThue').value) || 0, ghiChu: $('vGc').value, soHD: $('vSoHD') ? $('vSoHD').value : null, guiLai: !!o.guiLai };
-    if (f2.khMst.trim().length < 3) { bao('Ghi tên khách hàng + mã số thuế.', true); $('vKh').focus(); return; }
-    if (!f2.hang.trim()) { bao('Ghi tên hàng hóa.', true); $('vHang').focus(); return; }
-    if (!f2.sl) { bao('Ghi số lượng.', true); $('vSl').focus(); return; }
+    var f2 = vatFormDoc('v'); f2.guiLai = !!o.guiLai;
+    if (!vatFormKiem('v', f2)) return;
     if (!f2.diaChi.trim() && !confirm('Chưa có địa chỉ khách hàng. Vẫn ' + (o.moi ? 'gửi' : 'lưu') + '?')) return;
     if (o.moi) goi('vatGui', [TK, o.maDon, f2], function (x) {
       dongHop(); if (SB && x.vat) { SB.vat = x.vat; if (TAB === 'sb' && SB_TAB === 'don') veSo(); }
@@ -4525,6 +4554,68 @@ function moVatForm(o) {
     });
     else goi('vatCapNhat', [TK, o.x.ma, f2, VAT.thang], function (r) { dongHop(); VAT.r = r; veVat(); bao(o.guiLai ? 'Đã lưu và gửi lại kế toán thuế.' : 'Đã lưu.'); });
   };
+}
+function cnTachHD(hd) {
+  var kh = [], dc = [], gc = [];
+  String(hd || '').split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (l) {
+    var m = /^[-•\s]{0,5}(địa chỉ|đ\/c|đc)(?=[\s:.-]|$)[\s:.-]{0,5}/i.exec(l);
+    if (m) dc.push(l.slice(m[0].length)); else if (/e-?mail|@/i.test(l)) gc.push(l); else kh.push(l);
+  });
+  return { khMst: kh.join('\n'), diaChi: dc.join(', '), ghiChu: gc.join('\n') };
+}
+function cnVatTuDon() {
+  var d = CN.d, laHang = function (x) { return x.sp && docSo(x.sl) > 0 && !/^trừ/i.test(x.sp) && ['YẾN HŨ', 'YẾN TINH', 'YẾN THÔ'].indexOf(x.nhom) >= 0; };
+  var hu = d.dong.filter(function (x) { return laHang(x) && x.nhom === 'YẾN HŨ'; }), kg = d.dong.filter(function (x) { return laHang(x) && x.nhom !== 'YẾN HŨ'; }), nh = hu.length ? hu : kg, dong = [];
+  nh.forEach(function (x) {
+    var k = String(x.ct || '').split(/\s+·\s+/)[0], vi = k.split(/[,;\n]/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (vi.length && !vi.some(function (s) { return /^\d/.test(s); })) dong.push(soSL(docSo(x.sl)) + ' ' + vi.join(', '));
+    else if (vi.length) vi.forEach(function (s) { dong.push(s); }); else dong.push(soSL(docSo(x.sl)) + ' ' + x.sp);
+  });
+  var t = cnTachHD(d.hdGoc), nhan = d.nhan || {};
+  return { hang: dong.join('\n'), dvt: hu.length ? 'hũ' : kg.length ? 'kg' : '', sl: Math.round(nh.reduce(function (a, x) { return a + docSo(x.sl); }, 0) * 1000) / 1000,
+    tienDon: nh.reduce(function (a, x) { return a + Math.round(docSo(x.sl) * (Number(x.gia) || 0)); }, 0), thue: hu.length || !kg.length ? 8 : 5,
+    khMst: t.khMst || nhan.ten || '', diaChi: t.khMst ? t.diaChi : (nhan.dc || ''), ghiChu: t.ghiChu, tuNhan: !t.khMst && !!nhan.ten, daiLy: String(d.tenKH || '').split(' · ')[0] };
+}
+function cnCoHD() { var d = CN.d; return d.coHD != null ? d.coHD : !!(d.hd || (d.hdVat && d.hdVat.ma)); }
+function cnVatMoi() {
+  var a = cnVatTuDon(); CN.vatAuto = a; CN.vatDaGoiY = false; CN.vatSt = { goc: '', tienDon: a.tienDon };
+  return { daiLy: a.daiLy, khMst: a.khMst, diaChi: a.diaChi, ghiChu: a.ghiChu, hang: a.hang, dvt: a.dvt, sl: a.sl, thue: a.thue, tuNhan: a.tuNhan };
+}
+function cnVatHtml() {
+  var d = CN.d, v = d.hdVat || {};
+  if (v.tt && v.tt !== 'Chờ xuất' && v.tt !== 'Cần bổ sung') return '<div class="goiy" style="margin-top:6px">🧾 Yêu cầu HĐ VAT của đơn này đang ở <b>' + e(v.tt) + '</b> (kế toán thuế đang xử lý) nên không sửa ở đây. Cần sửa thì vào Phòng Hóa đơn VAT.</div>';
+  return '<div style="border:1px solid #CFE3DE;border-radius:10px;padding:10px 12px;margin-top:6px;background:#F6FBFA">' +
+    '<div class="hang" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="color:#0F7A6B">🧾 Thông tin xuất HĐ VAT</b><button class="nut phu nho" id="cnVatLai" style="width:auto">↻ Lấy lại theo đơn</button></div>' +
+    '<small class="muted">' + (v.ma ? 'Đơn này đã có yêu cầu HĐ (' + e(v.tt) + '), lưu đơn sẽ cập nhật yêu cầu đó.' : 'Lưu đơn xong app tự gửi yêu cầu sang Phòng Hóa đơn VAT cho kế toán thuế.') + '</small>' +
+    vatFormHtml('cnv', v, [8, 5, 10, 0], false, (CN.vatKC || {})[d.maKH]) + '</div>';
+}
+function cnVatGan() {
+  if (!$('cnvKh')) return;
+  var d = CN.d, v = d.hdVat || {}, a = cnVatTuDon();
+  CN.vatSt = CN.vatSt || { goc: v.thanhTien ? 'tt' : '', tienDon: 0 };
+  CN.vatSt.tienDon = a.tienDon; $('cnvTienDon').textContent = tien(a.tienDon) + 'đ'; $('cnvDonKhung').style.display = a.tienDon ? '' : 'none';
+  CN.vatTinh = vatFormGan('cnv', CN.vatSt, !CN.vatDaGoiY && !v.thanhTien, false, (CN.vatKC || {})[d.maKH]);
+  CN.vatDaGoiY = true;
+  $('cnVatLai').onclick = function () {
+    var b = cnVatTuDon();
+    $('cnvDaiLy').value = b.daiLy; $('cnvKh').value = b.khMst; $('cnvDc').value = b.diaChi; $('cnvHang').value = b.hang; $('cnvDvt').value = b.dvt; $('cnvSl').value = b.sl ? soSL(b.sl) : ''; $('cnvThue').value = String(b.thue);
+    $('cnvTuNhan').textContent = b.tuNhan ? 'Đang lấy theo người nhận trên đơn. Xuất cho đơn vị khác thì sửa lại.' : '';
+    CN.vatSt.tienDon = b.tienDon; $('cnvTienDon').textContent = tien(b.tienDon) + 'đ'; $('cnvDonKhung').style.display = b.tienDon ? '' : 'none';
+    $('cnvTong').value = b.tienDon ? tien(b.tienDon) : ''; CN.vatTinh('tong'); CN.vatAuto = b; cnDocForm(); bao('Đã lấy lại thông tin hóa đơn theo đơn.');
+  };
+  if (d.maKH && !(CN.vatKC || {})[d.maKH]) goi('vatKhachCu', [TK, d.maKH], function (x) { CN.vatKC = CN.vatKC || {}; CN.vatKC[x.maKH] = x.ds; if (CN && CN.d && CN.d.maKH === x.maKH && x.ds.length && $('cnvKh')) { cnDocForm(); veNhapChot(); } }, true, function () {});
+}
+function cnVatDongBo() {
+  if (!CN || !$('cnvKh') || !CN.vatAuto || !CN.vatTinh) return;
+  var a = cnVatTuDon(), cu = CN.vatAuto;
+  [['cnvDaiLy', 'daiLy'], ['cnvKh', 'khMst'], ['cnvDc', 'diaChi'], ['cnvHang', 'hang'], ['cnvDvt', 'dvt']].forEach(function (q) { if ($(q[0]).value === (cu[q[1]] || '')) $(q[0]).value = a[q[1]] || ''; });
+  if (docSo($('cnvSl').value) === (cu.sl || 0)) $('cnvSl').value = a.sl ? soSL(a.sl) : '';
+  CN.vatSt.tienDon = a.tienDon; $('cnvTienDon').textContent = tien(a.tienDon) + 'đ'; $('cnvDonKhung').style.display = a.tienDon ? '' : 'none';
+  if (CN.vatSt.goc === 'tong' && Math.round(docSoVN($('cnvTong').value)) === (cu.tienDon || 0)) $('cnvTong').value = a.tienDon ? tien(a.tienDon) : '';
+  if (CN.vatSt.goc === 'tt' && Math.round(docSoVN($('cnvTT').value)) === (cu.tienDon || 0)) $('cnvTT').value = a.tienDon ? tien(a.tienDon) : '';
+  CN.vatAuto = a;
+  if (!CN.vatSt.goc && a.tienDon && !docSoVN($('cnvTong').value) && !docSoVN($('cnvTT').value)) { $('cnvTong').value = tien(a.tienDon); CN.vatTinh('tong'); return; }
+  CN.vatTinh('');
 }
 function sbVeNo() {
   var ds = SB.khach, no = ds.filter(function (k) { return k.con > 0; }), vuot = ds.filter(function (k) { return k.trangThai === 'Vượt hạn mức'; });
