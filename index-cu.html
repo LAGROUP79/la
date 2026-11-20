@@ -4694,13 +4694,17 @@ function sbSaoKe(ma, thang) {
   var tu = thang + '-01', den = sbCuoiThang(thang);
   goi('ktSaoKe', [TK, ma, tu, den], function (r) { sbVeSaoKe(ma, thang, r); });
 }
+function sbSaoKeGui(ma, thang) {
+  thang = thang || SB.thang;
+  goi('ktSaoKeGui', [TK, ma, thang + '-01', sbCuoiThang(thang)], function (r) { sbVeSaoKe(ma, thang, r, true); });
+}
 function sbNhanGon(s) {
   s = String(s || '').trim(); var p = s.split(/\s+[\-–]\s+/), i = -1;
   p.forEach(function (x, j) { if (i < 0 && /(?:\+?84|0)(?:[\s.]?\d){9,10}/.test(x)) i = j; });
   if (i >= 0) s = p.slice(0, i + 1).join(' - ');
   var m = /^(.*?(?:\+?84|0)(?:[\s.]?\d){9,10})(?!\d)/.exec(s); return m ? m[1].replace(/[\s,\-–]+$/, '') : s;
 }
-function sbVeSaoKe(ma, thang, r) {
+function sbVeSaoKe(ma, thang, r, gui) {
   var k = sbKhach(ma) || {}, ps = 0, tra = 0, hang = [], ky = 0;
   var coDon = {}; r.dong.forEach(function (x) { if (x.loai === 'don') coDon[x.ma] = 1; });
   var kemCua = function (x) { var m = x.loai === 'thu' && /^Thu kèm đơn (\S+)/.exec(x.ghiChu || ''); return m && coDon[m[1]] ? m[1] : ''; };
@@ -4742,11 +4746,17 @@ function sbVeSaoKe(ma, thang, r) {
   $('sbNoi').innerHTML = css + '<button class="quaylai" id="skVe">‹ Công nợ</button><div class="the"><div class="hang" style="gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:17px">' + e(r.kh.ten) + '</b>' +
     (k.trangThai ? '<small style="color:' + (SB_MAU_TT[k.trangThai] || 'inherit') + '">' + e(k.trangThai) + '</small>' : '') +
     '<input type="month" id="skThang" value="' + e(thang) + '" min="2026-10" style="max-width:160px;margin-left:auto"></div></div>' +
+    (gui ? '<div class="the" style="background:#FFF8E6;border:1px solid #E8D48B"><b style="color:#8A5F00">🧾 Bảng gửi khách · hũ 7g giá ' + tien(r.giaGui) + 'đ</b><br><small class="muted">Chỉ để gửi khách (hình Zalo, In/PDF, Excel). Không ghi gì vào sổ, không tính vào doanh số, doanh thu. Hũ tặng 0đ, hàng lỗi, hũ 100% giữ giá sổ.</small>' +
+      '<button class="nut rong" id="skVeSo" style="margin-top:8px">‹ Về bảng công nợ theo sổ</button></div>' : '') +
     '<div class="the"><div class="cuon">' + bang + '</div></div>' +
-    (SB.ghi ? '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skSuaBang" style="flex:1">✎ Sửa trực tiếp trên bảng</button><button class="nut" id="skTra" style="flex:1;background:#004D2C">💵 THANH TOÁN</button></div></div>' : '') + '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skHinh" style="flex:1">🖼 Gửi khách bằng hình (Zalo)</button><button class="nut vang" id="skDep" style="flex:1">🧾 Gửi hình mẫu đẹp</button></div><button class="nut rong" id="skIn" style="margin-top:8px">In / lưu PDF</button><button class="nut rong" id="skXl" style="margin-top:8px">Lưu Excel</button>' +
-    (SB.ghi ? '<button class="nut rong" id="skSua" style="margin-top:8px">Sửa thông tin khách</button>' : '') + '</div>';
+    (SB.ghi && !gui ? '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skSuaBang" style="flex:1">✎ Sửa trực tiếp trên bảng</button><button class="nut" id="skTra" style="flex:1;background:#004D2C">💵 THANH TOÁN</button></div></div>' : '') +
+    (!gui && k.giaGui > 0 ? '<div class="the"><button class="nut" id="skGiaGui" style="background:#8A5F00">🧾 Bảng gửi khách giá ' + tien(k.giaGui) + 'đ/hũ 7g</button><small class="muted">Tính lại hũ 7g theo giá gửi khách để gửi ' + e(k.ten) + ', không đổi sổ.</small></div>' : '') +
+    '<div class="the"><div class="hang" style="gap:8px"><button class="nut" id="skHinh" style="flex:1">🖼 Gửi khách bằng hình (Zalo)</button><button class="nut vang" id="skDep" style="flex:1">🧾 Gửi hình mẫu đẹp</button></div><button class="nut rong" id="skIn" style="margin-top:8px">In / lưu PDF</button><button class="nut rong" id="skXl" style="margin-top:8px">Lưu Excel</button>' +
+    (SB.ghi && !gui ? '<button class="nut rong" id="skSua" style="margin-top:8px">Sửa thông tin khách</button>' : '') + '</div>';
   $('skVe').onclick = function () { veSo(); };
-  $('skThang').onchange = function () { if (this.value) sbSaoKe(ma, this.value); };
+  $('skThang').onchange = function () { if (this.value) (gui ? sbSaoKeGui : sbSaoKe)(ma, this.value); };
+  if ($('skGiaGui')) $('skGiaGui').onclick = function () { sbSaoKeGui(ma, thang); };
+  if ($('skVeSo')) $('skVeSo').onclick = function () { sbSaoKe(ma, thang); };
   if ($('skSuaBang')) $('skSuaBang').onclick = function () { sbSuaBang(ma, thang, r); };
   if ($('skTra')) $('skTra').onclick = function () {
     moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">Thanh toán · ' + e(r.kh.ten) + '</h3><small class="muted">Đang nợ đến ' + sbDMY(r.den) + ': ' + (chot < 0 ? '−' : '') + tien(Math.abs(chot)) + 'đ</small>' +
@@ -4949,7 +4959,8 @@ function sbSuaKhach(k, tenMoi, xong) {
     '<label for="kSdt">Số điện thoại</label><input id="kSdt" inputmode="tel" value="' + e(k.sdt || '') + '">' +
     '<label for="kKv">Khu vực</label><input id="kKv" value="' + e(k.khuVuc || '') + '">' +
     '<div id="kDL2"' + (loai === 'Khách lẻ' ? ' style="display:none"' : '') + '>' +
-    '<label for="kHm">Hạn mức riêng (để trống = theo doanh thu tháng trước)</label><input id="kHm" inputmode="numeric" value="' + e(k.hanMucRieng == null ? '' : tien(k.hanMucRieng)) + '"></div>' +
+    '<label for="kHm">Hạn mức riêng (để trống = theo doanh thu tháng trước)</label><input id="kHm" inputmode="numeric" value="' + e(k.hanMucRieng == null ? '' : tien(k.hanMucRieng)) + '">' +
+    '<label for="kGiaGui">Giá hũ 7g trên bảng gửi khách <small class="muted">(để trống = theo giá sổ; dùng khi sổ ghi giá đại lý cấp trên, vd Khắc Bình)</small></label><input id="kGiaGui" inputmode="numeric" value="' + e(k.giaGui ? tien(k.giaGui) : '') + '"></div>' +
     '<label for="kGhi">Ghi chú</label><input id="kGhi" value="' + e(k.ghiChu || '') + '">' +
     (k.ma && H.me.admin ? '<label for="kNo">Nợ chốt 30/09/2026 (chỉ Admin sửa)</label><input id="kNo" inputmode="numeric" placeholder="giữ nguyên">' : '') +
     (k.ma ? '<label class="hang" style="gap:6px;margin-top:8px"><input type="checkbox" id="kDung"' + (k.dung !== false ? ' checked' : '') + ' style="width:auto"> Đang giao dịch</label>' : '') +
@@ -4963,6 +4974,7 @@ function sbSuaKhach(k, tenMoi, xong) {
   $('kLuu').onclick = function () {
     var gui = { ma: k.ma, ten: $('kTen').value, loai: $('kLoai').value, nhom: $('kNhom').value, sdt: $('kSdt').value, khuVuc: $('kKv').value, hanMuc: $('kHm').value.trim() ? docTien($('kHm').value) : '', ghiChu: $('kGhi').value,
       hang: $('kLoai').value === 'Khách lẻ' ? '' : $('kHang').value, nguon: $('kNguon').value.trim(),
+      giaGui: $('kLoai').value === 'Khách lẻ' || !$('kGiaGui').value.trim() ? '' : docTien($('kGiaGui').value),
       dung: $('kDung') ? $('kDung').checked : true, noChot: $('kNo') && $('kNo').value.trim() ? $('kNo').value.replace(/[^\d\-]/g, '') : null };
     if (!gui.ten.trim()) { bao('Nhập tên khách.', true); return; }
     if (xong) { goi('chotThemKhach', [TK, gui], function (x) { dongHop(); xong(x, gui); }); return; }
