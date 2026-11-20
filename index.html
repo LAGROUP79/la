@@ -340,7 +340,7 @@ function cho(on) {
   if (!on && c) c.remove();
 }
 function goi(ham, args, ok, imLang, loi) {
-  if (!/^(chotDuLieu|khoDuLieu|ktSo|dsDon|baoCao|chotThongKe|chotTraCuu|qlPhanQuyen|trangChu|danhSachTen|chamCongThang|congViec|nghiPhep|tonKho|dsKhach|cskhDuLieu|qlNhatKy|nsHoSo|nsDanhSach|nsVanBanChung|nsBangCong|nsBangLuong|nsNghiPhepThang|khoPhieuNgay|khoBaoCaoNgay|kpiCaiDat|khoTheKho|crmDuLieu|chotXuatTheoNgay|nsBaoCao|thongBao|deXuat|laPhienBan|hoaDonVat|vatMau|vatBaoCao)$/.test(ham)) NHO = {};
+  if (!/^(chotDuLieu|khoDuLieu|ktSo|dsDon|baoCao|chotThongKe|chotTraCuu|qlPhanQuyen|trangChu|danhSachTen|chamCongThang|congViec|nghiPhep|tonKho|dsKhach|cskhDuLieu|qlNhatKy|nsHoSo|nsDanhSach|nsVanBanChung|nsBangCong|nsBangLuong|nsNghiPhepThang|khoPhieuNgay|khoBaoCaoNgay|kpiCaiDat|khoTheKho|crmDuLieu|chotXuatTheoNgay|nsBaoCao|thongBao|deXuat|laPhienBan|hoaDonVat|vatMau|vatBaoCao|vatMauMoi|vatKhachTen)$/.test(ham)) NHO = {};
   if (!imLang) cho(true);
   var r = google.script.run.withSuccessHandler(function (x, dau) { cho(false); if (ok) ok(x, dau); })
     .withFailureHandler(function (err) {
@@ -2652,8 +2652,10 @@ function vePhong(ma) {
     o = [['sb', 'SỔ BÁN HÀNG', 'Nhập đơn, thu tiền, đơn hàng, công nợ', 'len'], ['chot', 'CHỐT ĐƠN', 'Duyệt đơn trong ngày, nhập mã đơn, chuyển kho soạn', 'ds'], ['sb:cp', 'CHI PHÍ', 'Nhập, xem khoản chi trong tháng theo hạng mục', 'th'], ['bct', 'BÁO CÁO', 'Tất cả báo cáo: doanh thu, lãi, công nợ, doanh số KD, thưởng, kho, Excel', 'bc']];
   }
   if (ma === 'VAT') {
-    o = [['vat', 'YÊU CẦU XUẤT HĐ VAT', 'Kế toán gửi từ đơn hàng: chờ xuất, đã nháp, đã ký, đã gửi khách', 'ds'], ['vat:bc', 'BÁO CÁO HÓA ĐƠN', 'Dashboard: tổng giá trị, VAT, tiến độ, yêu cầu chờ lâu, theo ngày, đại lý, 6 tháng', 'bc'], ['vat:bang', 'SỔ HÓA ĐƠN THÁNG', 'Bảng theo mẫu XUẤT HÓA ĐƠN LANEST: tiền hàng, VAT, tổng giá trị HĐ, copy dán sang sheet', 'bc']];
-    ghiChu = 'Kế toán bấm 🧾 Xuất HĐ VAT ở cuối đơn (thẻ Chốt đơn hoặc Sổ bán hàng → Đơn hàng) thì yêu cầu hiện ở đây. Thuế suất gợi ý theo sheet đang làm: hàng hũ 8%, hàng kg 5%, sửa được từng hóa đơn.';
+    o = [['vat', 'YÊU CẦU XUẤT HĐ VAT', 'Kế toán gửi từ đơn hàng: chờ xuất, đã nháp, đã ký, đã gửi khách', 'ds']];
+    if (vatTaoDuoc()) o.push(['vat:moi', 'TẠO HÓA ĐƠN MỚI', 'Xuất HĐ cho khách không có đơn trong Chốt đơn / Sổ bán hàng', 'len']);
+    o.push(['vat:bc', 'BÁO CÁO HÓA ĐƠN', 'Dashboard: tổng giá trị, VAT, tiến độ, yêu cầu chờ lâu, theo ngày, đại lý, 6 tháng', 'bc'], ['vat:bang', 'SỔ HÓA ĐƠN THÁNG', 'Bảng theo mẫu XUẤT HÓA ĐƠN LANEST: tiền hàng, VAT, tổng giá trị HĐ, copy dán sang sheet', 'bc']);
+    ghiChu = 'Kế toán bấm 🧾 Xuất HĐ VAT ở cuối đơn (thẻ Chốt đơn hoặc Sổ bán hàng → Đơn hàng) thì yêu cầu hiện ở đây. Hóa đơn không có đơn trong app thì bấm Tạo hóa đơn mới. Thuế suất gợi ý theo sheet đang làm: hàng hũ 8%, hàng kg 5%, sửa được từng hóa đơn.';
   }
   if (ma === 'KD') {
     o = [['len', 'BÁN HÀNG', 'Lên đơn, giá, thưởng, tồn tham khảo', 'len'], ['ds', 'QUẢN LÍ ĐƠN HÀNG', 'Đơn theo ngày, tháng, năm', 'ds'], ['bc', 'DOANH SỐ KD', 'Theo đơn phòng KD lên: team, ngành hàng, % target, thưởng', 'bc'],
@@ -4348,7 +4350,7 @@ function vatBcHtml(b) {
     (tong ? '<div class="vbc-stack">' + VAT_GD_TT.filter(function (k) { return b.tt[k]; }).map(function (k) { return '<span tabindex="0" data-tip="' + e(k + ': ' + b.tt[k] + ' hóa đơn (' + Math.round(b.tt[k] / tong * 100) + '%)') + '" style="flex:' + b.tt[k] + ';background:' + VAT_GD[k][0] + '"></span>'; }).join('') + '</div>' : '<p class="muted">Tháng này chưa có yêu cầu nào.</p>') +
     '<div class="vbc-leg">' + VAT_GD_TT.map(function (k) { return '<span><i style="background:' + VAT_GD[k][0] + '"></i>' + VAT_GD[k][1] + k + ' <b>' + (b.tt[k] || 0) + '</b></span>'; }).join('') + (b.tt['Đã huỷ'] ? '<span>Đã huỷ <b>' + b.tt['Đã huỷ'] + '</b></span>' : '') + '</div><p class="vbc-doc"></p></div>';
   if (b.choLau.length) h += '<div class="the vbc-the" style="border-left:4px solid #d03b3b"><h3>⏰ Chờ từ 2 ngày trở lên · ' + b.choLau.length + ' yêu cầu</h3>' + b.choLau.map(function (x) {
-    return '<div class="vbc-cho"><span><b>Đơn ' + e(x.so || '—') + '</b> · ' + e(x.daiLy) + '<br><small class="muted">' + e(x.khach) + ' · ' + e(x.tt) + ' · gửi ' + ngVN(x.ngay) + '</small></span><b class="vbc-ngay">⏰ ' + x.cho + ' ngày</b></div>'; }).join('') + '</div>';
+    return '<div class="vbc-cho"><span><b>' + (x.taoMoi ? 'HĐ tạo mới' : 'Đơn ' + e(x.so || '—')) + '</b> · ' + e(x.daiLy) + '<br><small class="muted">' + e(x.khach) + ' · ' + e(x.tt) + ' · gửi ' + ngVN(x.ngay) + '</small></span><b class="vbc-ngay">⏰ ' + x.cho + ' ngày</b></div>'; }).join('') + '</div>';
   h += '<div class="the vbc-the"><h3>Giá trị hóa đơn theo ngày gửi</h3>' + vbcCot(ngays, function () { return VAT_C1; }, function (x) { return x.ngay === 1 || x.ngay % 5 === 0 ? x.ngay : ''; }) +
     '<p class="vbc-doc">' + (dinh && dinh.gt ? 'Cao nhất: ' + e(dinh.tip) + '. Chạm vào cột để xem từng ngày.' : 'Tháng này chưa có hóa đơn ghi ngày.') + '</p>' +
     (b.khongNgay ? '<p class="muted" style="margin:4px 0 0;font-size:12.5px">' + b.khongNgay + ' hóa đơn nhập từ sheet không ghi ngày nên không vẽ theo ngày (vẫn tính trong tổng tháng).</p>' : '') + '</div>';
@@ -4385,10 +4387,10 @@ function vatDonHtml(d) {
 function vatThe(x) {
   var dd = function (k, nhan) { var co = !!x[k]; return '<label class="chon" style="margin:0;font-size:13.5px"><input type="checkbox" data-vatdd="' + k + '" data-vatma="' + e(x.ma) + '"' + (co ? ' checked' : '') + (x.danhDauDuoc ? '' : ' disabled') + '> ' + nhan + (co ? ' <span class="muted">(' + e(x[k]) + ')</span>' : '') + '</label>'; };
   return '<div class="the" style="border-left:4px solid ' + (VAT_MAU[x.tt] || ['', '#888'])[1] + (x.tt === 'Đã huỷ' ? ';opacity:.6' : '') + '">' +
-    '<div class="hang" style="justify-content:space-between;align-items:flex-start;gap:8px"><b>' + (x.stt ? 'STT ' + x.stt + ' · ' : '') + (x.tuSheet ? 'Từ sheet · ' + ngVN(x.ngay) : 'Đơn ' + e(x.so || '—') + (x.ngayDon ? ' · ' + ngVN(x.ngayDon) : '')) + '</b>' + vatChip(x.tt) + '</div>' +
+    '<div class="hang" style="justify-content:space-between;align-items:flex-start;gap:8px"><b>' + (x.stt ? 'STT ' + x.stt + ' · ' : '') + (x.tuSheet ? 'Từ sheet · ' + ngVN(x.ngay) : x.taoMoi ? 'HĐ tạo mới · ' + ngVN(x.ngay) : 'Đơn ' + e(x.so || '—') + (x.ngayDon ? ' · ' + ngVN(x.ngayDon) : '')) + '</b>' + vatChip(x.tt) + '</div>' +
     (x.ngay.slice(0, 7) < VAT.r.thang ? '<small style="color:#B42318">Gửi từ tháng trước, chưa xong</small>' : '') +
     '<div style="margin-top:6px;font-size:14px;line-height:1.55">' +
-      '<div><span class="muted">Đại lý:</span> <b>' + e(x.daiLy) + '</b></div>' +
+      '<div><span class="muted">Đại lý:</span> <b>' + (x.daiLy ? e(x.daiLy) : '—') + '</b></div>' +
       '<div><span class="muted">Khách hàng + MST:</span><br>' + e(x.khMst).replace(/\n/g, '<br>') + '</div>' +
       (x.diaChi ? '<div><span class="muted">Địa chỉ:</span> ' + e(x.diaChi) + '</div>' : '<div style="color:#B42318">Chưa có địa chỉ khách hàng</div>') +
       '<div><span class="muted">Hàng hóa:</span><br>' + e(x.hang).replace(/\n/g, '<br>') + '</div>' +
@@ -4396,13 +4398,13 @@ function vatThe(x) {
       (x.ghiChu ? '<div><span class="muted">Ghi chú:</span> ' + e(x.ghiChu).replace(/\n/g, '<br>') + '</div>' : '') +
       (x.soHD ? '<div><span class="muted">Số hóa đơn:</span> <b>' + e(x.soHD) + '</b></div>' : '') +
       (x.ghiChuKTT ? '<div style="color:' + (x.tt === 'Cần bổ sung' ? '#B42318' : '#555') + '"><b>' + (x.tt === 'Cần bổ sung' ? '↩ Cần bổ sung: ' : 'Ghi chú xử lý: ') + '</b>' + e(x.ghiChuKTT) + '</div>' : '') +
-    '</div><small class="muted">' + (x.tuSheet ? 'Nhập từ sheet XUẤT HÓA ĐƠN LANEST' : 'Gửi bởi ' + e(x.tenNV) + ' · ' + e(x.guiLuc.slice(0, 16))) + '</small>' +
+    '</div><small class="muted">' + (x.tuSheet ? 'Nhập từ sheet XUẤT HÓA ĐƠN LANEST' : (x.taoMoi ? 'Tạo mới bởi ' : 'Gửi bởi ') + e(x.tenNV) + ' · ' + e(x.guiLuc.slice(0, 16))) + '</small>' +
     (x.tt !== 'Đã huỷ' ? '<div style="display:flex;flex-direction:column;gap:4px;margin-top:8px">' + dd('nhap', 'Đã xuất hóa đơn nháp') + dd('ky', 'Đã ký hóa đơn') + dd('gui', 'Đã gửi hóa đơn cho khách') + '</div>' : '') +
     '<div class="hang" style="gap:6px;margin-top:8px;flex-wrap:wrap">' +
       (x.suaDuoc ? '<button class="nut rong" data-vatsua="' + e(x.ma) + '" style="width:auto;padding:4px 12px">' + (x.tt === 'Cần bổ sung' && x.cuaToi ? '✎ Sửa &amp; gửi lại' : '✎ Sửa') + '</button>' : '') +
       (x.boSungDuoc ? '<button class="nut rong" data-vatbs="' + e(x.ma) + '" style="width:auto;padding:4px 12px">↩ Cần bổ sung</button>' : '') +
-      (x.huyDuoc ? '<button class="nut rong" data-vathuy="' + e(x.ma) + '" style="width:auto;padding:4px 12px;color:#B42318">🗑 Huỷ</button>' : '') + '</div>' +
-    '<details style="margin-top:6px"><summary class="muted">Đơn gốc · lịch sử</summary><div class="muted" style="font-size:12.5px;line-height:1.6;margin-top:4px">' + (x.tuSheet ? '<i>Dòng nhập từ sheet cũ, không gắn đơn trong app.</i>' : vatDonHtml(x.don)) +
+      (x.huyDuoc ? '<button class="nut rong" data-vathuy="' + e(x.ma) + '" style="width:auto;padding:4px 12px;background:#B42318;color:#fff">🗑 Huỷ</button>' : '') + '</div>' +
+    '<details style="margin-top:6px"><summary class="muted">' + (x.taoMoi ? 'Lịch sử' : 'Đơn gốc · lịch sử') + '</summary><div class="muted" style="font-size:12.5px;line-height:1.6;margin-top:4px">' + (x.tuSheet ? '<i>Dòng nhập từ sheet cũ, không gắn đơn trong app.</i>' : x.taoMoi ? '<i>Hóa đơn tạo mới trong Phòng Hóa đơn VAT, không theo đơn có sẵn trong app.</i>' : vatDonHtml(x.don)) +
       '<div style="margin-top:6px">' + x.lichSu.slice().reverse().map(function (l) { return e(l); }).join('<br>') + '</div></div></details></div>';
 }
 function vatDongBang(x) { return [x.stt, x.daiLy, x.khMst, x.diaChi, x.hang, x.dvt, soSL(x.sl), x.thanhTien ? tienLe(x.gia) : '', x.thanhTien ? tien(x.thanhTien) : '', x.nhap ? 'đã nháp' : '', ngayDu(x.ngay) + (x.ghiChu ? ' · ' + x.ghiChu : ''), x.ky ? 'TRUE' : 'FALSE', x.gui ? 'TRUE' : 'FALSE', x.vat ? tien(x.vat) : '', x.tong ? tien(x.tong) : '']; }
@@ -4428,9 +4430,11 @@ function vatCopy() {
 }
 function veVat() {
   var r = VAT.r; if (!r || TAB !== 'vat') return;
+  var moTao = VAT.xem === 'moi'; if (moTao) VAT.xem = 'the';
   var d = r.dem || {}, t = r.tong;
   var h = quayLai() + '<h2 class="tieude">🧾 Hóa đơn VAT</h2>' +
     '<div class="the"><div class="hang" style="gap:10px;align-items:center"><label for="vatThang" style="margin:0">Tháng</label><input type="month" id="vatThang" value="' + e(r.thang) + '" style="max-width:170px"></div>' +
+      (r.taoDuoc ? '<button class="nut" id="vatTao" style="margin-top:10px">➕ Tạo hóa đơn mới (không theo đơn)</button>' : '') +
     '<small class="muted" style="display:block;margin-top:6px">' + (r.nguoiXuLy.length ? 'Kế toán thuế: <b>' + e(r.nguoiXuLy.join(', ')) + '</b>' : '<b style="color:#B42318">Chưa ai được giao vai Kế toán thuế.</b> Admin vào Phòng Vận hành → Phân quyền, chọn phòng Hóa đơn VAT.') + '</small>' +
     (VAT.xem === 'bc' ? '' : '<div class="o" style="margin-top:10px"><div><small>Hóa đơn trong tháng</small><b>' + t.so + '</b></div><div><small>Thành tiền</small><b>' + tienNgan(t.thanhTien) + '</b></div><div><small>VAT</small><b>' + tienNgan(t.vat) + '</b></div><div><small>Tổng giá trị HĐ</small><b>' + tienNgan(t.tong) + '</b></div></div>') + '</div>' +
     '<div class="tab2" style="flex-wrap:wrap">' + [['the', '🗂 Yêu cầu'], ['bc', '📊 Báo cáo'], ['bang', '📋 Sổ tháng']].map(function (x) { return '<button data-vatxem="' + x[0] + '" class="' + (VAT.xem === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>';
@@ -4450,6 +4454,8 @@ function veVat() {
   document.querySelectorAll('[data-vatxem]').forEach(function (b) { b.onclick = function () { VAT.xem = b.dataset.vatxem; veVat(); }; });
   document.querySelectorAll('[data-vatloc]').forEach(function (b) { b.onclick = function () { VAT.loc = b.dataset.vatloc; veVat(); }; });
   if ($('vatCopy')) $('vatCopy').onclick = vatCopy;
+  if ($('vatTao')) $('vatTao').onclick = moTaoVat;
+  if (moTao && r.taoDuoc) moTaoVat();
   if (VAT.xem === 'bc') { if (coBc) vatBcGan(); else napVatBc(); }
   document.querySelectorAll('[data-vatdd]').forEach(function (c) { c.onchange = function () {
     goi('vatDanhDau', [TK, c.dataset.vatma, c.dataset.vatdd, c.checked, VAT.thang], function (r2) { VAT.r = r2; veVat(); }, false, function (m) { c.checked = !c.checked; bao(m, true); });
@@ -4470,9 +4476,50 @@ function moSuaVat(x) {
   moVatForm({ moi: false, x: x, don: x.don, guiLai: x.tt === 'Cần bổ sung' && x.cuaToi, xuLy: VAT.r.xuLy, thue: VAT.r.thue,
     f: { daiLy: x.daiLy, khMst: x.khMst, diaChi: x.diaChi, hang: x.hang, dvt: x.dvt, sl: x.sl, gia: x.gia, thanhTien: x.thanhTien, tong: x.tong, thue: x.thue, ghiChu: x.ghiChu, soHD: x.soHD, tienDon: x.tienDon } });
 }
-function vatFormHtml(p, f, thue, coSoHD, khachCu) {
-  return '<label for="' + p + 'DaiLy">TÊN ĐẠI LÝ</label><input id="' + p + 'DaiLy" value="' + e(f.daiLy || '') + '">' +
-    (khachCu && khachCu.length ? '<label for="' + p + 'Chon">Chọn khách đã xuất trước</label><select id="' + p + 'Chon"><option value="">— ' + khachCu.length + ' khách đã xuất của đại lý này —</option>' + khachCu.map(function (x, i) { return '<option value="' + i + '">' + e(String(x.khMst).split('\n')[0].slice(0, 70)) + '</option>'; }).join('') + '</select>' : '') +
+function vatTaoDuoc() { var g = H.me.phongGhi || []; return !!H.me.admin || g.indexOf('VAT') >= 0 || g.indexOf('TCKT') >= 0; }
+function vatTenKt(s) { return String(s || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim(); }
+function moTaoVat() {
+  goi('vatMauMoi', [TK], function (m) {
+    VAT.dlSet = {}; m.daiLy.forEach(function (t) { VAT.dlSet[vatTenKt(t)] = 1; });
+    moVatForm({ taoMoi: true, f: {}, thue: m.thue, daiLyDs: m.daiLy, tuXuLy: m.xuLy, nguoiXuLy: m.nguoiXuLy });
+  });
+}
+function vatChonHtml(p, khachCu) {
+  return khachCu && khachCu.length ? '<label for="' + p + 'Chon">Chọn khách đã xuất trước</label><select id="' + p + 'Chon"><option value="">— ' + khachCu.length + ' khách đã xuất của đại lý này —</option>' + khachCu.map(function (x, i) { return '<option value="' + i + '">' + e(String(x.khMst).split('\n')[0].slice(0, 70)) + '</option>'; }).join('') + '</select>' : '';
+}
+function vatChonGan(p, khachCu) {
+  if ($(p + 'Chon')) $(p + 'Chon').onchange = function () {
+    var x = (khachCu || [])[this.value]; if (!x) return;
+    $(p + 'Kh').value = x.khMst; $(p + 'Dc').value = x.diaChi || ''; $(p + 'TuNhan').textContent = 'Lấy theo lần xuất ngày ' + ngayDu(x.ngay) + ', dò lại nếu khách đổi thông tin.';
+  };
+}
+function vatDaiLyGan(p) {
+  VAT.khTen = VAT.khTen || {};
+  var o = $(p + 'DaiLy'), kh = $(p + 'Kh'), dc = $(p + 'Dc'), tu = { kh: null, dc: null };
+  function boTu() {
+    if (tu.kh !== null && kh.value === tu.kh) { kh.value = ''; if (dc.value === tu.dc) dc.value = ''; $(p + 'TuNhan').textContent = ''; }
+    tu.kh = tu.dc = null;
+  }
+  function hien(ten, ds) {
+    if (!$(p + 'DaiLy') || vatTenKt($(p + 'DaiLy').value) !== ten) return;
+    $(p + 'ChonKhung').innerHTML = vatChonHtml(p, ds); vatChonGan(p, ds);
+    if ($(p + 'Chon')) $(p + 'Chon').addEventListener('change', function () { tu.kh = kh.value; tu.dc = dc.value; });
+    if (kh.value.trim() && kh.value !== tu.kh) { if (tu.kh !== null) $(p + 'TuNhan').textContent = ''; tu.kh = tu.dc = null; return; }
+    if (!ds.length) return boTu();
+    kh.value = tu.kh = ds[0].khMst; dc.value = tu.dc = ds[0].diaChi || '';
+    $(p + 'TuNhan').textContent = 'Lấy theo lần xuất ngày ' + ngayDu(ds[0].ngay) + ' của đại lý này, dò lại nếu khách đổi thông tin.';
+  }
+  o.addEventListener('input', function () {
+    var ten = vatTenKt(o.value);
+    if (!ten || !(VAT.dlSet || {})[ten]) { $(p + 'ChonKhung').innerHTML = ''; boTu(); return; }
+    if (VAT.khTen[ten]) return hien(ten, VAT.khTen[ten]);
+    goi('vatKhachTen', [TK, o.value], function (r) { VAT.khTen[ten] = r.ds; hien(ten, r.ds); }, true, function () {});
+  });
+}
+function vatFormHtml(p, f, thue, coSoHD, khachCu, dlDs) {
+  return '<label for="' + p + 'DaiLy">TÊN ĐẠI LÝ</label><input id="' + p + 'DaiLy" value="' + e(f.daiLy || '') + '"' + (dlDs ? ' list="' + p + 'DaiLyDs" autocomplete="off" placeholder="Gõ tên hoặc chọn đại lý đã xuất trước"' : '') + '>' +
+    (dlDs ? '<datalist id="' + p + 'DaiLyDs">' + dlDs.map(function (t) { return '<option value="' + e(t) + '">'; }).join('') + '</datalist>' : '') +
+    '<div id="' + p + 'ChonKhung">' + vatChonHtml(p, khachCu) + '</div>' +
     '<label for="' + p + 'Kh">TÊN KHÁCH HÀNG + MÃ SỐ THUẾ</label><textarea id="' + p + 'Kh" rows="3" placeholder="- KH: …&#10;- Đơn vị: …&#10;- MST: …">' + e(f.khMst || '') + '</textarea>' +
     '<small class="muted" id="' + p + 'TuNhan">' + (f.tuNhan ? 'Đang lấy theo người nhận trên đơn. Xuất cho đơn vị khác thì sửa lại.' : '') + '</small>' +
     '<label for="' + p + 'Dc">ĐỊA CHỈ KHÁCH HÀNG</label><textarea id="' + p + 'Dc" rows="2">' + e(f.diaChi || '') + '</textarea>' +
@@ -4511,10 +4558,7 @@ function vatFormGan(p, st, goiY, coVatDon, khachCu) {
   [['Gia', 'gia'], ['GiaVat', 'giaVat'], ['TT', 'tt'], ['Tong', 'tong'], ['Sl', ''], ['Thue', '']].forEach(function (q) { $(p + q[0]).addEventListener(q[0] === 'Thue' ? 'change' : 'input', function () { tinh(q[1]); }); });
   $(p + 'LayTong').onclick = function () { $(p + 'Tong').value = tien(st.tienDon || 0); tinh('tong'); $(p + 'GoiYDon').textContent = 'Tổng HĐ bằng tiền hàng trên đơn (giá trên đơn đã gồm VAT).'; };
   $(p + 'LayTT').onclick = function () { $(p + 'TT').value = tien(st.tienDon || 0); tinh('tt'); $(p + 'GoiYDon').textContent = 'Thành tiền chưa VAT bằng tiền hàng trên đơn, VAT cộng thêm.'; };
-  if ($(p + 'Chon')) $(p + 'Chon').onchange = function () {
-    var x = (khachCu || [])[this.value]; if (!x) return;
-    $(p + 'Kh').value = x.khMst; $(p + 'Dc').value = x.diaChi || ''; $(p + 'TuNhan').textContent = 'Lấy theo lần xuất ngày ' + ngayDu(x.ngay) + ', dò lại nếu khách đổi thông tin.';
-  };
+  vatChonGan(p, khachCu);
   tinh('');
   if (goiY && st.tienDon) {
     if (coVatDon) { $(p + 'TT').value = tien(st.tienDon); tinh('tt'); $(p + 'GoiYDon').textContent = 'Đã gợi ý theo đơn: đơn có ghi VAT riêng nên tiền hàng là thành tiền chưa VAT, VAT cộng thêm. Sửa lại nếu xuất khác.'; }
@@ -4533,21 +4577,28 @@ function vatFormKiem(p, f2) {
   return true;
 }
 function moVatForm(o) {
-  var f = o.f, thue = o.thue || [8, 5, 10, 0];
+  var f = o.f, thue = o.thue || [8, 5, 10, 0], so = (o.don && o.don.so) || (o.x && o.x.so) || '', lam = o.taoMoi ? (o.tuXuLy ? 'tạo' : 'gửi') : o.moi ? 'gửi' : 'lưu';
   VAT_F = { goc: f.thanhTien ? 'tt' : '', tienDon: f.tienDon || 0 };
-  moHop('<h3 style="margin:0;color:var(--xanh)">🧾 ' + (o.moi ? 'Xuất HĐ VAT' : 'Sửa hóa đơn VAT') + ' · Đơn ' + e((o.don && o.don.so) || (o.x && o.x.so) || '') + '</h3>' +
+  moHop('<h3 style="margin:0;color:var(--xanh)">🧾 ' + (o.taoMoi ? 'Tạo hóa đơn mới' : (o.moi ? 'Xuất HĐ VAT' : 'Sửa hóa đơn VAT') + (so ? ' · Đơn ' + e(so) : o.x && o.x.taoMoi ? ' · HĐ tạo mới' : o.x && o.x.tuSheet ? ' · dòng sheet cũ' : '')) + '</h3>' +
+    (o.taoMoi ? '<p class="muted" style="margin:4px 0 8px">Hóa đơn cho khách không có đơn trong Chốt đơn / Sổ bán hàng. Điền theo mẫu sheet XUẤT HÓA ĐƠN LANEST rồi bấm ' + (o.tuXuLy ? 'Tạo hóa đơn' : 'Gửi') + ', hóa đơn hiện ở mục Cần xử lý của Phòng Hóa đơn VAT.</p>' : '') +
     (o.moi ? '<p class="muted" style="margin:4px 0 8px">Dò lại theo mẫu sheet XUẤT HÓA ĐƠN LANEST rồi bấm Gửi. Yêu cầu hiện ở Phòng Hóa đơn VAT cho kế toán thuế xử lý.</p>' : '') +
     (o.daGui && o.daGui.length ? '<p class="ch-canh doi">⚠ Đơn này đã gửi ' + o.daGui.length + ' yêu cầu: ' + o.daGui.map(function (y) { return e(y.tt + ' (' + y.guiLuc.slice(0, 16) + ' · ' + y.tenNV + (y.sl ? ' · ' + soSL(y.sl) + ' ' + y.dvt : '') + ')'); }).join('; ') + '. Chỉ gửi thêm khi xuất thêm hóa đơn khác.</p>' : '') +
-    '<details' + (o.moi ? ' open' : '') + ' style="margin:6px 0 4px"><summary class="muted">Thông tin đơn hàng</summary><div style="font-size:13.5px;line-height:1.6;background:#F7F8F6;border-radius:8px;padding:8px 10px;margin-top:4px">' + vatDonHtml(o.don) + '</div></details>' +
-    vatFormHtml('v', f, thue, o.xuLy, o.khachCu) +
-    '<div class="hang" style="margin-top:12px"><button class="nut phu" id="vDong">Đóng</button><button class="nut" id="vLuu">' + (o.moi ? '📤 Gửi kế toán thuế' : o.guiLai ? '📤 Lưu &amp; gửi lại' : '💾 Lưu') + '</button></div>');
+    (o.don ? '<details' + (o.moi ? ' open' : '') + ' style="margin:6px 0 4px"><summary class="muted">Thông tin đơn hàng</summary><div style="font-size:13.5px;line-height:1.6;background:#F7F8F6;border-radius:8px;padding:8px 10px;margin-top:4px">' + vatDonHtml(o.don) + '</div></details>' : '') +
+    vatFormHtml('v', f, thue, o.xuLy, o.khachCu, o.daiLyDs) +
+    '<div class="hang" style="margin-top:12px"><button class="nut phu" id="vDong">Đóng</button><button class="nut" id="vLuu">' + (o.taoMoi ? (o.tuXuLy ? '📤 Tạo hóa đơn' : '📤 Gửi kế toán thuế') : o.moi ? '📤 Gửi kế toán thuế' : o.guiLai ? '📤 Lưu &amp; gửi lại' : '💾 Lưu') + '</button></div>');
   vatFormGan('v', VAT_F, o.moi && !f.thanhTien, !!(o.don && o.don.vat), o.khachCu);
+  if (o.daiLyDs) vatDaiLyGan('v');
   $('vDong').onclick = dongHop;
   $('vLuu').onclick = function () {
     var f2 = vatFormDoc('v'); f2.guiLai = !!o.guiLai;
     if (!vatFormKiem('v', f2)) return;
-    if (!f2.diaChi.trim() && !confirm('Chưa có địa chỉ khách hàng. Vẫn ' + (o.moi ? 'gửi' : 'lưu') + '?')) return;
-    if (o.moi) goi('vatGui', [TK, o.maDon, f2], function (x) {
+    if (o.taoMoi && !f2.daiLy.trim() && !confirm('Chưa ghi tên đại lý. Vẫn ' + lam + '?')) return;
+    if (!f2.diaChi.trim() && !confirm('Chưa có địa chỉ khách hàng. Vẫn ' + lam + '?')) return;
+    if (o.taoMoi) goi('vatTaoMoi', [TK, f2], function (r) {
+      dongHop(); VAT.r = r; VAT.thang = r.thang; VAT.xem = 'the'; VAT.loc = 'can'; veVat();
+      bao(r.taoMoi.baoAi.length ? 'Đã tạo hóa đơn mới, ' + r.taoMoi.baoAi.join(', ') + ' nhận được thông báo.' : 'Đã tạo hóa đơn mới, đang ở mục Cần xử lý.');
+    });
+    else if (o.moi) goi('vatGui', [TK, o.maDon, f2], function (x) {
       dongHop(); if (SB && x.vat) { SB.vat = x.vat; if (TAB === 'sb' && SB_TAB === 'don') veSo(); }
       bao(x.nguoiXuLy.length ? 'Đã gửi sang Phòng Hóa đơn VAT, ' + x.nguoiXuLy.join(', ') + ' nhận được thông báo.' : 'Đã gửi sang Phòng Hóa đơn VAT. Chưa ai được giao vai Kế toán thuế nên chưa báo ai.');
     });
