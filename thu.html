@@ -472,7 +472,7 @@ function veNav() {
 }
 var PHONG_HT = '';
 var TAB_PHONG = { len: ['KD'], ds: ['KD', 'TCKT', 'KHO'], bc: ['KD', 'TCKT'], th: ['KD', 'TCKT', 'HCNS'], kh: ['KD', 'TCKT'], ton: ['KD', 'KHO', 'TCKT', 'VH'], nk: ['VH'],
-  p_VH: ['VH'], bchub: ['VH'], mvgsm: ['VH'], p_KH: ['KH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_VAT: ['VAT'], vat: ['VAT'], p_KD: ['KD'], p_KHO: ['KHO'],
+  p_VH: ['VH'], bchub: ['VH'], mvgsm: ['VH'], botzalo: ['VH'], p_KH: ['KH'], p_HCNS: ['HCNS'], p_TCKT: ['TCKT'], p_VAT: ['VAT'], vat: ['VAT'], p_KD: ['KD'], p_KHO: ['KHO'],
   hsx: ['HCNS'], ns_nv: ['HCNS'], ns_vb: ['HCNS'], ns_cong: ['HCNS'], ns_np: ['HCNS'], ns_luong: ['HCNS'], nsbc: ['HCNS'],
   kk: ['KHO'], kn: ['KHO'], kx: ['KHO'], knx: ['KHO'], chot: ['KHO', 'TCKT', 'VH'], kbx: ['KHO', 'TCKT', 'VH'], kp: ['KHO', 'VH'], kb: ['KHO', 'VH', 'TCKT'], xl: ['TCKT'], sb: ['TCKT', 'VH'], bct: ['TCKT', 'VH'] };
 function tenPhong(ma) { return ((H.phongBan || []).filter(function (p) { return p.ma === ma; })[0] || {}).ten || ma; }
@@ -503,7 +503,7 @@ function chuyenTab(t) {
 function veTab() {
   if (TAB.indexOf('p_') === 0) return vePhong(TAB.slice(2));
   var m = { home: veHome, len: veLenDon, ds: function () { napDon(); }, bc: function () { BC_XEM = BC_XEM === 'thuong' ? 'tong' : BC_XEM; napBaoCao(); },
-    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, sotay: veSoTay, ktkt: napKtt, toi: veToi, bchub: veBcHub, mvgsm: function () { napMv(); }, np: napNghiPhep, vat: function () { napVat(); }, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
+    th: function () { napBaoCao(null, 'thuong'); }, ton: napTon, cc: function () { napCongThang(); }, cv: napCongViec, tb: napThongBao, sotay: veSoTay, ktkt: napKtt, toi: veToi, bchub: veBcHub, mvgsm: function () { napMv(); }, botzalo: function () { napBotZalo(); }, np: napNghiPhep, vat: function () { napVat(); }, kh: function () { napKhach(); }, crm: function () { napCrm(); }, crmm: function () { napCrm(); }, cskh: function () { napCskh(); }, cd: function () { veCaiDat(CD_MO); }, nk: napNhatKy,
     hs: function () { HS_ID = ''; napHoSo(); }, hsx: napHoSo, ns_nv: napNsNV, ns_vb: napNsVB, ns_cong: function () { napNsCong(); }, ns_np: function () { napNsNP(); }, ns_luong: function () { napNsLuong(); }, nsbc: napNsBc,
     kk: function () { napKho('kiem'); }, kn: function () { napKho('nhap'); }, kx: function () { napKho('xuat'); }, knx: veKnx, bct: veBaoCaoTC, chot: function () { napChot(); }, kbx: function () { napKbx(); }, kp: function () { napKp(); }, kb: function () { napKb(); }, xl: veXl, sb: function () { SB_DON = null; napSo(); } };
   (m[TAB] || veHome)();
@@ -576,6 +576,32 @@ function veBcHub() {
     ['ag', 'PHÒNG ĐIỀU HÀNH AGENT', 'Các trợ lý AI: con nào chạy ổn, con nào cần xem', 'bc', ['#E4EDF9', '#1F5F9E', '#163F6B']],
     ['nk', 'NHẬT KÝ HỆ THỐNG', 'Ai làm gì, lúc nào', 'ds', M.cd]];
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">Báo cáo</h2><p class="muted" style="margin:0 0 10px">Mọi báo cáo của công ty ở một chỗ.</p>' + oLon(ds);
+}
+var BOTZ = null;
+function napBotZalo(viec) {
+  if (viec === 'go' && !confirm('Gỡ Zalo đã đăng ký? Bot sẽ không trả lời ai tới khi chị đăng ký lại.')) return;
+  goi('botThongTin', [TK, viec || ''], function (r) { BOTZ = r; veBotZalo(); });
+}
+function veBotZalo() {
+  var r = BOTZ;
+  $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">🤖 Bot Zalo · Trợ lý LA</h2>' +
+    '<div class="the"><p style="margin:0">Chị nhắn bot trên Zalo để hỏi mọi số trong app: doanh thu, đơn, Chốt đơn, công nợ, kho, nhân sự, lương, chi phí, MVGSM… Bot <b>chỉ đọc</b>, không sửa gì trong app, và <b>chỉ trả lời Zalo đã đăng ký</b>. Không có tài sản cá nhân, mật mã.</p></div>' +
+    '<div class="the"><b>Zalo đã đăng ký</b><p style="margin:4px 0">' + (r.coZalo ? '✅ ' + e(r.zaloTen || 'Zalo của chị') + (r.zaloLuc ? ' · từ ' + e(r.zaloLuc) : '') : '⏳ Chưa có Zalo nào đăng ký') + '</p>' +
+    (r.ma ? '<div style="font-size:30px;font-weight:700;letter-spacing:5px;color:var(--xanh)">' + e(r.ma) + '</div><small class="muted">Nhắn cho bot đúng dòng này: <b>/dangky ' + e(r.ma) + '</b> · mã hết hạn lúc ' + e(String(r.maHet).slice(11)) + '</small>' : '') +
+    '<div class="hang" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="nut" id="bzMa" style="width:auto;padding:8px 14px">' + (r.coZalo ? 'Đăng ký Zalo khác (lấy mã)' : 'Lấy mã đăng ký') + '</button>' +
+    (r.coZalo ? '<button class="nut phu" id="bzGo" style="width:auto;padding:8px 14px">Gỡ Zalo đã đăng ký</button>' : '') + '</div></div>' +
+    '<div class="the"><b>Khoá bot · dán vào n8n</b><p class="muted" style="margin:4px 0">Chỉ dán vào ô <b>KHOA_APP</b> của luồng n8n "Lanest - Bot Zalo Trợ lý LA". Không gửi khoá này cho ai, kể cả trong Zalo.</p>' +
+    '<div class="hang" style="gap:8px;flex-wrap:wrap"><input id="bzKhoa" type="password" readonly value="' + e(r.khoa) + '" style="flex:1;min-width:200px;font-family:monospace"><button class="nut phu" id="bzHien" style="width:auto;padding:8px 14px">Hiện</button><button class="nut" id="bzChep" style="width:auto;padding:8px 14px">Chép khoá</button></div></div>' +
+    '<div class="the"><b>Lượt hỏi</b><p style="margin:4px 0">Hôm nay ' + r.hoiHomNay + ' lượt · tổng ' + r.soHoi + ' lượt' + (r.hoiCuoi ? ' · lần cuối ' + e(r.hoiCuoi) : '') + '</p></div>' +
+    '<div class="the"><b>Cài lần đầu</b><ol style="margin:6px 0 0;padding-left:20px;line-height:1.6">' +
+    '<li>Trong Zalo tìm <b>Zalo Bot Manager</b> → bấm <b>Tạo bot</b>, đặt tên bắt đầu bằng chữ "Bot" (VD: <b>Bot Trợ lý LA</b>). Zalo nhắn mã bot (Bot Token) về cho chị.</li>' +
+    '<li>Mở n8n, luồng <b>Lanest - Bot Zalo Trợ lý LA</b>, khối <b>Cau hinh</b>: dán mã bot vào <b>ZALO_TOKEN</b>; bấm <b>Chép khoá</b> ở trên rồi dán vào <b>KHOA_APP</b>; gõ một chuỗi bí mật bất kỳ (ít nhất 12 ký tự) vào <b>BI_MAT</b>. Bấm Save.</li>' +
+    '<li>Nhắn em: em bật luồng và đăng ký webhook với Zalo.</li>' +
+    '<li>Bấm <b>Lấy mã đăng ký</b> ở trên, nhắn <b>/dangky + mã</b> cho bot. Xong thì hỏi thử: "hôm nay bán được bao nhiêu?"</li></ol></div>';
+  $('bzMa').onclick = function () { napBotZalo('ma'); };
+  if ($('bzGo')) $('bzGo').onclick = function () { napBotZalo('go'); };
+  $('bzHien').onclick = function () { var i = $('bzKhoa'); i.type = i.type === 'password' ? 'text' : 'password'; this.textContent = i.type === 'password' ? 'Hiện' : 'Ẩn'; };
+  $('bzChep').onclick = function () { var k = r.khoa; if (navigator.clipboard) navigator.clipboard.writeText(k).then(function () { bao('Đã chép khoá bot. Dán vào ô KHOA_APP trong n8n.'); }, function () { $('bzKhoa').type = 'text'; $('bzKhoa').select(); bao('Chị bấm giữ để chép khoá.'); }); else { $('bzKhoa').type = 'text'; $('bzKhoa').select(); } };
 }
 var MV = { nam: 0, xem: 'thang', quy: '', thang: '', r: null };
 var MV_MAU_TT = { 'Hoàn thành': ['#E3F4EA', '#0B7A3E'], 'Đang làm': ['#FFF4D6', '#9A6700'], 'Chưa hoàn thành': ['#FDECEC', '#C62828'] };
@@ -2734,7 +2760,7 @@ var IC_P = (function () {
 var MO_TA_P = { VH: 'Phân quyền, nhật ký hệ thống, điều hành agent AI', HCNS: 'Hồ sơ nhân viên, văn bản, công, lương, duyệt yêu cầu', TCKT: 'Sổ bán hàng, công nợ, doanh thu, thưởng, đối chiếu kho', VAT: 'Kế toán gửi yêu cầu từ đơn hàng · kế toán thuế xuất nháp, ký, gửi khách', KD: 'Bán hàng, đơn hàng, doanh thu, Target, giá & thưởng', KH: 'CRM khách cũ, khách mới, khách của tôi, bản đồ đại lý', KHO: 'Chốt đơn, kiểm kho, nhập, xuất, báo cáo ngày' };
 function phongNhanh(ma) {
   var me = H.me, kg = me.phongGhi.indexOf('KHO') >= 0;
-  var m = { VH: [me.admin && ['bchub', 'Báo cáo'], ['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký'], me.ag && ['ag', 'Agent AI']],
+  var m = { VH: [me.admin && ['bchub', 'Báo cáo'], ['cd:pq', 'Phân quyền'], ['nk', 'Nhật ký'], me.ag && ['ag', 'Agent AI'], me.admin && ['botzalo', 'Bot Zalo']],
     HCNS: [me.nsQL && ['ns_nv', 'Nhân viên'], me.xemLuong && ['nsbc', 'Báo cáo'], me.xemLuong && ['ns_luong', 'Bảng lương'], me.duyetCC && ['np', 'Duyệt yêu cầu'], me.nsQL && ['ns_np', 'Nghỉ phép']],
     TCKT: [['sb', 'Sổ bán hàng'], ['chot', 'Chốt đơn'], ['bct', 'Báo cáo']],
     VAT: [['vat', 'Yêu cầu'], ['vat:bc', 'Báo cáo'], ['vat:bang', 'Sổ tháng']],
@@ -2764,7 +2790,7 @@ function vePhong(ma) {
     if (ma === 'KD') { if (!LOC.ky) LOC.ky = 'thang'; goiNen('don|' + JSON.stringify(LOC), 'dsDon', [TK, LOC]); }
   }, 300);
   var o = [], ghi = H.me.phongGhi.indexOf(ma) >= 0, ghiChu = '';
-  if (ma === 'VH') { o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']]; if (H.me.admin) o.unshift(['bchub', 'BÁO CÁO', 'Mọi báo cáo ở một chỗ: kế toán, doanh thu, kho, xuất kho, nhân sự, kiểm tra, agent', 'bc']); if (H.me.ag) o.push(['ag', 'PHÒNG ĐIỀU HÀNH AGENT', 'Các trợ lý AI và việc tự động: con nào chạy ổn, con nào cần xem', 'bc']); }
+  if (ma === 'VH') { o = [['cd:pq', 'PHÂN QUYỀN', 'Ai vào phòng nào, vai gì, team nào', 'cd'], ['nk', 'NHẬT KÝ', 'Ai làm gì, lúc nào', 'ds']]; if (H.me.admin) o.unshift(['bchub', 'BÁO CÁO', 'Mọi báo cáo ở một chỗ: kế toán, doanh thu, kho, xuất kho, nhân sự, kiểm tra, agent', 'bc']); if (H.me.ag) o.push(['ag', 'PHÒNG ĐIỀU HÀNH AGENT', 'Các trợ lý AI và việc tự động: con nào chạy ổn, con nào cần xem', 'bc']); if (H.me.admin) o.push(['botzalo', 'BOT ZALO · TRỢ LÝ LA', 'Hỏi mọi số trong app qua Zalo: khoá bot, đăng ký Zalo, lượt hỏi', 'cskh']); }
   if (ma === 'HCNS') {
     if (H.me.nsQL) o.push(['ns_nv', 'NHÂN VIÊN', 'Hồ sơ, ảnh, CCCD, DISC, tài khoản & mật mã', 'kh'], ['ns_vb', 'VĂN BẢN', 'HĐLĐ, chế độ lương thưởng, kỷ luật', 'ds']);
     if (H.me.xemLuong) o.push(['nsbc', 'BÁO CÁO', 'Tổng hợp nhân sự, hiệu suất từng người · AI Phòng Nhân sự theo dõi, nhận xét', 'bc']);
