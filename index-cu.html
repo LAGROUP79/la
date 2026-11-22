@@ -5462,17 +5462,28 @@ function luuH() { try { luu('kd_h', JSON.stringify(H)); } catch (x) {} }
 <script>
 (function () {
   var MO = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-  function chu(v) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+  var CHON = 'input[type=date],input[type=month],input[type=time]';
+  var TRONG = { date: 'dd/mm/yyyy', month: 'Tháng --/----', time: '--:--' };
+  function chu(v, kieu) {
+    var m;
+    if (kieu === 'month') { m = /^(\d{4})-(\d{2})$/.exec(v || ''); return m ? 'Tháng ' + m[2] + '/' + m[1] : ''; }
+    if (kieu === 'time') { m = /^(\d{2}):(\d{2})/.exec(v || ''); return m ? m[1] + ':' + m[2] : ''; }
+    m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
+  }
   function ve(o) {
     var s = o.__ngvn; if (!s) return;
-    var t = chu(MO.get.call(o));
-    s.textContent = t || 'dd/mm/yyyy';
+    var t = chu(MO.get.call(o), o.type);
+    s.textContent = t || TRONG[o.type] || '';
     s.className = 'ngvn-chu' + (t ? '' : ' ngvn-trong');
   }
   function boc(o) {
     if (o.__ngvn || !o.parentNode) return;
     var cs = getComputedStyle(o), k = document.createElement('span'), s = document.createElement('span');
-    k.className = 'ngvn' + (o.style.width && o.style.width !== '100%' ? ' ngvn-dong' : '');
+    var dong = o.style.width && o.style.width !== '100%', pd = getComputedStyle(o.parentNode).display;
+    k.className = 'ngvn' + (dong ? ' ngvn-dong' : '');
+    if (!dong) k.style.width = '100%';
+    if (/flex|grid/.test(pd)) { k.style.flex = cs.flexGrow + ' ' + cs.flexShrink + ' ' + cs.flexBasis; k.style.alignSelf = cs.alignSelf; }
+    ['marginLeft', 'marginRight', 'marginTop', 'marginBottom', 'maxWidth', 'minWidth'].forEach(function (p) { if (o.style[p]) { k.style[p] = o.style[p]; o.style[p] = ''; } });
     s.style.left = (parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth)) + 'px';
     s.style.right = '34px';
     s.style.font = cs.font; s.style.color = cs.color;
@@ -5486,8 +5497,8 @@ function luuH() { try { luu('kd_h', JSON.stringify(H)); } catch (x) {} }
   }
   function quet(g) {
     if (!g || !g.querySelectorAll) return;
-    if (g.matches && g.matches('input[type=date]')) boc(g);
-    var ds = g.querySelectorAll('input[type=date]');
+    if (g.matches && g.matches(CHON)) boc(g);
+    var ds = g.querySelectorAll(CHON);
     for (var i = 0; i < ds.length; i++) boc(ds[i]);
   }
   quet(document.body);
