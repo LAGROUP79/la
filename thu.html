@@ -586,6 +586,9 @@ function veBotZalo() {
   var r = BOTZ;
   $('noiDung').innerHTML = quayLai() + '<h2 class="tieude">🤖 Bot Zalo · Trợ lý LA</h2>' +
     '<div class="the"><p style="margin:0">Chị nhắn bot trên Zalo để hỏi mọi số trong app: doanh thu, đơn, Chốt đơn, công nợ, kho, nhân sự, lương, chi phí, MVGSM… Bot <b>chỉ đọc</b>, không sửa gì trong app, và <b>chỉ trả lời Zalo đã đăng ký</b>. Không có tài sản cá nhân, mật mã.</p></div>' +
+    '<div class="the"><b>Soát các trợ lý AI</b><p style="margin:4px 0">30 phút/lần (7:00–21:30) bot xem các agent: con nào báo lỗi hoặc quá hạn thì <b>giao Trợ lý giám sát sửa ngay</b> (lượt nhanh mỗi giờ trên máy văn phòng). Sửa không được, việc chị phải tự làm, hoặc máy văn phòng đang tắt thì <b>bot nhắn chị trên Zalo</b>, mỗi việc 1 lần.</p>' +
+    '<p class="muted" style="margin:4px 0">' + (r.gsLuc ? 'Bot báo về lần cuối ' + e(r.gsLuc) : 'Bot chưa soát lần nào') + ' · việc đang mở ' + (r.gsMo || 0) + ' · hôm nay đã nhắn chị ' + (r.gsBaoHomNay || 0) + ' lần</p>' +
+    '<button class="nut phu" id="bzAg" style="width:auto;padding:8px 14px">Mở Phòng điều hành Agent</button></div>' +
     '<div class="the"><b>Zalo đã đăng ký</b><p style="margin:4px 0">' + (r.coZalo ? '✅ ' + e(r.zaloTen || 'Zalo của chị') + (r.zaloLuc ? ' · từ ' + e(r.zaloLuc) : '') : '⏳ Chưa có Zalo nào đăng ký') + '</p>' +
     (r.ma ? '<div style="font-size:30px;font-weight:700;letter-spacing:5px;color:var(--xanh)">' + e(r.ma) + '</div><small class="muted">Nhắn cho bot đúng dòng này: <b>/dangky ' + e(r.ma) + '</b> · mã hết hạn lúc ' + e(String(r.maHet).slice(11)) + '</small>' : '') +
     '<div class="hang" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="nut" id="bzMa" style="width:auto;padding:8px 14px">' + (r.coZalo ? 'Đăng ký Zalo khác (lấy mã)' : 'Lấy mã đăng ký') + '</button>' +
@@ -600,6 +603,7 @@ function veBotZalo() {
     '<li>Bấm <b>Lấy mã đăng ký</b> ở trên, nhắn <b>/dangky + mã</b> cho bot. Xong thì hỏi thử: "hôm nay bán được bao nhiêu?"</li></ol></div>';
   $('bzMa').onclick = function () { napBotZalo('ma'); };
   if ($('bzGo')) $('bzGo').onclick = function () { napBotZalo('go'); };
+  $('bzAg').onclick = function () { chuyenTab('ag'); };
   $('bzHien').onclick = function () { var i = $('bzKhoa'); i.type = i.type === 'password' ? 'text' : 'password'; this.textContent = i.type === 'password' ? 'Hiện' : 'Ẩn'; };
   $('bzChep').onclick = function () { var k = r.khoa; if (navigator.clipboard) navigator.clipboard.writeText(k).then(function () { bao('Đã chép khoá bot. Dán vào ô KHOA_APP trong n8n.'); }, function () { $('bzKhoa').type = 'text'; $('bzKhoa').select(); bao('Chị bấm giữ để chép khoá.'); }); else { $('bzKhoa').type = 'text'; $('bzKhoa').select(); } };
 }
