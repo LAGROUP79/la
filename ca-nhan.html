@@ -859,5 +859,50 @@ if('serviceWorker' in navigator){
   setInterval(()=>{if(document.visibilityState==='visible'&&!$('moNen')&&DA_NAP) ve()},60000);
 })();
 </script>
+<style>
+.ngvn{position:relative;display:block}
+.ngvn.ngvn-dong{display:inline-block;vertical-align:middle}
+.ngvn>input.ngvn-o{color:transparent!important;-webkit-text-fill-color:transparent}
+.ngvn>input.ngvn-o::-webkit-datetime-edit{color:transparent}
+.ngvn-chu{position:absolute;top:0;bottom:0;display:flex;align-items:center;pointer-events:none;white-space:nowrap;overflow:hidden}
+.ngvn-chu.ngvn-trong{opacity:.45}
+</style>
+<script>
+(function () {
+  var MO = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  function chu(v) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+  function ve(o) {
+    var s = o.__ngvn; if (!s) return;
+    var t = chu(MO.get.call(o));
+    s.textContent = t || 'dd/mm/yyyy';
+    s.className = 'ngvn-chu' + (t ? '' : ' ngvn-trong');
+  }
+  function boc(o) {
+    if (o.__ngvn || !o.parentNode) return;
+    var cs = getComputedStyle(o), k = document.createElement('span'), s = document.createElement('span');
+    k.className = 'ngvn' + (o.style.width && o.style.width !== '100%' ? ' ngvn-dong' : '');
+    s.style.left = (parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth)) + 'px';
+    s.style.right = '34px';
+    s.style.font = cs.font; s.style.color = cs.color;
+    o.parentNode.insertBefore(k, o); k.appendChild(o); k.appendChild(s);
+    o.__ngvn = s; o.classList.add('ngvn-o');
+    Object.defineProperty(o, 'value', { configurable: true, get: function () { return MO.get.call(this); }, set: function (v) { MO.set.call(this, v); ve(this); } });
+    o.addEventListener('input', function () { ve(o); });
+    o.addEventListener('change', function () { ve(o); });
+    o.addEventListener('click', function () { try { if (o.showPicker && !o.disabled && !o.readOnly) o.showPicker(); } catch (x) {} });
+    ve(o);
+  }
+  function quet(g) {
+    if (!g || !g.querySelectorAll) return;
+    if (g.matches && g.matches('input[type=date]')) boc(g);
+    var ds = g.querySelectorAll('input[type=date]');
+    for (var i = 0; i < ds.length; i++) boc(ds[i]);
+  }
+  quet(document.body);
+  new MutationObserver(function (ms) {
+    for (var i = 0; i < ms.length; i++) for (var j = 0; j < ms[i].addedNodes.length; j++) quet(ms[i].addedNodes[j]);
+  }).observe(document.body, { childList: true, subtree: true });
+})();
+</script>
 </body>
 </html>
