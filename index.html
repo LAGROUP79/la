@@ -4005,7 +4005,7 @@ function cdtTinh(s, q) {
   var B = Math.max(0, q.diemB - (n('tre') + n('tacPhong')) * q.truTacPhong - n('veSinh') * q.truVeSinh);
   var C = n('themGio') * q.congThemGio + n('sangKien') * q.congSangKien, ly = [];
   if (loai('tre', q.loaiTre)) ly.push('Đi trễ từ ' + q.loaiTre + ' lần');
-  if (loai('khongPhep', q.loaiKhongPhep)) ly.push('Nghỉ không phép');
+  if (q.loaiKhongPhep > 0 && Math.ceil(n('khongPhep')) >= q.loaiKhongPhep) ly.push('Nghỉ không phép');
   if (loai('khongChapHanh', q.loaiKhongChapHanh)) ly.push('Không chấp hành điều hành');
   if (loai('chatLuong', q.loaiPheBinh)) ly.push('Bị phê bình, nhắc nhở từ ' + q.loaiPheBinh + ' lần');
   if (loai('phep', q.loaiPhep)) ly.push('Nghỉ có phép từ ' + soSL(q.loaiPhep) + ' ngày');
@@ -4014,7 +4014,8 @@ function cdtTinh(s, q) {
 }
 function cdtQuyTacHtml(q, phut) {
   function dk(nhan, v, dv) { return v > 0 ? nhan + ' từ ' + soSL(v) + ' ' + dv : ''; }
-  var loai = [dk('đi trễ', q.loaiTre, 'lần'), dk('bị phê bình, nhắc nhở', q.loaiPheBinh, 'lần'), dk('nghỉ có phép', q.loaiPhep, 'ngày'), dk('nghỉ không phép', q.loaiKhongPhep, 'ngày'),
+  var loai = [dk('đi trễ', q.loaiTre, 'lần'), dk('bị phê bình, nhắc nhở', q.loaiPheBinh, 'lần'), dk('nghỉ có phép', q.loaiPhep, 'ngày'),
+    q.loaiKhongPhep > 0 && q.loaiKhongPhep <= 1 ? 'có nghỉ không phép (kể cả nửa ngày)' : dk('nghỉ không phép', q.loaiKhongPhep, 'ngày (nửa ngày tính tròn 1 ngày)'),
     dk('không chấp hành điều hành hợp lý của cấp trên', q.loaiKhongChapHanh, 'lần')].filter(Boolean);
   return '<ul style="margin:6px 0;padding-left:18px;line-height:1.6;font-size:14px">' +
     '<li><b>A. Nhiệm vụ trọng tâm</b>: tối đa ' + soSL(q.diemA) + ' điểm. Trừ ' + soSL(q.truChatLuong) + ' điểm mỗi lần lỗi chất lượng, bị phê bình, nhắc nhở; ' + soSL(q.truCham) + ' điểm mỗi lần chậm tiến độ; ' +
@@ -4063,6 +4064,8 @@ function cdtTheHtml(x) {
     '<div class="hang" style="justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap"><div><b style="font-size:16px;color:var(--xanh)">' + e(x.ten) + '</b>' +
     '<div class="muted">' + e(x.viTri || '—') + ' · người chấm: ' + e(x.nguoiCham || '—') + '</div></div>' +
     '<span class="chip ' + (x.daCham ? 'xong' : 'cho') + '">' + (x.daCham ? 'Đã chấm' + (x.luc ? ' ' + e(x.luc.slice(8, 10) + '/' + x.luc.slice(5, 7)) : '') : 'Chưa chấm') + '</span></div>' +
+    (CDT.admin && CDT.tt === 'Nháp' && x.daCham && !x.trongDs ? '<div class="cdt-goiy" style="background:#FFF1F0">⚠️ ' + e(x.ten) + ' không còn trong danh sách chấm điểm nhưng tháng này đã có dòng điểm (sẽ được chốt cùng). Chọn nhầm người thì bấm bỏ dòng; vẫn muốn tính thì thêm lại vào danh sách.' +
+      '<br><button class="nut do nho" data-cdtbo="1" style="width:auto;margin-top:6px">Bỏ dòng này</button></div>' : '') +
     (gy || vc ? '<div class="cdt-goiy">' + (gy ? '<div>📅 ' + e(gy) + '</div>' : '') + (vc ? '<div>✓ ' + e(vc) + '</div>' : '') +
       (sua && g && g.tre != null ? '<button class="nut phu nho" data-cdtcc="1" style="width:auto;margin-top:6px">Lấy số đi trễ, nghỉ từ chấm công</button>' : '') + '</div>' : '') +
     o + '<label style="margin-top:0">Ghi chú (bắt buộc khi có trừ hoặc cộng: ghi cụ thể từng lần, ngày nào, việc gì)</label>' +
@@ -4107,7 +4110,11 @@ function veCdt(r) {
   if ($('cdtDsSua')) $('cdtDsSua').onclick = moCdtDs;
   document.querySelectorAll('[data-cdtden]').forEach(function (b) { b.onclick = function () { var o = $('cdt_' + b.dataset.cdtden); if (o) o.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; });
   document.querySelectorAll('.cdt-the').forEach(function (the) {
-    var x = cdtTim(the.dataset.cdtid), gc = the.querySelector('[data-cdtgc]'); if (!x || !x.suaDuoc || !gc) return;
+    var x = cdtTim(the.dataset.cdtid), gc = the.querySelector('[data-cdtgc]'), bo = the.querySelector('[data-cdtbo]');
+    if (x && bo) bo.onclick = function () {
+      if (confirm('Bỏ dòng điểm tháng ' + CDT.thang.slice(5) + '/' + CDT.thang.slice(0, 4) + ' của ' + x.ten + '?')) goi('cdtBoDong', [TK, CDT.thang, x.id], function (r) { veCdt(r); bao('Đã bỏ dòng điểm của ' + x.ten + '.'); });
+    };
+    if (!x || !x.suaDuoc || !gc) return;
     var tinh = function () { var s = cdtDocThe(the); the.querySelector('[data-cdtkq]').innerHTML = cdtKqDong(cdtTinh(s, CDT.qt)); gc.classList.toggle('cdt-thieu', cdtCanGhiChu(s) && gc.value.trim().length < 5); };
     the.querySelectorAll('[data-cdk]').forEach(function (i) { i.oninput = tinh; });
     gc.oninput = tinh; tinh();
@@ -4128,8 +4135,12 @@ function cdtLayCC(the, x) {
   bao('Đã điền đi trễ ' + (g.tre || 0) + ' lần, nghỉ có đơn ' + soSL(g.phep || 0) + ' ngày, vắng ' + (g.vang || 0) + ' ngày. Xem lại rồi bấm Lưu.');
 }
 function cdtGiuNhap(tru) {
-  var m = {};
-  document.querySelectorAll('.cdt-the').forEach(function (the) { var id = the.dataset.cdtid, gc = the.querySelector('[data-cdtgc]'); if (id !== tru && gc) m[id] = { so: cdtDocThe(the), gc: gc.value }; });
+  var m = {}, khoa = CDT_CO_TRU.concat(['phep']);
+  document.querySelectorAll('.cdt-the').forEach(function (the) {
+    var id = the.dataset.cdtid, gc = the.querySelector('[data-cdtgc]'), x = cdtTim(id); if (id === tru || !gc || !x) return;
+    var s = cdtDocThe(the), doi = gc.value !== (x.ghiChu || '') || khoa.some(function (k) { return (Number(s[k]) || 0) !== (Number((x.so || {})[k]) || 0); });
+    if (doi) m[id] = { so: s, gc: gc.value };
+  });
   return m;
 }
 function cdtTraNhap(m) {
@@ -4147,7 +4158,9 @@ function cdtLuu(the, x) {
 }
 function cdtDoiTT(tt) {
   var tl = CDT.thang.slice(5) + '/' + CDT.thang.slice(0, 4), cu = CDT.tt;
-  var hoi = tt === 'Đã chốt' && cu === 'Nháp' ? 'Chốt bảng chấm điểm tháng ' + tl + '? Sau khi chốt, người chấm không sửa được nữa (Admin mở chốt được).' :
+  var ngoai = CDT.ds.filter(function (x) { return x.daCham && !x.trongDs; }).map(function (x) { return x.ten; });
+  var hoi = tt === 'Đã chốt' && cu === 'Nháp' ? 'Chốt bảng chấm điểm tháng ' + tl + '? Sau khi chốt, người chấm không sửa được nữa (Admin mở chốt được).' +
+      (ngoai.length ? ' Lưu ý: ' + ngoai.join(', ') + ' không còn trong danh sách nhưng có dòng điểm, sẽ được chốt cùng.' : '') :
     tt === 'Đã gửi nhân viên' ? 'Gửi kết quả tháng ' + tl + ' cho nhân viên? Mỗi bạn nhận thông báo và xem được phiếu điểm của mình ở Hồ sơ của tôi.' :
     tt === 'Nháp' ? 'Mở chốt bảng tháng ' + tl + ' để sửa lại?' : 'Thu hồi kết quả tháng ' + tl + '? Nhân viên sẽ không xem được phiếu điểm tháng này nữa.';
   if (!confirm(hoi)) return;
@@ -4156,15 +4169,16 @@ function cdtDoiTT(tt) {
   });
 }
 function moCdtQt() {
-  var q = CDT.qt, md = CDT.qtMd || {};
-  moHop('<h3 style="margin:0 0 6px;color:var(--xanh)">Quy tắc tính điểm, thưởng</h3><p class="muted" style="margin-top:0">Áp dụng cho các tháng chưa chốt; tháng đã chốt giữ số lúc chốt. Ô "Không xét khi…" đặt 0 là bỏ mục đó.</p><div class="luoi2">' +
+  var q = CDT.qtHienTai || CDT.qt, md = CDT.qtMd || {};
+  moHop('<h3 style="margin:0 0 6px;color:var(--xanh)">Quy tắc tính điểm, thưởng</h3><p class="muted" style="margin-top:0">Đây là quy tắc đang dùng, áp dụng cho các tháng chưa chốt; tháng đã chốt giữ số lúc chốt' +
+    (CDT.tt !== 'Nháp' ? ' (tháng ' + CDT.thang.slice(5) + '/' + CDT.thang.slice(0, 4) + ' đang xem đã chốt, không đổi theo)' : '') + '. Ô "Không xét khi…" đặt 0 là bỏ mục đó.</p><div class="luoi2">' +
     CDT_QT_NHAN.map(function (f) { var k = f[0], v = q[k];
       return '<div><label>' + e(f[1]) + ' <small class="muted">(mặc định ' + (k === 'mucCoSo' ? tien(md[k]) : soSL(md[k] || 0)) + ')</small></label><input data-cdq="' + k + '" inputmode="decimal" value="' + (k === 'mucCoSo' ? tien(v) : String(v)) + '"></div>'; }).join('') + '</div>' +
     '<div class="hang" style="margin-top:12px;flex-wrap:wrap"><button class="nut phu" id="cdqHuy">Đóng</button><button class="nut phu" id="cdqGoc">Về số mặc định</button><button class="nut" id="cdqLuu">Lưu quy tắc</button></div>');
   $('cdqHuy').onclick = dongHop;
   $('cdqGoc').onclick = function () { var giu = cdtGiuNhap(''); if (confirm('Đưa quy tắc về số mặc định?')) goi('cdtLuuQT', [TK, null, CDT.thang], function (r) { dongHop(); veCdt(r); cdtTraNhap(giu); bao('Đã đưa quy tắc về số mặc định.'); }); };
   $('cdqLuu').onclick = function () {
-    var o = {}, giu = cdtGiuNhap(''); document.querySelectorAll('[data-cdq]').forEach(function (i) { o[i.dataset.cdq] = i.dataset.cdq === 'mucCoSo' ? docTien(i.value) : String(i.value).trim(); });
+    var o = {}, giu = cdtGiuNhap(''); document.querySelectorAll('[data-cdq]').forEach(function (i) { o[i.dataset.cdq] = i.dataset.cdq === 'mucCoSo' ? (String(i.value).replace(/\D/g, '') ? docTien(i.value) : '') : String(i.value).trim(); });
     goi('cdtLuuQT', [TK, o, CDT.thang], function (r) { dongHop(); veCdt(r); cdtTraNhap(giu); bao('Đã lưu quy tắc chấm điểm.'); });
   };
 }
