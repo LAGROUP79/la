@@ -734,7 +734,7 @@ function mvSua(ky, ma) {
 function canLamHtml() {
   var v = H.viec || {}, cl = H.canLam || {}, c = H.cc || {}, ds = [];
   var vao = (c.evs || []).some(function (x) { return x.loai === 'Vào'; });
-  if (!H.me.admin && !c.loi && !vao) ds.push(['cc', '', '◷', 'Chưa chấm công vào hôm nay', '#B42318']);
+  if (!H.me.admin && !H.me.khongCC && !c.loi && !vao) ds.push(['cc', '', '◷', 'Chưa chấm công vào hôm nay', '#B42318']);
   if (v.chot) ds.push(['chot', '', '📦', v.chot + (H.me.admin || H.me.phongVao.indexOf('TCKT') >= 0 ? ' đơn chờ duyệt' : ' đơn mới cần soạn'), '#8a5f00']);
   if (v.chuaXong) ds.push(['cv', 'viec', '✓', v.chuaXong + ' việc được giao chưa xong', '#4C63D9']);
   if (v.canDuyet) ds.push(['cv', 'viec', '☑', v.canDuyet + ' việc chờ bạn duyệt', '#4C63D9']);
@@ -3971,10 +3971,11 @@ function moDongLuong(l) {
     '<div class="hang" style="margin-top:12px"><button class="nut phu" id="lgHuy">Đóng</button>' + (sua ? '<button class="nut" id="lgLuu">Lưu</button>' : '') + '</div>');
   $('lgHuy').onclick = dongHop;
   if ($('lgCd')) $('lgCd').onclick = function () {
-    var i = document.querySelector('[data-lg="tKhac"]'), cu = docTien(i.value), moi = cd.xet ? cd.tien : 0, g = $('lgGc');
-    if (cu && cu !== moi && !confirm('Ô Thưởng khác đang có ' + tien(cu) + 'đ. Thay bằng thưởng chấm điểm ' + tien(moi) + 'đ?')) return;
-    i.value = moi ? tien(moi) : ''; if (g && g.value.indexOf('chấm điểm') < 0) g.value = (g.value ? g.value + ' · ' : '') + 'Thưởng khác = thưởng chấm điểm tháng';
-    bao('Đã điền. Bấm Lưu để ghi vào phiếu lương.');
+    var i = document.querySelector('[data-lg="tKhac"]'), cu = docTien(i.value), moi = cd.xet ? cd.tien : 0, g = $('lgGc'), daCo = !!g && g.value.indexOf('chấm điểm') >= 0;
+    if (daCo && !confirm('Ghi chú phiếu đã có thưởng chấm điểm. Vẫn cộng thêm ' + tien(moi) + 'đ vào Thưởng khác?')) return;
+    if (cu && !daCo && !confirm('Ô Thưởng khác đang có ' + tien(cu) + 'đ (VD thưởng KPI). Cộng thêm thưởng chấm điểm ' + tien(moi) + 'đ, thành ' + tien(cu + moi) + 'đ?')) return;
+    i.value = cu + moi ? tien(cu + moi) : ''; if (g && !daCo) g.value = (g.value ? g.value + ' · ' : '') + 'Thưởng khác gồm thưởng chấm điểm tháng ' + tien(moi) + 'đ';
+    bao('Đã cộng vào ô Thưởng khác. Bấm Lưu để ghi vào phiếu lương.');
   };
   if (sua) $('lgLuu').onclick = function () {
     var d = { ghiChu: $('lgGc').value }; document.querySelectorAll('[data-lg]').forEach(function (i) { d[i.dataset.lg] = docTien(i.value); });
