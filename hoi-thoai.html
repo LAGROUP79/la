@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hội thoại fanpage · LA</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#005a34">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{
+  --bg:#eef4f0; --card:#ffffff; --ink:#1d2a22; --muted:#66756b; --line:#dbe7de; --soft:#e7f2ea; --hover:#f3f8f4;
+  --xanh:#006b3f; --xanh2:#0b8a52; --cam:#d9822b; --do:#c4473a; --lam:#1f5f9e; --lamNhat:#e7f0fd;
+  --khach:#f1f3f2; --nv:#dff1e5; --bot:#e3edfb; --trang:#eef0f3;
+  --shadow:0 1px 2px rgba(0,60,30,.06),0 4px 14px rgba(0,60,30,.07);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1712; --card:#18231c; --ink:#e8f1ea; --muted:#9bb0a2; --line:#2a3a30; --soft:#1c3226; --hover:#1f2c24;
+  --xanh:#2fa86a; --xanh2:#3cbf7c; --cam:#e0a04f; --do:#ec7a6c; --lam:#79a6e6; --lamNhat:#1b2a3d;
+  --khach:#222d26; --nv:#1d3a2a; --bot:#1c2a3d; --trang:#252b30; --shadow:none;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1712; --card:#18231c; --ink:#e8f1ea; --muted:#9bb0a2; --line:#2a3a30; --soft:#1c3226; --hover:#1f2c24;
+  --xanh:#2fa86a; --xanh2:#3cbf7c; --cam:#e0a04f; --do:#ec7a6c; --lam:#79a6e6; --lamNhat:#1b2a3d;
+  --khach:#222d26; --nv:#1d3a2a; --bot:#1c2a3d; --trang:#252b30; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--lam)}
+.an{display:none!important}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+header.dau{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:linear-gradient(120deg,#005a34,#007a45 60%,#5aa52c);color:#fff;flex:none}
+header.dau h1{margin:0;font-size:17px;font-weight:700;white-space:nowrap}
+.ve{color:#fff;text-decoration:none;font-weight:600;font-size:13px;background:rgba(255,255,255,.16);padding:4px 11px;border-radius:99px;white-space:nowrap}
+header.dau select,header.dau .nutD{border:0;border-radius:99px;padding:5px 12px;background:rgba(255,255,255,.18);color:#fff;font-weight:600;font-size:13px}
+header.dau select option{color:#1d2a22}
+header.dau .tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:auto}
+.khung{flex:1;min-height:0;display:grid;grid-template-columns:340px minmax(0,1fr) 290px}
+.cot{min-height:0;min-width:0;display:flex;flex-direction:column;background:var(--card);border-right:1px solid var(--line)}
+#cotTt{border-right:0;border-left:1px solid var(--line);overflow:auto}
+/* danh sách */
+.loc{padding:10px 10px 6px;border-bottom:1px solid var(--line);flex:none}
+.loc input[type=search]{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.tabLoai{display:flex;gap:4px;margin-top:8px}
+.tabLoai button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 4px;font-size:13px;font-weight:600;color:var(--muted)}
+.tabLoai button.on{background:var(--xanh);border-color:var(--xanh);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:2px 10px;font-size:12.5px;color:var(--muted);font-weight:600}
+.chip.on{background:var(--soft);border-color:var(--xanh);color:var(--xanh)}
+.chip b{color:var(--do)}
+.ds{flex:1;overflow:auto}
+.dong{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;position:relative}
+.dong:hover{background:var(--hover)}
+.dong.chon{background:var(--soft)}
+.dong.xong{opacity:.62}
+.anh{flex:none;width:42px;height:42px;border-radius:50%;background:var(--soft);color:var(--xanh);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;overflow:hidden;position:relative}
+.anh img{width:100%;height:100%;object-fit:cover}
+.anh .loaiIco{position:absolute;right:-2px;bottom:-2px;font-size:12px;background:var(--card);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px var(--line)}
+.dong .giua{flex:1;min-width:0}
+.dong .h1{display:flex;gap:6px;align-items:baseline}
+.dong .ten{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.dong.moi .ten,.dong.moi .tom{font-weight:700;color:var(--ink)}
+.dong .gio{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.dong .tom{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dong .h3{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;align-items:center}
+.nhan{font-size:11px;font-weight:600;padding:0 7px;border-radius:99px;background:var(--soft);color:var(--xanh);white-space:nowrap}
+.nhan.trang{background:var(--lamNhat);color:var(--lam)}
+.nhan.nv{background:#fff3e0;color:#8a4b0f}
+.dem{flex:none;min-width:20px;height:20px;border-radius:99px;background:var(--do);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px}
+.cham{width:8px;height:8px;border-radius:50%;background:var(--cam);flex:none}
+.trong{padding:30px 18px;text-align:center;color:var(--muted)}
+#xemThem{margin:10px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px;font-weight:600;color:var(--muted)}
+/* chat */
+#cotChat{background:var(--bg)}
+.dauChat{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line);flex:none;min-height:56px}
+.dauChat .ten{font-weight:700;font-size:15.5px}
+.dauChat small{color:var(--muted);font-size:12.5px}
+.dauChat .nutT{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:4px 9px;font-size:13px;font-weight:600}
+.lui{display:none;border:0;background:none;font-size:22px;padding:0 6px 0 0;color:var(--xanh)}
+.tinDs{flex:1;overflow:auto;padding:12px 16px 18px}
+.ngay{text-align:center;margin:12px 0 6px}
+.ngay span{font-size:11.5px;color:var(--muted);background:var(--card);padding:2px 10px;border-radius:99px;box-shadow:var(--shadow)}
+.tin{display:flex;margin:3px 0;gap:8px}
+.tin.ra{justify-content:flex-end}
+.bong{max-width:min(78%,560px);padding:7px 11px;border-radius:14px;background:var(--khach);white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere;box-shadow:var(--shadow)}
+.tin.ra .bong{background:var(--nv);border-bottom-right-radius:4px}
+.tin.ra.bot .bong{background:var(--bot)}
+.tin.ra.trang .bong{background:var(--trang)}
+.tin.vao .bong{border-bottom-left-radius:4px;background:var(--card)}
+.bong .meta{display:block;font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap}
+.bong img{display:block;max-width:240px;max-height:240px;border-radius:10px;margin:3px 0;cursor:zoom-in}
+.bong img.sticker{max-width:110px;box-shadow:none}
+.bong.nhac{background:#fff3e0!important;color:#8a4b0f;font-size:13px}
+.bl{background:var(--card);border-radius:12px;padding:8px 12px;margin:6px 0;box-shadow:var(--shadow)}
+.bl.con{margin-left:28px}
+.bl.trang{background:var(--trang)}
+.bl.nv{background:var(--nv)}
+.bl .ai{font-weight:700;font-size:13px}
+.bl .nd{white-space:pre-wrap;overflow-wrap:anywhere}
+.bl .nut{display:flex;gap:12px;margin-top:3px;font-size:12.5px}
+.bl .nut button{border:0;background:none;color:var(--lam);font-weight:600;padding:0}
+.bl.danAn .nd{opacity:.5}
+.bl.daXoa .nd{text-decoration:line-through;opacity:.5}
+.bl.dangTra{outline:2px solid var(--lam)}
+.huy{font-size:11px;font-weight:700;color:var(--do);margin-left:6px}
+.baiLink{font-size:13px;margin:4px 0 8px;color:var(--muted)}
+.baiXem{display:flex;gap:10px;background:var(--card);border-radius:12px;padding:10px;margin:2px 0 10px;box-shadow:var(--shadow);font-size:13px}
+.baiXem img{width:84px;height:84px;object-fit:cover;border-radius:8px;flex:none}
+.baiXem .nd{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink);margin:2px 0 4px;max-height:96px;overflow:hidden}
+.soan{background:var(--card);border-top:1px solid var(--line);padding:8px 12px 10px;flex:none}
+.canh{font-size:12.5px;padding:6px 10px;border-radius:8px;margin-bottom:6px;background:#fff3e0;color:#8a4b0f}
+.canh.do{background:#fde8e6;color:#9b2c20}
+.traDen{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--lam);margin-bottom:6px}
+.traDen span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.traDen button{border:0;background:none;color:var(--muted);font-size:16px}
+.hangSoan{display:flex;gap:8px;align-items:flex-end}
+.hangSoan textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:9px 12px;min-height:42px;max-height:160px;background:var(--bg)}
+.nutGui{border:0;background:var(--xanh);color:#fff;font-weight:700;border-radius:12px;padding:10px 16px;white-space:nowrap}
+.nutGui.phu{background:var(--lam)}
+.nutGui:disabled{opacity:.55;cursor:wait}
+.nutMau{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 11px;font-weight:600}
+.botChip{font-size:11.5px;font-weight:600;color:var(--lam);background:var(--lamNhat);padding:1px 8px;border-radius:99px}
+#mauHop{position:absolute;left:12px;right:12px;bottom:100%;max-height:320px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:6px;z-index:20}
+#mauHop input{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--bg)}
+#mauHop .nhomM{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:8px 6px 2px}
+#mauHop button{display:block;width:100%;text-align:left;border:0;background:none;border-radius:8px;padding:6px 8px}
+#mauHop button:hover{background:var(--hover)}
+#mauHop button small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* thông tin khách */
+.ttKhoi{padding:12px 14px;border-bottom:1px solid var(--line)}
+.ttKhoi h3{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.ttDau{text-align:center}
+.ttDau .anh{width:64px;height:64px;font-size:24px;margin:0 auto 6px}
+.ttDau b{font-size:16px}
+.ttKhoi input,.ttKhoi select,.ttKhoi textarea{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.ttKhoi textarea{resize:vertical;min-height:64px}
+.theDs{display:flex;flex-wrap:wrap;gap:5px}
+.nutTo{display:block;width:100%;border:0;border-radius:10px;padding:9px;font-weight:700;margin-top:6px;background:var(--soft);color:var(--xanh)}
+.nutTo.chinh{background:var(--cam);color:#fff}
+.nutTo.nhe{background:var(--card);border:1px solid var(--line);color:var(--ink);font-weight:600}
+.hangNho{display:flex;gap:6px;align-items:center}
+.hangNho button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;font-weight:600;font-size:13px}
+.trongGiua{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:30px}
+/* hộp nổi */
+#hop{position:fixed;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:flex-start;justify-content:center;z-index:100;overflow:auto;padding:30px 12px}
+#hop .noi{background:var(--card);border-radius:16px;max-width:880px;width:100%;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+#hop h2{margin:0 0 8px;font-size:18px}
+#hop h3{margin:16px 0 6px;font-size:15px;color:var(--xanh)}
+#hop .goiY{font-size:12.5px;color:var(--muted)}
+#hop table{width:100%;border-collapse:collapse;font-size:13px}
+#hop th,#hop td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+#hop th{font-size:11px;color:var(--muted);text-transform:uppercase}
+#hop input[type=text],#hop input[type=password],#hop input[type=date],#hop textarea{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);width:100%}
+#hop .nut{border:0;border-radius:9px;padding:7px 14px;font-weight:700;background:var(--xanh);color:#fff}
+#hop .nut.phu{background:var(--card);color:var(--ink);border:1px solid var(--line);font-weight:600}
+#hop .nut.nho{padding:4px 10px;font-size:12.5px}
+#hop .ok{color:var(--xanh);font-weight:700}
+#hop .ko{color:var(--do);font-weight:700}
+#hop .nvChon{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px}
+#hop .nvChon label{display:flex;gap:4px;align-items:center;white-space:nowrap}
+#hop code{background:var(--bg);padding:2px 6px;border-radius:6px;font-size:12.5px;word-break:break-all}
+#baoNho{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1d2a22;color:#fff;padding:9px 16px;border-radius:12px;font-weight:600;z-index:200;max-width:90vw;box-shadow:0 6px 24px rgba(0,0,0,.3)}
+#baoNho.loi{background:#9b2c20}
+#chan{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:300}
+#chan .c{max-width:400px;background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+#chan a{display:inline-block;margin-top:10px;background:#006b3f;color:#fff;text-decoration:none;font-weight:600;padding:8px 16px;border-radius:10px}
+@media (max-width:1150px){
+  .khung{grid-template-columns:320px minmax(0,1fr)}
+  #cotTt{position:fixed;right:0;top:0;bottom:0;width:min(320px,92vw);z-index:50;box-shadow:-8px 0 30px rgba(0,0,0,.2);transform:translateX(105%);transition:transform .2s}
+  #app.moTt #cotTt{transform:none}
+}
+@media (max-width:760px){
+  .khung{grid-template-columns:minmax(0,1fr)}
+  #cotChat{display:none}
+  #app.xemChat #cotDs{display:none}
+  #app.xemChat #cotChat{display:flex}
+  #app.xemChat header.dau select,#app.xemChat header.dau .nutD{display:none}
+  .lui{display:block}
+  header.dau{gap:6px 8px;padding:7px 10px}
+  header.dau h1{font-size:15px}
+  header.dau .tt,.chuNut{display:none}
+  header.dau select{order:9;flex:1 1 100%;min-width:0}
+  header.dau h1{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .bong{max-width:86%}
+  .tabLoai button{font-size:12.5px;padding:5px 2px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="dau">
+    <a class="ve" href="./" id="veApp">‹ App LA</a>
+    <h1>💬 Hội thoại fanpage</h1>
+    <select id="chonTrang" aria-label="Chọn fanpage"></select>
+    <span class="tt" id="trangThai">Đang tải…</span>
+    <button class="nutD an" id="btnTk" title="Thống kê trả lời">📊<span class="chuNut"> Thống kê</span></button>
+    <button class="nutD an" id="btnCd" title="Cài đặt hộp thư (Admin)">⚙<span class="chuNut"> Cài đặt</span></button>
+    <button class="nutD" id="btnTheme" title="Đổi nền sáng/tối">🌓</button>
+  </header>
+  <main class="khung">
+    <section class="cot" id="cotDs">
+      <div class="loc">
+        <input id="tim" type="search" placeholder="Tìm tên khách, SĐT, nội dung…" autocomplete="off">
+        <div class="tabLoai" id="tabLoai"><button data-loai="" class="on">Tất cả</button><button data-loai="tn">💬 Tin nhắn</button><button data-loai="bl">🗨 Bình luận</button></div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="ds" id="ds"><div class="trong">Đang tải…</div></div>
+    </section>
+    <section class="cot" id="cotChat"><div class="trongGiua"><div><div style="font-size:44px">💬</div>Chọn một hội thoại bên trái để xem và trả lời.</div></div></section>
+    <aside class="cot" id="cotTt"></aside>
+  </main>
+</div>
+<div id="hop" class="an"><div class="noi" id="hopNoi"></div></div>
+<div id="baoNho" class="an"></div>
+<div id="chan" class="an"><div class="c"><h2 id="chanTieuDe" style="margin:0 0 6px"></h2><p id="chanNoiDung" style="margin:0;color:var(--muted)"></p><a id="chanNut" href="./">Mở app LA</a></div></div>
+
+<script>
+const API = 'https://oubxfxeosmozsttsobsw.supabase.co/functions/v1/la';
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91YnhmeGVvc21venN0dHNvYnN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjg2MjEsImV4cCI6MjEwNjg0NDYyMX0.Vq0h8A8J3OO3KwwzFf_j69JRCQoSZSCvumZRvH5Mhxg';
+const THU = /[?&]thu=1/.test(location.search);
+const APP = THU ? 'thu.html' : './';
+let TK = null; try { TK = localStorage.getItem((THU ? 'thu_' : '') + 'kd_tk'); } catch (x) {}
+const $ = id => document.getElementById(id);
+const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Gọi máy chủ app LA. Bản chạy thử trong trình duyệt gắn window.LA_THU thay cho mạng.
+function goi(f, a) {
+  if (window.LA_THU) return window.LA_THU(f, a || []);
+  return fetch(API, { method: 'POST', credentials: 'omit', body: JSON.stringify({ f, a: a || [] }), headers: { 'Content-Type': 'application/json', apikey: ANON, Authorization: 'Bearer ' + ANON } })
+    .then(r => r.json(), () => { throw new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.'); })
+    .then(x => { if (x && x.loi != null) throw new Error(x.loi); return x ? x.kq : null; });
+}
+// Kết quả phần hộp thư (máy chủ trả ở r.fb[i]): lỗi thì ném ra.
+function fbKq(r, i) { const x = r && r.fb && r.fb[i || 0]; if (!x) throw new Error('Máy chủ chưa trả kết quả hộp thư.'); if (x.loi) throw new Error(x.loi); return x.kq; }
+function bao(s, loi) { const b = $('baoNho'); b.textContent = s; b.className = loi ? 'loi' : ''; clearTimeout(bao.h); bao.h = setTimeout(() => b.className = 'an', loi ? 6000 : 2600); }
+function chan(td, nd) { $('chanTieuDe').textContent = td; $('chanNoiDung').textContent = nd; $('chanNut').href = APP; $('chan').classList.remove('an'); }
+function loiChung(err) {
+  const m = String((err && err.message) || err);
+  if (m === 'HET_PHIEN') { chan('Hết phiên đăng nhập', 'Chị mở app LA, đăng nhập lại, rồi mở lại Hội thoại fanpage.'); return; }
+  bao(m, true);
+}
+if (THU) $('veApp').href = 'thu.html';
+
+// ---------- trạng thái ----------
+let V = null;                       // fbVao: me, trang, nv, the, mau
+const LOC = { trang: '', loai: '', loc: '', the: '', tim: '' };
+let DS = [], DEM = {}, HET = false, MOC = null, DANG_TAI = false, CHO_TAI = false, DANG_GUI = false;
+let MO = null;                      // hội thoại đang mở: {khoa, ht, tin, sau, bai}
+let TRA = null;                     // bình luận đang trả lời: {mid, nd, rieng}
+const NHAP = {};                    // chữ đang gõ dở theo từng hội thoại
+const coChuot = matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+const tenTrang = id => ((V && V.trang.find(t => t.id === id)) || {}).ten || 'Trang';
+const tenNv = id => ((V && V.nv.find(n => n.id === id)) || {}).ten || id;
+function tenAi(ai, tenAi2) {
+  if (ai === 'khach') return tenAi2 || 'Khách';
+  if (ai === 'bot') return '🤖 Bot';
+  if (ai === 'trang') return 'Trang (hộp thư Facebook)';
+  return tenNv(ai) || tenAi2 || ai;
+}
+function chuDau(s) { const w = String(s || '').trim().split(/\s+/); return (w[w.length - 1] || '?').charAt(0).toUpperCase(); }
+function anhHtml(ht, to) {
+  const ico = ht.loai === 'bl' ? '🗨' : '💬';
+  return '<div class="anh"' + (to ? ' style="width:' + to + 'px;height:' + to + 'px"' : '') + '>' +
+    (ht.anh ? '<img src="' + e(ht.anh) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + e(chuDau(ht.ten)) +
+    (to ? '' : '<span class="loaiIco">' + ico + '</span>') + '</div>';
+}
+function d2(n) { return (n < 10 ? '0' : '') + n; }
+function gioNgan(s) {
+  if (!s) return '';
+  const d = new Date(s), nay = new Date();
+  if (d.toDateString() === nay.toDateString()) return d2(d.getHours()) + ':' + d2(d.getMinutes());
+  const hq = new Date(nay); hq.setDate(nay.getDate() - 1);
+  if (d.toDateString() === hq.toDateString()) return 'Hôm qua';
+  return d2(d.getDate()) + '/' + d2(d.getMonth() + 1) + (d.getFullYear() !== nay.getFullYear() ? '/' + String(d.getFullYear()).slice(2) : '');
+}
+function ngayDai(s) {
+  const d = new Date(s), nay = new Date(), hq = new Date(nay); hq.setDate(nay.getDate() - 1);
+  if (d.toDateString() === nay.toDateString()) return 'Hôm nay';
+  if (d.toDateString() === hq.toDateString()) return 'Hôm qua';
+  return d2(d.getDate()) + '/' + d2(d.getMonth() + 1) + '/' + d.getFullYear();
+}
+function lienKet(s) { return e(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>'); }
+
+// ---------- danh sách ----------
+const LOC_CHIP = [['chua_doc', 'Chưa đọc', 'chua_doc'], ['chua_tra', 'Chưa trả lời', 'chua_tra'], ['cua_toi', 'Của tôi', 'cua_toi'], ['co_sdt', 'Có SĐT'], ['bot', '🤖 Bot đang trả lời'], ['xong', '✓ Đã xong']];
+function veChips() {
+  $('chips').innerHTML = LOC_CHIP.map(c => '<button class="chip' + (LOC.loc === c[0] ? ' on' : '') + '" data-loc="' + c[0] + '">' + c[1] +
+    (c[2] && DEM[c[2]] ? ' <b>' + DEM[c[2]] + '</b>' : '') + '</button>').join('') +
+    '<select class="chip' + (LOC.the ? ' on' : '') + '" id="locThe"><option value="">🏷 Thẻ</option>' + (V.the || []).map(t => '<option' + (LOC.the === t ? ' selected' : '') + '>' + e(t) + '</option>').join('') + '</select>';
+  $('locThe').onchange = ev => { LOC.the = ev.target.value; napDs(); };
+}
+function dongHtml(h) {
+  const moi = h.chua_doc > 0, ten = h.ten || (h.loai === 'bl' ? 'Người bình luận' : 'Khách Messenger');
+  const truoc = h.cuoi_ai && h.cuoi_ai !== 'khach' ? (h.cuoi_ai === 'bot' ? '🤖 ' : h.cuoi_ai === 'trang' ? 'Trang: ' : tenNv(h.cuoi_ai).split(' ').pop() + ': ') : '';
+  return '<div class="dong' + (moi ? ' moi' : '') + (h.xong ? ' xong' : '') + (MO && MO.khoa === h.khoa ? ' chon' : '') + '" data-khoa="' + e(h.khoa) + '">' + anhHtml(h) +
+    '<div class="giua"><div class="h1"><span class="ten">' + e(ten) + '</span><span class="gio">' + e(gioNgan(h.luc_cuoi)) + '</span></div>' +
+    '<div class="h1"><span class="tom">' + e(truoc + (h.tin_cuoi || '')) + '</span>' + (h.chua_tra && !h.xong ? '<span class="cham" title="Chưa trả lời"></span>' : '') + (moi ? '<span class="dem">' + h.chua_doc + '</span>' : '') + '</div>' +
+    '<div class="h3">' + (V.trang.length > 1 ? '<span class="nhan trang">' + e(tenTrang(h.trang)) + '</span>' : '') +
+    (h.nv ? '<span class="nhan nv">👤 ' + e(tenNv(h.nv)) + '</span>' : '') + (h.the || []).map(t => '<span class="nhan">' + e(t) + '</span>').join('') +
+    (h.sdt ? '<span class="nhan">📞 ' + e(h.sdt) + '</span>' : '') + '</div></div></div>';
+}
+function veDs() {
+  veChips();
+  $('ds').innerHTML = DS.length ? DS.map(dongHtml).join('') + (HET ? '' : '<button id="xemThem">Xem thêm hội thoại cũ hơn</button>') :
+    '<div class="trong">' + (LOC.loc || LOC.tim || LOC.the || LOC.loai ? 'Không có hội thoại khớp bộ lọc.' : 'Chưa có hội thoại nào.<br><small>Tin nhắn và bình luận mới của fanpage sẽ hiện ở đây.</small>') + '</div>';
+  const t = $('xemThem'); if (t) t.onclick = () => napDs(true);
+}
+function napDs(them) {
+  if (DANG_TAI) { if (!them) CHO_TAI = true; return Promise.resolve(); } // đang tải: tải lại ngay sau đó với bộ lọc mới
+  DANG_TAI = true;
+  const loc = Object.assign({}, LOC, { truoc: them && DS.length ? DS[DS.length - 1].luc_cuoi : '' });
+  return goi('fbDs', [TK, loc]).then(r => {
+    const k = fbKq(r);
+    DS = them ? DS.concat(k.ds) : k.ds; DEM = k.dem || {}; HET = k.ds.length < 40;
+    veDs(); capNhatTieuDe();
+  }).catch(loiChung).then(() => { DANG_TAI = false; if (CHO_TAI) { CHO_TAI = false; napDs(); } });
+}
+function capNhatTieuDe() {
+  const n = DEM.chua_doc || 0;
+  document.title = (n ? '(' + n + ') ' : '') + 'Hội thoại fanpage · LA';
+  $('trangThai').textContent = 'Cập nhật ' + d2(new Date().getHours()) + ':' + d2(new Date().getMinutes());
+}
+
+// ---------- khung chat ----------
+function moHt(khoa) {
+  const h = DS.find(x => x.khoa === khoa);
+  MO = { khoa: khoa, ht: h || null, tin: [], sau: 0 }; TRA = null;
+  if (h && h.chua_doc) { DEM.chua_doc = Math.max(0, (DEM.chua_doc || 1) - 1); h.chua_doc = 0; }
+  document.querySelectorAll('.dong').forEach(d => d.classList.toggle('chon', d.dataset.khoa === khoa));
+  $('app').classList.add('xemChat');
+  veChat(); veTt();
+  goi('fbMo', [TK, khoa, 0, khoa.indexOf('bl:') === 0]).then(r => {
+    const k = fbKq(r); if (!MO || MO.khoa !== khoa) return;
+    MO.ht = k.ht || MO.ht; MO.tin = k.tin || []; MO.sau = MO.tin.reduce((a, t) => Math.max(a, t.id), 0);
+    try { if (r.fb[1]) MO.bai = fbKq(r, 1); } catch (x) { MO.bai = null; } // bài viết: thiếu mã trang / chưa được duyệt thì chỉ còn link
+    if (MO.ht && MO.ht.loai === 'bl' && !TRA) { const c = MO.tin.filter(t => t.chieu === 'vao' && t.mid && !t.tt).pop(); if (c) TRA = { mid: c.mid, nd: c.noi_dung }; }
+    veChat(true); veTt(); const d = DS.find(x => x.khoa === khoa); if (d && MO.ht) Object.assign(d, MO.ht); veDs(); capNhatTieuDe();
+  }).catch(loiChung);
+}
+// Tải lại cả hội thoại đang mở (≤300 tin): có tin mới, và cập nhật trạng thái ẩn / xoá / sửa của tin cũ.
+function napTinMoi() {
+  if (!MO) return Promise.resolve();
+  const khoa = MO.khoa, dangXem = !document.hidden && getComputedStyle($('cotChat')).display !== 'none';
+  return goi('fbMo', [TK, khoa, 0, false, dangXem]).then(r => {
+    const k = fbKq(r); if (!MO || MO.khoa !== khoa) return;
+    const cu = JSON.stringify(MO.ht);
+    if (k.ht) MO.ht = k.ht;
+    const ds = k.tin || [], doi = ds.length !== MO.tin.length || JSON.stringify(ds) !== JSON.stringify(MO.tin);
+    if (doi) { const cuoi = laCuoi(); MO.tin = ds; MO.sau = ds.reduce((a, t) => Math.max(a, t.id), 0); veTinDs(cuoi); }
+    if (JSON.stringify(MO.ht) !== cu && !$('cotTt').contains(document.activeElement)) veTt(); // đang gõ ghi chú / SĐT thì không vẽ lại
+  }).catch(() => {});
+}
+function laCuoi() { const b = $('tinDs'); return !b || b.scrollHeight - b.scrollTop - b.clientHeight < 80; }
+function veChat(cuon) {
+  if (!MO) { $('cotChat').innerHTML = '<div class="trongGiua"><div><div style="font-size:44px">💬</div>Chọn một hội thoại bên trái để xem và trả lời.</div></div>'; return; }
+  const h = MO.ht || { ten: '', loai: MO.khoa.slice(0, 2), trang: MO.khoa.split(':')[1] };
+  const tr = V.trang.find(t => t.id === h.trang) || {};
+  $('cotChat').innerHTML = '<div class="dauChat"><button class="lui" id="btnLui" title="Về danh sách">‹</button>' + anhHtml(h, 38) +
+    '<div style="flex:1;min-width:0"><div class="ten">' + e(h.ten || (h.loai === 'bl' ? 'Người bình luận' : 'Khách Messenger')) + '</div><small>' + (h.loai === 'bl' ? '🗨 Bình luận' : '💬 Tin nhắn') + ' · ' + e(tenTrang(h.trang)) +
+    (tr.bot && h.loai === 'tn' ? ' · <span class="botChip">🤖 Bot đang bật ở trang này</span>' : '') + '</small></div>' +
+    '<button class="nutT" id="btnTt" title="Thông tin khách">ⓘ</button></div>' +
+    '<div class="tinDs" id="tinDs"></div>' +
+    '<div class="soan" id="soan" style="position:relative"></div>';
+  $('btnLui').onclick = () => { MO = null; TRA = null; $('app').classList.remove('xemChat', 'moTt'); veChat(); veTt(); veDs(); };
+  $('btnTt').onclick = () => $('app').classList.toggle('moTt');
+  veTinDs(true); veSoan();
+  if (cuon) { const b = $('tinDs'); b.scrollTop = b.scrollHeight; }
+}
+function dinhKemHtml(t) {
+  return (t.dinh_kem || []).map(d => {
+    if (!d.url || !(/^https:\/\//.test(d.url) || !/:/.test(d.url))) return '<i>[' + e(d.loai) + ']</i>';
+    if (d.loai === 'image' || d.loai === 'sticker') return '<a href="' + e(d.url) + '" target="_blank" rel="noopener"><img class="' + (d.loai === 'sticker' ? 'sticker' : '') + '" src="' + e(d.url) + '" alt="Ảnh" loading="lazy" referrerpolicy="no-referrer"></a>';
+    return '<a href="' + e(d.url) + '" target="_blank" rel="noopener">' + ({ video: '▶ Video', audio: '🔊 Ghi âm', file: '📎 Tệp' }[d.loai] || '📎 Đính kèm') + (d.ten ? ' · ' + e(d.ten) : '') + '</a>';
+  }).join(' ');
+}
+function veTinDs(cuon) {
+  const b = $('tinDs'); if (!b || !MO) return;
+  const h = MO.ht || {};
+  let s = '', ngay = '';
+  if (h.loai === 'bl' && h.bai) {
+    const p = MO.bai, link = (p && p.permalink_url) || 'https://www.facebook.com/' + h.bai;
+    s += p ? '<div class="baiXem">' + (p.full_picture ? '<img src="' + e(p.full_picture) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '') +
+      '<div><b>Bài viết của trang</b><div class="nd">' + e(String(p.message || '(bài không có chữ)').slice(0, 300)) + (String(p.message || '').length > 300 ? '…' : '') + '</div>' +
+      '<a href="' + e(link) + '" target="_blank" rel="noopener">Mở bài viết trên Facebook ↗</a></div></div>' :
+      '<div class="baiLink">Bình luận trên bài viết · <a href="' + e(link) + '" target="_blank" rel="noopener">Mở bài viết trên Facebook ↗</a></div>';
+  }
+  MO.tin.forEach(t => {
+    const nd = new Date(t.luc).toDateString(); // theo giờ máy (Việt Nam), không theo ngày UTC
+    if (nd !== ngay) { ngay = nd; s += '<div class="ngay"><span>' + e(ngayDai(t.luc)) + '</span></div>'; }
+    const gio = d2(new Date(t.luc).getHours()) + ':' + d2(new Date(t.luc).getMinutes());
+    if (h.loai === 'bl') {
+      const lop = t.chieu === 'vao' ? '' : t.ai === 'trang' || t.ai === 'bot' ? ' trang' : ' nv';
+      s += '<div class="bl' + lop + (t.cha ? ' con' : '') + (t.tt === 'an' ? ' danAn' : '') + (t.tt === 'xoa' ? ' daXoa' : '') + (TRA && TRA.mid === t.mid ? ' dangTra' : '') + '" data-mid="' + e(t.mid || '') + '">' +
+        '<div class="ai">' + e(tenAi(t.ai, t.ten_ai || h.ten)) + ' <small style="font-weight:400;color:var(--muted)">' + gio + '</small>' +
+        (t.tt === 'an' ? '<span class="huy">ĐÃ ẨN</span>' : t.tt === 'xoa' ? '<span class="huy">ĐÃ XOÁ</span>' : t.tt === 'sua' ? '<span class="huy" style="color:var(--muted)">đã sửa</span>' : '') + '</div>' +
+        '<div class="nd">' + lienKet(t.noi_dung) + dinhKemHtml(t) + '</div>' +
+        (t.chieu === 'vao' && t.mid && t.tt !== 'xoa' ? '<div class="nut"><button data-tra="' + e(t.mid) + '">↩ Trả lời</button><button data-rieng="' + e(t.mid) + '">✉ Nhắn riêng</button>' +
+          '<button data-an="' + e(t.mid) + '" data-giatri="' + (t.tt === 'an' ? '0' : '1') + '">' + (t.tt === 'an' ? '👁 Hiện lại' : '🙈 Ẩn') + '</button></div>' : '') + '</div>';
+      return;
+    }
+    const ra = t.chieu === 'ra', lop = ra ? (t.ai === 'bot' ? ' bot' : t.ai === 'trang' ? ' trang' : '') : '';
+    s += '<div class="tin ' + (ra ? 'ra' : 'vao') + lop + '"><div class="bong' + (/^✉ Đã nhắn riêng/.test(t.noi_dung) ? ' nhac' : '') + '">' + lienKet(t.noi_dung) + dinhKemHtml(t) +
+      '<span class="meta">' + (ra ? e(tenAi(t.ai, t.ten_ai)) + ' · ' : '') + gio + '</span></div></div>';
+  });
+  if (!MO.tin.length) s += '<div class="trong">Đang tải tin…</div>';
+  b.innerHTML = s;
+  if (cuon) b.scrollTop = b.scrollHeight;
+}
+function quaGio() { // số giờ từ tin cuối của khách
+  const l = MO && MO.ht && MO.ht.luc_khach; return l ? (Date.now() - new Date(l).getTime()) / 3600000 : 0;
+}
+function veSoan() {
+  const b = $('soan'); if (!b || !MO) return;
+  const h = MO.ht || {}, gio = quaGio(), bl = h.loai === 'bl';
+  let canh = '';
+  if (!bl && gio > 168) canh = '<div class="canh do">Đã quá 7 ngày từ tin cuối của khách. Facebook không cho trang nhắn tiếp; chờ khách nhắn lại.</div>';
+  else if (!bl && gio > 24) canh = '<div class="canh">Đã quá 24 giờ từ tin cuối của khách. Gửi lúc này dùng thẻ "nhân viên trả lời" (7 ngày) — chỉ được sau khi Meta duyệt quyền này.</div>';
+  const rieng = bl && TRA && TRA.rieng;
+  const traDen = bl ? (TRA ? '<div class="traDen"' + (rieng ? ' style="color:var(--do)"' : '') + '><span>' + (rieng ? '✉ Nhắn riêng qua Messenger cho bình luận: «' : '↩ Trả lời công khai bình luận: «') + e(String(TRA.nd || '').slice(0, 80)) + '»</span><button id="boTra" title="Bỏ chọn">×</button></div>' :
+    '<div class="canh">Bấm "↩ Trả lời" hoặc "✉ Nhắn riêng" dưới một bình luận của khách để trả lời.</div>') : '';
+  b.innerHTML = canh + traDen + '<div class="hangSoan"><button class="nutMau" id="btnMau" title="Mẫu trả lời (gõ / để tìm)">⚡</button>' +
+    '<textarea id="oSoan" rows="1" placeholder="' + (rieng ? 'Viết tin nhắn riêng (khách nhận trong Messenger)…' : bl ? 'Viết trả lời công khai dưới bình luận…' : 'Nhập tin nhắn… (gõ / để chọn mẫu)') + '"></textarea>' +
+    '<button class="nutGui' + (rieng ? ' phu' : '') + '" id="btnGui">' + (rieng ? '✉ Nhắn riêng' : bl ? 'Trả lời' : 'Gửi') + '</button></div>';
+  const o = $('oSoan'), kieu = () => bl ? (TRA && TRA.rieng ? 'rieng' : 'bl') : 'tn';
+  o.value = NHAP[MO.khoa] || '';
+  if (o.value) { o.style.height = Math.min(o.scrollHeight, 160) + 'px'; }
+  o.oninput = () => { NHAP[MO.khoa] = o.value; o.style.height = 'auto'; o.style.height = Math.min(o.scrollHeight, 160) + 'px'; if (/^\//.test(o.value)) moMau(o.value.slice(1)); else dongMau(); };
+  o.onkeydown = ev => {
+    if (ev.key === 'Enter' && !ev.shiftKey && coChuot && !ev.isComposing && ev.keyCode !== 229) { ev.preventDefault(); gui(kieu()); }
+    if (ev.key === 'Escape') dongMau();
+  };
+  $('btnGui').onclick = () => gui(kieu());
+  if ($('boTra')) $('boTra').onclick = () => { TRA = null; veTinDs(); veSoan(); };
+  $('btnMau').onclick = () => { if ($('mauHop')) dongMau(); else moMau(''); };
+}
+function gui(kieu) {
+  if (DANG_GUI || !MO) return;
+  const o = $('oSoan'), nd = o.value.trim();
+  if (!nd) { o.focus(); return; }
+  if (MO.ht && MO.ht.loai === 'bl' && !TRA) { bao('Chọn bình luận cần trả lời trước.', true); return; }
+  if (MO.ht && MO.ht.loai === 'tn' && quaGio() > 168) { bao('Đã quá 7 ngày, Facebook không cho nhắn.', true); return; }
+  if (/\[[^\]\n]{1,40}\]/.test(nd) && !confirm('Tin còn chỗ trong ngoặc vuông [ … ] chưa điền (VD [Tên], [số tiền]). Vẫn gửi?')) return;
+  DANG_GUI = true;
+  const nut = document.querySelectorAll('.nutGui'); nut.forEach(x => x.disabled = true);
+  const khoa = MO.khoa;
+  goi('fbGui', [TK, khoa, nd, kieu, TRA ? TRA.mid : '', quaGio() > 24, MO.ht ? MO.ht.ten : '']).then(r => {
+    fbKq(r);
+    delete NHAP[khoa];
+    if (!MO || MO.khoa !== khoa) return;
+    o.value = ''; o.style.height = 'auto'; dongMau();
+    if (kieu === 'rieng') { TRA = null; veSoan(); }
+    bao(kieu === 'rieng' ? 'Đã nhắn riêng cho khách qua Messenger.' : 'Đã gửi.');
+    return napTinMoi().then(() => napDs());
+  }).catch(loiChung).then(() => { DANG_GUI = false; document.querySelectorAll('.nutGui').forEach(x => x.disabled = false); });
+}
+// mẫu trả lời (từ Cẩm nang CSKH: chỉ mẫu gửi khách được)
+function moMau(q) {
+  dongMau();
+  const box = document.createElement('div'); box.id = 'mauHop';
+  box.innerHTML = '<input id="mauTim" placeholder="Tìm mẫu…" value="' + e(q || '') + '"><div id="mauDs"></div>';
+  $('soan').appendChild(box);
+  const ve = () => {
+    const t = $('mauTim').value.trim().toLowerCase(), nhom = {};
+    (V.mau || []).filter(m => !t || (m.tieuDe + ' ' + m.noiDung).toLowerCase().indexOf(t) >= 0).forEach(m => (nhom[m.nhom] = nhom[m.nhom] || []).push(m));
+    const ten = n => ((V.nhomMau || []).find(x => x[0] === n) || [0, n])[1];
+    $('mauDs').innerHTML = Object.keys(nhom).map(n => '<div class="nhomM">' + e(ten(n)) + '</div>' + nhom[n].map(m => '<button data-mau="' + e(V.mau.indexOf(m)) + '"><b>' + e(m.tieuDe) + '</b><small>' + e(m.noiDung.slice(0, 120)) + '</small></button>').join('')).join('') ||
+      '<div class="trong" style="padding:12px">' + ((V.mau || []).length ? 'Không có mẫu khớp.' : 'Chưa có mẫu. Mẫu lấy từ mục Cẩm nang CSKH trong app LA.') + '</div>';
+  };
+  $('mauTim').oninput = ve; ve();
+  if (!q) $('mauTim').focus();
+}
+function dongMau() { const m = $('mauHop'); if (m) m.remove(); }
+
+// ---------- thông tin khách ----------
+function veTt() {
+  const b = $('cotTt');
+  if (!MO || !MO.ht) { b.innerHTML = MO ? '<div class="trong">Đang tải…</div>' : '<div class="trong">Thông tin khách hiện ở đây khi chị chọn một hội thoại.</div>'; return; }
+  const h = MO.ht, qly = V.me.admin || V.me.quanLy;
+  b.innerHTML = '<div class="ttKhoi ttDau">' + anhHtml(h, 64) + '<b>' + e(h.ten || 'Chưa có tên') + '</b><br><small style="color:var(--muted)">' + (h.loai === 'bl' ? '🗨 Bình luận' : '💬 Tin nhắn') + ' · ' + e(tenTrang(h.trang)) + '</small>' +
+    '<div style="margin-top:6px;font-size:13px">' + (h.loai === 'bl' && h.bai ? '<a href="https://www.facebook.com/' + e(h.bai) + '" target="_blank" rel="noopener">Mở bài viết ↗</a>' :
+      '<a href="https://business.facebook.com/latest/inbox/all?asset_id=' + e(h.trang) + '" target="_blank" rel="noopener">Mở hộp thư Meta ↗</a>') + '</div></div>' +
+    '<div class="ttKhoi"><h3>Số điện thoại</h3><div class="hangNho"><input id="ttSdt" inputmode="tel" value="' + e(h.sdt) + '" placeholder="Chưa có"><button id="luuSdt">Lưu</button></div></div>' +
+    '<div class="ttKhoi"><h3>Người phụ trách</h3>' + (qly ? '<select id="ttNv"><option value="">— Chưa giao —</option>' + V.nv.map(n => '<option value="' + e(n.id) + '"' + (h.nv === n.id ? ' selected' : '') + '>' + e(n.ten) + '</option>').join('') + '</select>' :
+      '<div style="margin-bottom:4px">' + (h.nv ? '👤 ' + e(tenNv(h.nv)) : 'Chưa ai nhận') + '</div>') +
+    (h.nv !== V.me.id ? '<button class="nutTo nhe" id="nhanKhach">🙋 Nhận khách này</button>' : '') + '</div>' +
+    '<div class="ttKhoi"><h3>Thẻ</h3><div class="theDs">' + (V.the || []).map(t => '<button class="chip' + ((h.the || []).indexOf(t) >= 0 ? ' on' : '') + '" data-the="' + e(t) + '">' + e(t) + '</button>').join('') + '</div></div>' +
+    '<div class="ttKhoi"><h3>Ghi chú nội bộ</h3><textarea id="ttGc" placeholder="Khách hỏi gì, hẹn gì… (khách không thấy)">' + e(h.ghi_chu) + '</textarea></div>' +
+    '<div class="ttKhoi"><button class="nutTo chinh" id="lenDon">📦 Lên đơn cho khách này</button>' +
+    '<button class="nutTo" id="danhXong">' + (h.xong ? '↺ Mở lại hội thoại' : '✓ Đánh dấu đã xong') + '</button>' +
+    '<button class="nutTo nhe" id="chuaDoc">● Đánh dấu chưa đọc</button>' +
+    (V.me.admin ? '<button class="nutTo nhe" id="xoaKhach" style="color:var(--do)">🗑 Xoá dữ liệu khách này</button>' : '') + '</div>';
+  $('luuSdt').onclick = () => sua({ sdt: $('ttSdt').value }, 'Đã lưu số điện thoại.');
+  if ($('ttNv')) $('ttNv').onchange = ev => sua({ nv: ev.target.value }, 'Đã giao khách.');
+  if ($('nhanKhach')) $('nhanKhach').onclick = () => sua({ nv: V.me.id }, 'Chị đã nhận khách này.');
+  b.querySelectorAll('[data-the]').forEach(x => x.onclick = () => {
+    const t = x.dataset.the, cu = (MO.ht.the || []).slice(), i = cu.indexOf(t); if (i >= 0) cu.splice(i, 1); else cu.push(t); sua({ the: cu });
+  });
+  $('ttGc').onchange = () => sua({ ghi_chu: $('ttGc').value }, 'Đã lưu ghi chú.');
+  $('danhXong').onclick = () => sua({ xong: !MO.ht.xong }, MO.ht.xong ? 'Đã mở lại.' : 'Đã đánh dấu xong.');
+  $('chuaDoc').onclick = () => sua({ doc: false }, 'Đã đánh dấu chưa đọc.').then(() => { MO = null; $('app').classList.remove('xemChat'); veChat(); veTt(); });
+  $('lenDon').onclick = lenDon;
+  if ($('xoaKhach')) $('xoaKhach').onclick = () => {
+    if (!confirm('Xoá hẳn hội thoại này và mọi tin nhắn của khách khỏi hộp thư app LA? (Làm khi khách yêu cầu xoá dữ liệu. Không lấy lại được. Tin trên Facebook không bị xoá.)')) return;
+    const khoa = MO.khoa;
+    goi('fbXoa', [TK, khoa]).then(r => { fbKq(r); delete NHAP[khoa]; MO = null; TRA = null; $('app').classList.remove('xemChat', 'moTt'); veChat(); veTt(); bao('Đã xoá dữ liệu khách khỏi hộp thư.'); return napDs(); }).catch(loiChung);
+  };
+}
+function sua(doi, loiBao) {
+  const khoa = MO.khoa;
+  return goi('fbSua', [TK, khoa, doi]).then(r => {
+    const k = fbKq(r); if (k && k.ok === false) throw new Error(k.loi || 'Không lưu được.');
+    if (MO && MO.khoa === khoa) { Object.assign(MO.ht, doi.doc === false ? {} : doi); if ('doc' in doi) MO.ht.chua_doc = doi.doc ? 0 : 1; veTt(); }
+    const d = DS.find(x => x.khoa === khoa); if (d) Object.assign(d, doi.doc === false ? { chua_doc: 1 } : doi);
+    if (loiBao) bao(loiBao);
+    return napDs();
+  }).catch(loiChung);
+}
+function lenDon() {
+  const h = MO.ht, tin = MO.tin.filter(t => t.chieu === 'vao' && t.noi_dung).slice(-8).map(t => t.noi_dung).join('\n');
+  const sdt = h.sdt || '', goiY = { sdt: sdt, ten: h.ten || '', tin: tin, trang: tenTrang(h.trang) };
+  if (!V.me.kd) {
+    const chu = (h.ten || '') + (sdt ? ' · ' + sdt : '') + '\n' + tin;
+    (navigator.clipboard ? navigator.clipboard.writeText(chu) : Promise.reject()).then(() => bao('Bạn không có quyền Bán hàng. Đã chép tên, SĐT và tin khách — dán vào Nhập đơn ở Chốt đơn.'), () => bao('Bạn không có quyền Bán hàng (phòng Kinh doanh).', true));
+    return;
+  }
+  try { localStorage.setItem('ht_len', JSON.stringify(goiY)); } catch (x) {}
+  location.href = APP + '?mo=len';
+}
+
+// ---------- cài đặt (Admin) ----------
+let CD = null;
+function moHop(html) { $('hopNoi').innerHTML = html; $('hop').classList.remove('an'); }
+function dongHop() { $('hop').classList.add('an'); }
+$('hop').onclick = ev => { if (ev.target.id === 'hop') dongHop(); };
+function moCaiDat() { goi('fbCaiDat', [TK]).then(r => { CD = r; veCaiDat(); }).catch(loiChung); }
+function veCaiDat() {
+  const nvChon = (t, i) => '<div class="nvChon">' + CD.nv.map(n => '<label><input type="checkbox" data-nv="' + i + '" value="' + e(n.id) + '"' + (t.nv.some(x => x === n.id || x.toLowerCase() === n.ten.toLowerCase()) ? ' checked' : '') + '>' + e(n.ten) + '</label>').join('') + '</div>';
+  moHop('<div style="display:flex;justify-content:space-between;align-items:center"><h2>⚙ Cài đặt hộp thư Hội thoại</h2><button class="nut phu nho" id="cdDong">Đóng</button></div>' +
+    '<p class="goiY">Mã trang và App Secret chỉ lưu trên máy chủ, app không bao giờ hiện lại. Nhân viên chỉ thấy trang được tích tên.</p>' +
+    '<h3>1. Kết nối Facebook</h3>' +
+    '<div>App Secret của app Meta "Lanest CSKH Fanpage": ' + (CD.coBiMat ? '<span class="ok">✓ Đã có</span>' : '<span class="ko">✗ Chưa có</span> — chưa có thì hộp thư chưa nhận tin') + '</div>' +
+    (CD.loiKy ? '<div class="ko" style="margin-top:4px">⚠ Lần cuối Facebook gửi tin sai chữ ký: ' + e(CD.loiKy) + '. Nếu vừa xảy ra, App Secret dán sai — dán lại (bot vẫn chạy, nhưng hộp thư không lưu tin).</div>' : '') +
+    '<div class="hangNho" style="margin-top:6px;gap:6px;display:flex"><input type="password" id="cdBiMat" placeholder="Dán App Secret (32 ký tự)" autocomplete="off"><button class="nut nho" id="cdLuuBiMat">Lưu</button></div>' +
+    '<p class="goiY">Lấy ở developers.facebook.com → Ứng dụng của tôi → Lanest CSKH Fanpage → Cài đặt ứng dụng → Thông tin cơ bản → Khoá bí mật của ứng dụng (bấm Hiện).</p>' +
+    '<p class="goiY">Cổng nhận tin (Callback URL): <code>' + e(CD.cong) + '</code><br>Mã xác minh (Verify token): <code>' + e(CD.maXacMinh) + '</code></p>' +
+    '<h3>2. Các fanpage</h3><table><thead><tr><th>Trang</th><th>Mã trang</th><th>Bot</th><th>Dùng</th><th>Nhân viên được xem</th></tr></thead><tbody>' +
+    CD.trang.map((t, i) => '<tr><td><input type="text" data-ten="' + i + '" value="' + e(t.ten) + '" style="min-width:140px"><div class="goiY">ID ' + e(t.id) + '</div></td>' +
+      '<td style="white-space:nowrap">' + (t.coMa ? '<span class="ok">✓ Có</span>' : '<span class="ko">✗ Chưa</span>') + '<br><button class="nut phu nho" data-dan="' + i + '">Dán mã</button> ' +
+      (t.coMa ? '<button class="nut phu nho" data-dk="' + i + '" title="Đăng ký trang gửi tin về cổng">Nhận tin</button> <button class="nut phu nho" data-go="' + i + '">Gỡ</button>' : '') + '</td>' +
+      '<td>' + (t.botDuoc ? '<input type="checkbox" data-bot="' + i + '"' + (t.bot ? ' checked' : '') + ' title="Bot n8n tự trả lời trang này">' : '<span class="goiY" title="Bot n8n hiện chỉ trả lời trang Lanest">—</span>') + '</td>' +
+      '<td><input type="checkbox" data-dung="' + i + '"' + (t.dung ? ' checked' : '') + '></td><td>' + nvChon(t, i) + '</td></tr>').join('') + '</tbody></table>' +
+    '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><input type="password" id="cdMaMoi" placeholder="Thêm trang: dán mã trang (EAA…) của fanpage mới" autocomplete="off" style="flex:1;min-width:220px"><button class="nut nho" id="cdThem">Kiểm & thêm</button></div>' +
+    '<h3>3. Thẻ gắn khách</h3><input type="text" id="cdThe" value="' + e((CD.the || []).join(', ')) + '"><p class="goiY">Cách nhau dấu phẩy.</p>' +
+    '<div style="margin-top:14px;text-align:right"><button class="nut" id="cdLuu">Lưu cài đặt</button></div>');
+  $('cdDong').onclick = dongHop;
+  $('cdLuuBiMat').onclick = () => { const v = $('cdBiMat').value.trim(); if (!v) return; goi('fbLuuMa', [TK, 'bimat', '', v, '']).then(r => { CD = r; veCaiDat(); bao('Đã lưu App Secret.'); }).catch(loiChung); };
+  $('cdLuu').onclick = luuCaiDat;
+  $('cdThem').onclick = () => {
+    const ma = $('cdMaMoi').value.trim(); if (!ma) return;
+    goi('fbKiemMa', [TK, ma]).then(r => {
+      const p = fbKq(r);
+      if (!confirm('Mã này là của trang "' + p.name + '" (ID ' + p.id + '). Thêm / cập nhật trang này?')) return;
+      return goi('fbLuuMa', [TK, 'token', p.id, ma, p.name]).then(x => { CD = x; veCaiDat(); bao('Đã lưu mã trang ' + p.name + '. Bấm "Nhận tin" để trang gửi tin về hộp thư.'); });
+    }).catch(loiChung);
+  };
+  document.querySelectorAll('[data-dan]').forEach(b => b.onclick = () => {
+    const t = CD.trang[+b.dataset.dan], ma = (prompt('Dán mã trang (EAA…) của "' + t.ten + '":') || '').trim(); if (!ma) return;
+    goi('fbKiemMa', [TK, ma]).then(r => {
+      const p = fbKq(r);
+      if (String(p.id) !== t.id) throw new Error('Mã này là của trang "' + p.name + '", không phải "' + t.ten + '".');
+      return goi('fbLuuMa', [TK, 'token', t.id, ma, t.ten]).then(x => { CD = x; veCaiDat(); bao('Đã lưu mã trang ' + t.ten + '.'); });
+    }).catch(loiChung);
+  });
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
+    const t = CD.trang[+b.dataset.go]; if (!confirm('Gỡ mã trang của "' + t.ten + '"? Nhân viên sẽ không trả lời được trang này từ app.')) return;
+    goi('fbLuuMa', [TK, 'xoa', t.id, '', '']).then(x => { CD = x; veCaiDat(); bao('Đã gỡ mã trang.'); }).catch(loiChung);
+  });
+  document.querySelectorAll('[data-dk]').forEach(b => b.onclick = () => {
+    const t = CD.trang[+b.dataset.dk];
+    goi('fbDangKy', [TK, t.id]).then(r => { fbKq(r); bao('Trang "' + t.ten + '" đã đăng ký gửi tin về hộp thư.'); }).catch(loiChung);
+  });
+}
+function luuCaiDat() {
+  const ds = CD.trang.map((t, i) => ({ id: t.id, ten: (document.querySelector('[data-ten="' + i + '"]') || {}).value || t.ten,
+    bot: !!(document.querySelector('[data-bot="' + i + '"]') || {}).checked, dung: !!(document.querySelector('[data-dung="' + i + '"]') || {}).checked,
+    nv: Array.from(document.querySelectorAll('[data-nv="' + i + '"]:checked')).map(x => x.value) }));
+  const the = $('cdThe').value.split(',').map(x => x.trim()).filter(Boolean);
+  goi('fbLuuTrang', [TK, ds, the]).then(r => { CD = r; veCaiDat(); bao('Đã lưu cài đặt.'); return taiLai(); }).catch(loiChung);
+}
+// ---------- thống kê ----------
+function moThongKe() {
+  const nay = new Date(), tu = nay.getFullYear() + '-' + d2(nay.getMonth() + 1) + '-01', den = nay.getFullYear() + '-' + d2(nay.getMonth() + 1) + '-' + d2(nay.getDate());
+  moHop('<div style="display:flex;justify-content:space-between;align-items:center"><h2>📊 Thống kê trả lời</h2><button class="nut phu nho" id="tkDong">Đóng</button></div>' +
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input type="date" id="tkTu" value="' + tu + '" style="width:auto"> → <input type="date" id="tkDen" value="' + den + '" style="width:auto"><button class="nut nho" id="tkXem">Xem</button></div><div id="tkKq" style="margin-top:12px"></div>');
+  $('tkDong').onclick = dongHop;
+  const xem = () => goi('fbThongKe', [TK, $('tkTu').value, $('tkDen').value]).then(r => {
+    const k = fbKq(r), ten = id => ((r.nv || []).find(n => n.id === id) || {}).ten || tenAi(id);
+    const tg = g => g == null ? '—' : g < 60 ? g + ' giây' : g < 3600 ? Math.round(g / 60) + ' phút' : (g / 3600).toFixed(1).replace('.', ',') + ' giờ';
+    $('tkKq').innerHTML = '<p>' + k.hoi_thoai + ' hội thoại · ' + k.khach + ' tin khách nhắn</p><table><thead><tr><th>Người trả lời</th><th>Tin đã gửi</th><th>Lần trả lời khách</th><th>Trả lời sau (trung bình)</th></tr></thead><tbody>' +
+      (k.nguoi || []).map(x => '<tr><td>' + e(ten(x.ai)) + '</td><td>' + x.so_tin + '</td><td>' + x.so_lan_tra + '</td><td>' + tg(x.giay_tb) + '</td></tr>').join('') + '</tbody></table>' +
+      '<p class="goiY">"Trả lời sau" = thời gian từ tin khách tới câu trả lời đầu tiên của người đó trong hội thoại.</p>';
+  }).catch(loiChung);
+  $('tkXem').onclick = xem; xem();
+}
+
+// ---------- sự kiện ----------
+$('ds').onclick = ev => { const d = ev.target.closest('.dong'); if (d) moHt(d.dataset.khoa); };
+$('cotChat').addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if (!b || !MO) return;
+  const timTin = mid => MO.tin.find(t => t.mid === mid);
+  if (b.dataset.tra || b.dataset.rieng) {
+    const t = timTin(b.dataset.tra || b.dataset.rieng); if (!t) return;
+    TRA = { mid: t.mid, nd: t.noi_dung, rieng: !!b.dataset.rieng }; veTinDs(); veSoan();
+    const o = $('oSoan'); o.focus(); if (b.dataset.rieng) bao('Tin này gửi riêng qua Messenger, khách khác không thấy. Mỗi bình luận chỉ nhắn riêng được 1 lần.');
+  }
+  if (b.dataset.an) {
+    const an = b.dataset.giatri === '1';
+    goi('fbAn', [TK, MO.khoa, b.dataset.an, an]).then(r => { fbKq(r); const t = timTin(b.dataset.an); if (t) t.tt = an ? 'an' : ''; veTinDs(); bao(an ? 'Đã ẩn bình luận.' : 'Đã hiện lại bình luận.'); }).catch(loiChung);
+  }
+});
+document.addEventListener('click', ev => {
+  const m = ev.target.closest('[data-mau]');
+  if (m) {
+    const x = V.mau[+m.dataset.mau], o = $('oSoan');
+    // bỏ phần ghi chú nội bộ trong mẫu, để khách không thấy
+    const nd = String(x.noiDung).replace(/\s*\((?:Lưu ý nội bộ|Nội bộ|Ghi chú nội bộ)[^)]*\)/gi, '').split('\n').filter(l => !/^\s*(Lưu ý nội bộ|Nội bộ|Ghi chú nội bộ)\s*:/i.test(l)).join('\n').trim();
+    if (o) { o.value = nd; o.dispatchEvent(new Event('input')); dongMau(); o.focus(); }
+    return;
+  }
+  if ($('mauHop') && !ev.target.closest('#mauHop') && ev.target.id !== 'btnMau') dongMau();
+});
+$('tabLoai').onclick = ev => { const b = ev.target.closest('[data-loai]'); if (!b) return; LOC.loai = b.dataset.loai; document.querySelectorAll('#tabLoai button').forEach(x => x.classList.toggle('on', x === b)); napDs(); };
+$('chips').onclick = ev => { const b = ev.target.closest('[data-loc]'); if (!b) return; LOC.loc = LOC.loc === b.dataset.loc ? '' : b.dataset.loc; napDs(); };
+let henTim = null;
+$('tim').oninput = () => { clearTimeout(henTim); henTim = setTimeout(() => { LOC.tim = $('tim').value.trim(); napDs(); }, 400); };
+$('chonTrang').onchange = ev => { LOC.trang = ev.target.value; napDs(); };
+$('btnCd').onclick = moCaiDat;
+$('btnTk').onclick = moThongKe;
+$('btnTheme').onclick = () => { const r = document.documentElement, toi = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches; r.dataset.theme = toi ? 'light' : 'dark'; try { localStorage.setItem('ht_theme', r.dataset.theme); } catch (x) {} };
+try { const t = localStorage.getItem('ht_theme'); if (t) document.documentElement.dataset.theme = t; } catch (x) {}
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { dongHop(); $('app').classList.remove('moTt'); } });
+
+// Hỏi mốc đổi mỗi 20 giây khi đang mở trang (ẩn tab thì thôi); đổi thì tải lại danh sách + hội thoại đang mở.
+function hoiMoc() {
+  if (document.hidden || !V) return;
+  goi('fbMoc', []).then(v => { if (MOC !== null && v !== MOC) { napDs(); napTinMoi(); } MOC = v; }).catch(() => {});
+}
+setInterval(hoiMoc, 20000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) hoiMoc(); });
+function taiLai() { return goi('fbVao', [TK]).then(r => { V = r; veDau(); return napDs(); }); }
+function veDau() {
+  $('chonTrang').innerHTML = (V.trang.length > 1 ? '<option value="">Tất cả fanpage (' + V.trang.length + ')</option>' : '') + V.trang.map(t => '<option value="' + e(t.id) + '"' + (LOC.trang === t.id ? ' selected' : '') + '>' + e(t.ten) + (t.bot ? ' · 🤖' : '') + '</option>').join('');
+  $('chonTrang').classList.toggle('an', !V.trang.length);
+  $('btnCd').classList.toggle('an', !V.me.admin);
+  $('btnTk').classList.toggle('an', !(V.me.admin || V.me.quanLy));
+}
+if (!TK) chan('Chưa đăng nhập', 'Chị mở app LA, đăng nhập, rồi mở lại Hội thoại fanpage.');
+else taiLai().then(() => {
+  if (V && !V.trang.length && V.me.admin) $('ds').innerHTML = '<div class="trong">Chưa có fanpage nào. Bấm <b>⚙ Cài đặt</b> để thêm trang và dán mã trang.</div>';
+  goi('fbMoc', []).then(v => MOC = v).catch(() => {});
+}).catch(err => { const m = String((err && err.message) || err); if (m === 'HET_PHIEN') loiChung(err); else chan('Chưa mở được hộp thư', m); });
+</script>
+</body>
+</html>

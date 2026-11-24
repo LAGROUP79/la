@@ -436,6 +436,19 @@ function vaoApp(home) {
   if (/[?&]mo=chot/.test(location.search)) { moTuThongBao(location.search); try { history.replaceState(null, '', location.pathname); } catch (x) {} }
   else if (/[?&]mo=tb/.test(location.search)) { chuyenTab('tb'); try { history.replaceState(null, '', location.pathname); } catch (x) {} }
   else if (/[?&]mo=vat/.test(location.search)) { if (H.me.phongVao.indexOf('VAT') >= 0) chuyenTab('vat'); else chuyenTab('tb'); try { history.replaceState(null, '', location.pathname); } catch (x) {} }
+  else if (/[?&]mo=len/.test(location.search)) { lenTuHoiThoai(); try { history.replaceState(null, '', location.pathname); } catch (x) {} }
+}
+function lenTuHoiThoai() {
+  var k = null; try { k = JSON.parse(localStorage.getItem('ht_len') || 'null'); localStorage.removeItem('ht_len'); } catch (x) {}
+  if (!k || H.me.phongVao.indexOf('KD') < 0) return;
+  PHONG_HT = ''; SUA = null; TAB = 'len'; veNav(); veLenDon();
+  $('fSdt').value = k.sdt || ''; $('fTen').value = k.ten || '';
+  var dau = $('fNgay') && $('fNgay').closest('.the');
+  if (k.tin && dau) { var b = document.createElement('div'); b.className = 'the'; b.style.cssText = 'background:#E7F0FD;border-left:4px solid #1F5F9E';
+    b.innerHTML = '<b>💬 Tin khách nhắn ' + e(k.trang ? 'trang ' + k.trang : 'fanpage') + '</b><div style="white-space:pre-wrap;font-size:13.5px;margin-top:4px;max-height:220px;overflow:auto">' + e(k.tin) + '</div>';
+    dau.parentNode.insertBefore(b, dau); }
+  if (k.sdt) timKhach();
+  window.scrollTo(0, 0);
 }
 var CHOT_MO = null;
 function moTuThongBao(url) {
@@ -464,7 +477,7 @@ function veNav() {
       return '<button data-tab="p_' + p.ma + '" class="' + (PHONG_HT === p.ma ? 'on' : '') + (vao ? '' : ' khoa') + '" style="--dam:' + m[1] + '"><i></i>' + e(tenPhong(p.ma).replace(/^PHÒNG /, '')) + (vao ? '' : ' 🔒') + '</button>';
     }).join('') + '</div>' +
     (H.me.crm && H.me.phongVao.indexOf('KH') < 0 ? '<div class="navPhong"><small>CRM</small><button data-tab="crm" class="' + (TAB === 'crm' ? 'on' : '') + '" style="--dam:#3D6FA8"><i></i>CRM khách cũ</button><button data-tab="crmm" class="' + (TAB === 'crmm' ? 'on' : '') + '" style="--dam:#2E8B57"><i></i>CRM khách mới</button></div>' : '') +
-    '<div class="navPhong"><small>CẨM NANG VÀ CSKH</small><button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button>' +
+    '<div class="navPhong"><small>CẨM NANG VÀ CSKH</small>' + (H.me.fb ? '<button data-tab="ht" style="--dam:#1F5F9E"><i></i>Hội thoại fanpage</button>' : '') + '<button data-tab="cskh" class="' + (TAB === 'cskh' ? 'on' : '') + '" style="--dam:#D9822B"><i></i>Cẩm nang &amp; chính sách</button>' +
     '<button data-tab="sotay" class="' + (TAB === 'sotay' ? 'on' : '') + '" style="--dam:#006B3F"><i></i>Sổ tay văn hóa</button>' +
     '<button data-tab="ktkt" class="' + (TAB === 'ktkt' ? 'on' : '') + '" style="--dam:#1F5F9E"><i></i>Kiểm tra kiến thức</button>' +
     (H.me.xemChot && H.me.phongVao.indexOf('KD') < 0 ? '<button data-tab="chot" class="' + (TAB === 'chot' ? 'on' : '') + '" style="--dam:#8a5f00"><i></i>Duyệt đơn (chỉ xem)</button>' : '') + '</div>';
@@ -487,6 +500,7 @@ function chuyenTab(t) {
   if (t === 'cn') { location.href = 'ca-nhan.html' + (/thu\.html/.test(location.pathname) ? '?thu=1' : ''); return; }
   if (t === 'ag') { location.href = 'agent.html' + (/thu\.html/.test(location.pathname) ? '?thu=1' : ''); return; }
   if (t === 'bd') { location.href = 'ban-do.html' + (/thu\.html/.test(location.pathname) ? '?thu=1' : ''); return; }
+  if (t === 'ht') { location.href = 'hoi-thoai.html' + (/thu\.html/.test(location.pathname) ? '?thu=1' : ''); return; }
   if (t.indexOf('cd:') === 0) { CD_MO = t.slice(3); t = 'cd'; } else if (t === 'cd') CD_MO = '';
   if (t.indexOf('sb:') === 0) { SB_TAB = t.slice(3); t = 'sb'; } else if (t === 'sb' && (SB_TAB === 'bc' || SB_TAB === 'cp' || SB_TAB === 'nhap')) SB_TAB = 'don';
   if (t.indexOf('vat:') === 0) { VAT.xem = t.slice(4); t = 'vat'; } else if (t === 'vat') VAT.xem = 'the';
@@ -542,7 +556,8 @@ function veHome() {
       '<button data-tab="bd" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + IC_O.crm + '</span><b>BẢN ĐỒ ĐẠI LÝ</b><span>Đại lý theo tỉnh, vùng còn trống, đại lý chậm mua</span></button></div>' : '') +
     (H.me.ts ? '<h3 class="nhom">RIÊNG CỦA CHỊ</h3><div class="oclon bon"><button data-tab="cn" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.cv || '') + '</span><b>TRÌNH CÁ NHÂN</b><span>Việc, lịch, kế hoạch, chờ quyết, báo cáo, tài sản · nhắc giờ lên điện thoại</span></button>' +
       '<button data-tab="ts" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.bc || '') + '</span><b>TÀI SẢN CÁ NHÂN</b><span>Cơ cấu tài sản, công nợ theo tháng · chỉ mình chị xem</span></button></div>' : '') +
-    '<h3 class="nhom">CẨM NANG VÀ CSKH</h3><div class="oclon bon"><button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
+    '<h3 class="nhom">CẨM NANG VÀ CSKH</h3><div class="oclon bon">' + (H.me.fb ? '<button data-tab="ht" style="--nen:#E7F0FD;--dam:#1F5F9E;--dam2:#163F6B"><span class="ico">' + IC_O.cskh + '</span><b>HỘI THOẠI FANPAGE</b><span>Tin nhắn, bình luận các fanpage: trả lời, giao khách, lên đơn</span></button>' : '') +
+      '<button data-tab="cskh" style="--nen:' + mau.cskh[0] + ';--dam:' + mau.cskh[1] + ';--dam2:' + mau.cskh[2] + '"><span class="ico">' + IC_O.cskh + '</span><b>CSKH</b><span>Cẩm nang, chính sách, mẫu trả lời: bấm copy gửi khách qua Zalo</span></button>' +
       '<button data-tab="sotay" style="--nen:#E3F1E8;--dam:#006B3F;--dam2:#004D2C"><span class="ico">' + (IC_O.hs || IC_O.cskh) + '</span><b>SỔ TAY VĂN HÓA</b><span>6 giá trị cốt lõi, được làm / không được làm, nội quy công ty</span></button>' +
       '<button data-tab="ktkt" style="--nen:#E4EDF9;--dam:#1F5F9E;--dam2:#163F6B"><span class="ico">' + (IC_O.cv || IC_O.cskh) + '</span><b>KIỂM TRA KIẾN THỨC</b><span>10 câu trắc nghiệm mỗi tuần về Sổ tay và Cẩm nang CSKH</span></button>' +
       (H.me.xemChot && !coKD ? '<button data-tab="chot" style="--nen:#FFF3D9;--dam:#8a5f00;--dam2:#5c3f00"><span class="ico">' + (IC_O.ds || '') + '</span><b>DUYỆT ĐƠN</b><span>Chỉ xem: đơn chờ duyệt và đơn đang đi kho, không hiện giá</span></button>' : '') + '</div>';
