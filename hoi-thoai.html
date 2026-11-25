@@ -134,6 +134,9 @@ header.dau .tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:auto}
 /* thông tin khách */
 .ttKhoi{padding:12px 14px;border-bottom:1px solid var(--line)}
 .ttKhoi h3{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.ttKhoi .nhan{display:block;margin:8px 0 3px;font-size:12px;color:var(--muted)}
+.ttKhoi .sao{display:flex;gap:6px}
+.ttKhoi .sao .chip{flex:1;font-size:15px;line-height:1.1;padding:5px 0}
 .ttDau{text-align:center}
 .ttDau .anh{width:64px;height:64px;font-size:24px;margin:0 auto 6px}
 .ttDau b{font-size:16px}
@@ -206,7 +209,7 @@ header.dau .tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:auto}
     <section class="cot" id="cotDs">
       <div class="loc">
         <input id="tim" type="search" placeholder="Tìm tên khách, SĐT, nội dung…" autocomplete="off">
-        <div class="tabLoai" id="tabLoai"><button data-loai="" class="on">Tất cả</button><button data-loai="tn">💬 Tin nhắn</button><button data-loai="bl">🗨 Bình luận</button></div>
+        <div class="tabLoai" id="tabLoai"><button data-loai="" class="on">Tất cả</button><button data-loai="tn">💬 Tin nhắn</button><button data-loai="bl">🗨 Bình luận</button><button data-loai="web">🛒 Đơn web</button></div>
         <div class="chips" id="chips"></div>
       </div>
       <div class="ds" id="ds"><div class="trong">Đang tải…</div></div>
@@ -264,7 +267,7 @@ function tenAi(ai, tenAi2) {
 }
 function chuDau(s) { const w = String(s || '').trim().split(/\s+/); return (w[w.length - 1] || '?').charAt(0).toUpperCase(); }
 function anhHtml(ht, to) {
-  const ico = ht.loai === 'bl' ? '🗨' : '💬';
+  const ico = ht.loai === 'bl' ? '🗨' : ht.loai === 'web' ? '🛒' : '💬';
   return '<div class="anh"' + (to ? ' style="width:' + to + 'px;height:' + to + 'px"' : '') + '>' +
     (ht.anh ? '<img src="' + e(ht.anh) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + e(chuDau(ht.ten)) +
     (to ? '' : '<span class="loaiIco">' + ico + '</span>') + '</div>';
@@ -295,7 +298,7 @@ function veChips() {
   $('locThe').onchange = ev => { LOC.the = ev.target.value; napDs(); };
 }
 function dongHtml(h) {
-  const moi = h.chua_doc > 0, ten = h.ten || (h.loai === 'bl' ? 'Người bình luận' : 'Khách Messenger');
+  const moi = h.chua_doc > 0, ten = h.ten || (h.loai === 'bl' ? 'Người bình luận' : h.loai === 'web' ? 'Khách đặt web' : 'Khách Messenger');
   const truoc = h.cuoi_ai && h.cuoi_ai !== 'khach' ? (h.cuoi_ai === 'bot' ? '🤖 ' : h.cuoi_ai === 'trang' ? 'Trang: ' : tenNv(h.cuoi_ai).split(' ').pop() + ': ') : '';
   return '<div class="dong' + (moi ? ' moi' : '') + (h.xong ? ' xong' : '') + (MO && MO.khoa === h.khoa ? ' chon' : '') + '" data-khoa="' + e(h.khoa) + '">' + anhHtml(h) +
     '<div class="giua"><div class="h1"><span class="ten">' + e(ten) + '</span><span class="gio">' + e(gioNgan(h.luc_cuoi)) + '</span></div>' +
@@ -361,7 +364,7 @@ function veChat(cuon) {
   const h = MO.ht || { ten: '', loai: MO.khoa.slice(0, 2), trang: MO.khoa.split(':')[1] };
   const tr = V.trang.find(t => t.id === h.trang) || {};
   $('cotChat').innerHTML = '<div class="dauChat"><button class="lui" id="btnLui" title="Về danh sách">‹</button>' + anhHtml(h, 38) +
-    '<div style="flex:1;min-width:0"><div class="ten">' + e(h.ten || (h.loai === 'bl' ? 'Người bình luận' : 'Khách Messenger')) + '</div><small>' + (h.loai === 'bl' ? '🗨 Bình luận' : '💬 Tin nhắn') + ' · ' + e(tenTrang(h.trang)) +
+    '<div style="flex:1;min-width:0"><div class="ten">' + e(h.ten || (h.loai === 'bl' ? 'Người bình luận' : h.loai === 'web' ? 'Khách đặt web' : 'Khách Messenger')) + '</div><small>' + (h.loai === 'bl' ? '🗨 Bình luận' : h.loai === 'web' ? '🛒 Đơn từ website' : '💬 Tin nhắn') + ' · ' + e(tenTrang(h.trang)) +
     (tr.bot && h.loai === 'tn' ? ' · <span class="botChip">🤖 Bot đang bật ở trang này</span>' : '') + '</small></div>' +
     '<button class="nutT" id="btnTt" title="Thông tin khách">ⓘ</button></div>' +
     '<div class="tinDs" id="tinDs"></div>' +
@@ -417,6 +420,16 @@ function quaGio() { // số giờ từ tin cuối của khách
 function veSoan() {
   const b = $('soan'); if (!b || !MO) return;
   const h = MO.ht || {}, gio = quaGio(), bl = h.loai === 'bl';
+  // Đơn từ website: không nhắn lại qua Facebook được — gọi điện hoặc Zalo cho khách (chị Lê 25/11/2026).
+  if (h.loai === 'web') {
+    b.innerHTML = '<div class="canh">Đây là đơn khách đặt trên website, không nhắn lại trong app được.' +
+      ' Gọi hoặc nhắn Zalo cho khách theo số bên phải, rồi bấm <b>🧾 Lên đơn cho khách này</b>.</div>' +
+      (h.sdt ? '<div class="hangSoan" style="gap:8px">' +
+        '<a class="nutGui" style="text-decoration:none;text-align:center" href="tel:' + e(h.sdt) + '">📞 Gọi ' + e(h.sdt) + '</a>' +
+        '<a class="nutGui phu" style="text-decoration:none;text-align:center" href="https://zalo.me/' + e(h.sdt.replace(/\D/g, '')) + '" target="_blank" rel="noopener">💬 Nhắn Zalo</a>' +
+        '</div>' : '');
+    return;
+  }
   let canh = '';
   if (!bl && gio > 168) canh = '<div class="canh do">Đã quá 7 ngày từ tin cuối của khách. Facebook không cho trang nhắn tiếp; chờ khách nhắn lại.</div>';
   else if (!bl && gio > 24) canh = '<div class="canh">Đã quá 24 giờ từ tin cuối của khách. Gửi lúc này dùng thẻ "nhân viên trả lời" (7 ngày) — chỉ được sau khi Meta duyệt quyền này.</div>';
@@ -481,7 +494,7 @@ function veTt() {
   const b = $('cotTt');
   if (!MO || !MO.ht) { b.innerHTML = MO ? '<div class="trong">Đang tải…</div>' : '<div class="trong">Thông tin khách hiện ở đây khi chị chọn một hội thoại.</div>'; return; }
   const h = MO.ht, qly = V.me.admin || V.me.quanLy;
-  b.innerHTML = '<div class="ttKhoi ttDau">' + anhHtml(h, 64) + '<b>' + e(h.ten || 'Chưa có tên') + '</b><br><small style="color:var(--muted)">' + (h.loai === 'bl' ? '🗨 Bình luận' : '💬 Tin nhắn') + ' · ' + e(tenTrang(h.trang)) + '</small>' +
+  b.innerHTML = '<div class="ttKhoi ttDau">' + anhHtml(h, 64) + '<b>' + e(h.ten || 'Chưa có tên') + '</b><br><small style="color:var(--muted)">' + (h.loai === 'bl' ? '🗨 Bình luận' : h.loai === 'web' ? '🛒 Đơn từ website' : '💬 Tin nhắn') + ' · ' + e(tenTrang(h.trang)) + '</small>' +
     '<div style="margin-top:6px;font-size:13px">' + (h.loai === 'bl' && h.bai ? '<a href="https://www.facebook.com/' + e(h.bai) + '" target="_blank" rel="noopener">Mở bài viết ↗</a>' :
       '<a href="https://business.facebook.com/latest/inbox/all?asset_id=' + e(h.trang) + '" target="_blank" rel="noopener">Mở hộp thư Meta ↗</a>') + '</div></div>' +
     '<div class="ttKhoi"><h3>Số điện thoại</h3><div class="hangNho"><input id="ttSdt" inputmode="tel" value="' + e(h.sdt) + '" placeholder="Chưa có"><button id="luuSdt">Lưu</button></div></div>' +
@@ -490,6 +503,7 @@ function veTt() {
     (h.nv !== V.me.id ? '<button class="nutTo nhe" id="nhanKhach">🙋 Nhận khách này</button>' : '') + '</div>' +
     '<div class="ttKhoi"><h3>Thẻ</h3><div class="theDs">' + (V.the || []).map(t => '<button class="chip' + ((h.the || []).indexOf(t) >= 0 ? ' on' : '') + '" data-the="' + e(t) + '">' + e(t) + '</button>').join('') + '</div></div>' +
     '<div class="ttKhoi"><h3>Ghi chú nội bộ</h3><textarea id="ttGc" placeholder="Khách hỏi gì, hẹn gì… (khách không thấy)">' + e(h.ghi_chu) + '</textarea></div>' +
+    '<div class="ttKhoi" id="ttCrm"></div>' +
     '<div class="ttKhoi"><button class="nutTo chinh" id="lenDon">📦 Lên đơn cho khách này</button>' +
     '<button class="nutTo" id="danhXong">' + (h.xong ? '↺ Mở lại hội thoại' : '✓ Đánh dấu đã xong') + '</button>' +
     '<button class="nutTo nhe" id="chuaDoc">● Đánh dấu chưa đọc</button>' +
@@ -504,12 +518,65 @@ function veTt() {
   $('danhXong').onclick = () => sua({ xong: !MO.ht.xong }, MO.ht.xong ? 'Đã mở lại.' : 'Đã đánh dấu xong.');
   $('chuaDoc').onclick = () => sua({ doc: false }, 'Đã đánh dấu chưa đọc.').then(() => { MO = null; $('app').classList.remove('xemChat'); veChat(); veTt(); });
   $('lenDon').onclick = lenDon;
+  veCrm();
   if ($('xoaKhach')) $('xoaKhach').onclick = () => {
     if (!confirm('Xoá hẳn hội thoại này và mọi tin nhắn của khách khỏi hộp thư app LA? (Làm khi khách yêu cầu xoá dữ liệu. Không lấy lại được. Tin trên Facebook không bị xoá.)')) return;
     const khoa = MO.khoa;
     goi('fbXoa', [TK, khoa]).then(r => { fbKq(r); delete NHAP[khoa]; MO = null; TRA = null; $('app').classList.remove('xemChat', 'moTt'); veChat(); veTt(); bao('Đã xoá dữ liệu khách khỏi hộp thư.'); return napDs(); }).catch(loiChung);
   };
 }
+// ---------- CRM khách mới ngay trong hộp thư (chị Lê 25/11/2026) ----------
+// Gộp để khỏi phải mở màn CRM riêng: thấy khách đang ở bước nào, đổi trạng thái / chấm sao ngay tại đây.
+let CRM = null;      // {duoc, dm, km} của số điện thoại đang mở
+function veCrm() {
+  const b = $('ttCrm'); if (!b || !MO || !MO.ht) return;
+  const h = MO.ht, so = (h.sdt || '').replace(/\D/g, '');
+  if (!so || so.length < 10) {
+    b.innerHTML = '<h3>CRM khách mới</h3><div style="font-size:13px;color:var(--muted)">Lưu số điện thoại của khách ở trên, CRM sẽ hiện ra đây.</div>';
+    return;
+  }
+  if (!CRM || CRM.sdt !== so) {
+    b.innerHTML = '<h3>CRM khách mới</h3><div style="font-size:13px;color:var(--muted)">Đang xem…</div>';
+    const khoa = MO.khoa;
+    goi('fbCrmSo', [TK, khoa, so]).then(r => {
+      const k = fbKq(r) || {};
+      if (!MO || MO.khoa !== khoa) return;
+      if (!k.duoc) { CRM = { sdt: so, duoc: false }; }
+      else CRM = { sdt: so, duoc: true, dm: k.dm || {}, km: k.km || null };
+      veCrm();
+    }).catch(() => { const x = $('ttCrm'); if (x) x.innerHTML = ''; });
+    return;
+  }
+  if (!CRM.duoc) { b.innerHTML = ''; return; }   // không có quyền CRM thì ẩn hẳn khối
+  const km = CRM.km, dm = CRM.dm || {}, chon = (ds, v) => (ds || []).map(x => '<option' + (x === v ? ' selected' : '') + '>' + e(x) + '</option>').join('');
+  b.innerHTML = '<h3>CRM khách mới' + (km ? ' · ' + e(km.ma) : ' <small style="font-weight:400;color:var(--muted)">(chưa có)</small>') + '</h3>' +
+    (km && km.maKH ? '<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">Đã là khách sổ bán hàng: <b>' + e(km.maKH) + '</b></div>' : '') +
+    '<label class="nhan">Trạng thái</label><select id="crTt">' + chon(dm.tt, km ? km.tt : 'Khách mới') + '</select>' +
+    '<label class="nhan">Phân loại</label><select id="crLoai"><option value=""></option>' + chon(dm.loai, km ? km.loai : '') + '</select>' +
+    '<label class="nhan">Nguồn khách</label><select id="crNguon"><option value=""></option>' + chon(dm.nguon, km ? km.nguon : (h.loai === 'web' ? 'Website' : 'Fanpage FB')) + '</select>' +
+    '<label class="nhan">Tỉnh</label><select id="crTinh"><option value=""></option>' + chon(dm.tinh, km ? km.tinh : '') + '</select>' +
+    '<label class="nhan">Mức quan tâm</label><div class="sao" id="crSao">' + [1, 2, 3].map(i =>
+      '<button data-sao="' + i + '" class="chip' + (km && km.sao >= i ? ' on' : '') + '">★</button>').join('') + '</div>' +
+    '<button class="nutTo chinh" id="crLuu" style="margin-top:8px">💾 Lưu vào CRM</button>' +
+    (km ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">Nhập ' + e(km.ngay || '') + ' · ' + e(km.nguoi || '') + '</div>' : '');
+  let sao = km ? Number(km.sao || 0) : 0;
+  b.querySelectorAll('[data-sao]').forEach(n => n.onclick = () => {
+    sao = sao === Number(n.dataset.sao) ? 0 : Number(n.dataset.sao);
+    b.querySelectorAll('[data-sao]').forEach(m => m.classList.toggle('on', Number(m.dataset.sao) <= sao));
+  });
+  $('crLuu').onclick = () => {
+    const khoa = MO.khoa, gui = { sdt: CRM.sdt, ten: h.ten || (km ? km.ten : ''), tt: $('crTt').value,
+      loai: $('crLoai').value, nguon: $('crNguon').value, tinh: $('crTinh').value, sao: sao,
+      ghiChu: km ? km.ghiChu : (h.ghi_chu || '') };
+    $('crLuu').disabled = true;
+    goi('fbCrmLuu', [TK, khoa, gui]).then(r => {
+      const k = fbKq(r) || {};
+      if (k.km) { CRM = { sdt: CRM.sdt, duoc: true, dm: CRM.dm, km: k.km }; veCrm(); }
+      bao('Đã lưu vào CRM khách mới.');
+    }).catch(err => { bao(err.message || 'Không lưu được.', true); const n = $('crLuu'); if (n) n.disabled = false; });
+  };
+}
+
 function sua(doi, loiBao) {
   const khoa = MO.khoa;
   return goi('fbSua', [TK, khoa, doi]).then(r => {
@@ -555,11 +622,28 @@ function veCaiDat() {
       '<td>' + (t.botDuoc ? '<input type="checkbox" data-bot="' + i + '"' + (t.bot ? ' checked' : '') + ' title="Bot n8n tự trả lời trang này">' : '<span class="goiY" title="Bot n8n hiện chỉ trả lời trang Lanest">—</span>') + '</td>' +
       '<td><input type="checkbox" data-dung="' + i + '"' + (t.dung ? ' checked' : '') + '></td><td>' + nvChon(t, i) + '</td></tr>').join('') + '</tbody></table>' +
     '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><input type="password" id="cdMaMoi" placeholder="Thêm trang: dán mã trang (EAA…) của fanpage mới" autocomplete="off" style="flex:1;min-width:220px"><button class="nut nho" id="cdThem">Kiểm & thêm</button></div>' +
-    '<h3>3. Thẻ gắn khách</h3><input type="text" id="cdThe" value="' + e((CD.the || []).join(', ')) + '"><p class="goiY">Cách nhau dấu phẩy.</p>' +
+    '<h3>3. Đơn từ website</h3>' +
+    '<div>Khoá để lanest.com.vn gửi đơn vào hộp thư: ' + (CD.khoaWeb ? '<span class="ok">✓ Đã có</span>' : '<span class="ko">✗ Chưa có</span> — chưa có thì website không gửi đơn vào được') + '</div>' +
+    '<div class="hangNho" style="margin-top:6px;gap:6px;display:flex;flex-wrap:wrap">' +
+      '<input type="text" id="cdKhoaWeb" value="' + e(CD.khoaWeb || '') + '" readonly placeholder="Chưa có khoá" style="flex:1;min-width:220px;font-family:monospace">' +
+      '<button class="nut phu nho" id="cdChepKhoa">Chép</button><button class="nut nho" id="cdKhoaMoi">Tạo khoá mới</button></div>' +
+    '<p class="goiY">Khoá này nằm trong mã trang web nên không phải bí mật, nhưng nó chỉ làm được một việc: nhận đơn. Tạo khoá mới thì khoá cũ hết tác dụng ngay — nhớ dán khoá mới vào website.</p>' +
+    '<h3>4. Thẻ gắn khách</h3><input type="text" id="cdThe" value="' + e((CD.the || []).join(', ')) + '"><p class="goiY">Cách nhau dấu phẩy.</p>' +
     '<div style="margin-top:14px;text-align:right"><button class="nut" id="cdLuu">Lưu cài đặt</button></div>');
   $('cdDong').onclick = dongHop;
   $('cdLuuBiMat').onclick = () => { const v = $('cdBiMat').value.trim(); if (!v) return; goi('fbLuuMa', [TK, 'bimat', '', v, '']).then(r => { CD = r; veCaiDat(); bao('Đã lưu App Secret.'); }).catch(loiChung); };
   $('cdLuu').onclick = luuCaiDat;
+  $('cdChepKhoa').onclick = () => {
+    const v = $('cdKhoaWeb').value; if (!v) { bao('Chưa có khoá. Bấm "Tạo khoá mới".', true); return; }
+    try { navigator.clipboard.writeText(v); bao('Đã chép khoá.'); } catch (e) { $('cdKhoaWeb').select(); bao('Bấm Ctrl+C để chép.'); }
+  };
+  $('cdKhoaMoi').onclick = () => {
+    if (CD.khoaWeb && !confirm('Tạo khoá mới? Khoá đang dùng trên website sẽ hết tác dụng ngay, đơn sẽ không vào được cho tới khi dán khoá mới vào website.')) return;
+    goi('fbKhoaWebMoi', [TK]).then(r => {
+      const k = fbKq(r) || {}; CD.khoaWeb = k.khoa || ''; veCaiDat();
+      bao('Đã tạo khoá mới. Chép rồi dán vào website.');
+    }).catch(loiChung);
+  };
   $('cdThem').onclick = () => {
     const ma = $('cdMaMoi').value.trim(); if (!ma) return;
     goi('fbKiemMa', [TK, ma]).then(r => {
