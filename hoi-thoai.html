@@ -167,6 +167,58 @@ header.dau .tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:auto}
 #hop .nvChon{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px}
 #hop .nvChon label{display:flex;gap:4px;align-items:center;white-space:nowrap}
 #hop code{background:var(--bg);padding:2px 6px;border-radius:6px;font-size:12.5px;word-break:break-all}
+/* màn Khách hàng (CRM khách mới gộp vào hộp thư — chị Lê 25/11/2026) */
+.chonMan{display:flex;gap:3px;background:rgba(255,255,255,.14);border-radius:99px;padding:2px}
+.chonMan button{border:0;background:none;color:rgba(255,255,255,.82);font-weight:600;font-size:13px;padding:4px 11px;border-radius:99px;white-space:nowrap}
+.chonMan button.on{background:#fff;color:#005a34}
+.manKh{flex:1;min-height:0;overflow:auto;padding:12px 14px 24px}
+.khLoc{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.khLoc input[type=search]{flex:1;min-width:190px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.khNut{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:7px 13px;font-weight:700;color:var(--xanh)}
+.khNut.chinh{background:var(--xanh);border-color:var(--xanh);color:#fff}
+.khSo{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin:2px 0 6px}
+.khSo b{color:var(--ink)}
+.khHang{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.khHang>small{width:92px;color:var(--muted)}
+.khCot{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:8px;margin-top:10px}
+.khC{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px;min-height:120px}
+.khC.keo{outline:2px dashed var(--xanh)}
+.khDau{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
+.khDau .so{margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:0 8px;font-size:12px}
+.khDau button{border:1px solid var(--line);background:var(--card);border-radius:7px;width:22px;height:22px;line-height:1;font-weight:700;color:var(--xanh)}
+.khThanh{height:4px;border-radius:4px;background:var(--line);margin:6px 0 8px;overflow:hidden}
+.khThanh i{display:block;height:100%}
+.khThe{background:var(--card);border-radius:10px;padding:8px 9px;margin-bottom:7px;box-shadow:var(--shadow);border-left:4px solid;cursor:pointer}
+.khThe:hover{box-shadow:0 3px 12px rgba(0,60,30,.16)}
+.khThe b{font-size:14px}
+.khThe .p{font-size:12.5px;color:var(--muted)}
+.khTag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:9px;margin:2px 4px 0 0;background:var(--soft);color:var(--xanh)}
+.khTag.ng{background:#fdeee6;color:#a8461e}
+.khTag.dl{background:var(--lamNhat);color:var(--lam)}
+.khTag.cb{background:#fdecec;color:#b42318}
+.khChan{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;color:var(--muted);white-space:nowrap}
+.khChan .ai{margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+.khSao{border:0;background:none;padding:0 1px;font-size:16px;line-height:1;color:var(--line)}
+.khSao.on{color:#eda100}
+.khChan a,.khChan button.mo{text-decoration:none;font-size:15px;border:0;background:none;padding:0}
+.khRong{font-size:12.5px;color:var(--muted);text-align:center;padding:14px 4px;border:1px dashed var(--line);border-radius:10px}
+.khBc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.khBc h3{margin:0 0 8px;font-size:15.5px;color:var(--xanh)}
+.khO{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.khO>div{background:var(--bg);border-radius:10px;padding:7px 10px}
+.khO small{display:block;font-size:11.5px;color:var(--muted)}
+.khO b{font-size:19px}
+.khBang{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+.khBang th,.khBang td{padding:6px;border-bottom:1px solid var(--line);text-align:left}
+.khBang th{font-size:11px;color:var(--muted);text-transform:uppercase}
+.khBang td.s,.khBang th.s{text-align:right}
+.khPheu{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.khPheu>div{flex:1;min-width:92px;background:var(--bg);border-radius:9px;border-top:4px solid;padding:6px 9px}
+.khPheu small{display:block;font-size:11.5px;color:var(--muted)}
+.khPheu b{font-size:19px}
+@media (max-width:1250px){.khCot{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:860px){.khCot{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.khCot{grid-template-columns:minmax(0,1fr)}.chonMan button{padding:4px 8px;font-size:12.5px}}
 #baoNho{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1d2a22;color:#fff;padding:9px 16px;border-radius:12px;font-weight:600;z-index:200;max-width:90vw;box-shadow:0 6px 24px rgba(0,0,0,.3)}
 #baoNho.loi{background:#9b2c20}
 #chan{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:300}
@@ -199,13 +251,14 @@ header.dau .tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:auto}
   <header class="dau">
     <a class="ve" href="./" id="veApp">‹ App LA</a>
     <h1>💬 Hội thoại fanpage</h1>
+    <div class="chonMan an" id="chonMan"><button data-man="ht" class="on">💬 Hội thoại</button><button data-man="kh">👥 Khách hàng</button><button data-man="bc">📈 Báo cáo</button></div>
     <select id="chonTrang" aria-label="Chọn fanpage"></select>
     <span class="tt" id="trangThai">Đang tải…</span>
     <button class="nutD an" id="btnTk" title="Thống kê trả lời">📊<span class="chuNut"> Thống kê</span></button>
     <button class="nutD an" id="btnCd" title="Cài đặt hộp thư (Admin)">⚙<span class="chuNut"> Cài đặt</span></button>
     <button class="nutD" id="btnTheme" title="Đổi nền sáng/tối">🌓</button>
   </header>
-  <main class="khung">
+  <main class="khung" id="manHt">
     <section class="cot" id="cotDs">
       <div class="loc">
         <input id="tim" type="search" placeholder="Tìm tên khách, SĐT, nội dung…" autocomplete="off">
@@ -217,6 +270,7 @@ header.dau .tt{font-size:12px;color:rgba(255,255,255,.85);margin-left:auto}
     <section class="cot" id="cotChat"><div class="trongGiua"><div><div style="font-size:44px">💬</div>Chọn một hội thoại bên trái để xem và trả lời.</div></div></section>
     <aside class="cot" id="cotTt"></aside>
   </main>
+  <main class="manKh an" id="manKh"></main>
 </div>
 <div id="hop" class="an"><div class="noi" id="hopNoi"></div></div>
 <div id="baoNho" class="an"></div>
@@ -573,6 +627,7 @@ function veCrm() {
     goi('fbCrmLuu', [TK, khoa, gui]).then(r => {
       const k = r || {};   // fbCrmLuu cũng trả thẳng
       if (k.km) { CRM = { sdt: CRM.sdt, duoc: true, dm: CRM.dm, km: k.km }; veCrm(); }
+      KH = null;   // bảng Khách hàng tải lại cho khớp
       bao('Đã lưu vào CRM khách mới.');
     }).catch(err => { bao(err.message || 'Không lưu được.', true); const n = $('crLuu'); if (n) n.disabled = false; });
   };
@@ -731,6 +786,210 @@ try { const t = localStorage.getItem('ht_theme'); if (t) document.documentElemen
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { dongHop(); $('app').classList.remove('moTt'); } });
 
 // Hỏi mốc đổi mỗi 20 giây khi đang mở trang (ẩn tab thì thôi); đổi thì tải lại danh sách + hội thoại đang mở.
+// ---------- MÀN KHÁCH HÀNG: CRM khách mới gộp luôn vào hộp thư (chị Lê 25/11/2026) ----------
+// "Gộp 2 phần này thành 1 cho dễ quản lí, trong đây sẽ có các chức năng và báo cáo của CRM khách mới luôn."
+const KM_COT = [['Khách mới', '#2a78d6', '🆕'], ['Đang tư vấn', '#eda100', '💬'], ['Từ chối', '#e34948', '✋'], ['Đã mua hàng', '#1baf7a', '🛒'], ['Chuyển đại lý', '#4a3aa7', '🤝']];
+let MAN = 'ht';                       // ht = hội thoại · kh = bảng khách · bc = báo cáo
+let KH = null;                        // fbKhachDs: {ds, ngam, dt, dm, homNay, ngamNgay}
+const KHL = { q: '', loc: {} };
+let KH_KY = 'thang';
+const tien = n => (Number(n) || 0).toLocaleString('vi-VN');
+function congNgay(s, n) { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+
+function doiMan(m) {
+  MAN = m;
+  document.querySelectorAll('#chonMan button').forEach(b => b.classList.toggle('on', b.dataset.man === m));
+  $('manHt').classList.toggle('an', m !== 'ht');
+  $('manKh').classList.toggle('an', m === 'ht');
+  if (m === 'ht') return;
+  if (!KH) { $('manKh').innerHTML = '<div class="trong">Đang tải khách hàng…</div>'; napKh(); return; }
+  veMan();
+}
+function veMan() { if (MAN === 'kh') veKhBang(); else if (MAN === 'bc') veKhBc(); }
+function napKh() {
+  return goi('fbKhachDs', [TK]).then(r => { KH = r; veMan(); })
+    .catch(err => { $('manKh').innerHTML = '<div class="trong">' + e(String((err && err.message) || err)) + '</div>'; });
+}
+function khMau(tt) { const c = KM_COT.find(x => x[0] === tt); return c ? c[1] : '#8a938c'; }
+function khSoDep(s) { const d = String(s || '').replace(/\D/g, ''); return d ? d.slice(0, 4) + ' ' + d.slice(4, 7) + ' ' + d.slice(7) : ''; }
+function khNgay(s) {
+  if (!s || !KH) return '';
+  const n = Math.round((new Date(KH.homNay + 'T00:00:00') - new Date(s + 'T00:00:00')) / 864e5);
+  return isNaN(n) ? '' : n <= 0 ? 'hôm nay' : n + ' ngày';
+}
+function khLoc() {
+  const q = KHL.q.toLowerCase().trim(), g = q.replace(/[\s.]/g, '');
+  return (KH.ds || []).filter(x => {
+    for (const k in KHL.loc) if (KHL.loc[k] && (x[k] || '(chưa ghi)') !== KHL.loc[k]) return false;
+    if (!q) return true;
+    const s = [x.ten, x.sdt, x.tinh, x.loai, x.nguon, x.ghiChu, x.nguoi].join(' ').toLowerCase();
+    return s.indexOf(q) >= 0 || (g && s.replace(/[\s.]/g, '').indexOf(g) >= 0);
+  });
+}
+function khChip(ten, k, thuTu, mauTheo, toiDa) {
+  const m = {}; (KH.ds || []).forEach(x => { const v = x[k] || '(chưa ghi)'; m[v] = (m[v] || 0) + 1; });
+  let keys = (thuTu || []).filter(v => m[v]).concat(Object.keys(m).filter(v => (thuTu || []).indexOf(v) < 0).sort((a, b) => m[b] - m[a]));
+  if (toiDa) keys = keys.slice(0, toiDa);
+  if (!keys.length) return '';
+  return '<div class="khHang"><small>' + ten + '</small>' + keys.map(v => {
+    const on = KHL.loc[k] === v, c = mauTheo ? khMau(v) : '';
+    return '<button class="chip' + (on ? ' on' : '') + '" data-khloc="' + k + '|' + e(v) + '">' +
+      (c ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + c + ';margin-right:5px"></span>' : '') + e(v) + ' · ' + m[v] + '</button>';
+  }).join('') + '</div>';
+}
+function veKhBang() {
+  const ds = khLoc(), tong = (KH.ds || []).length, chot = (KH.ds || []).filter(x => x.tt === 'Đã mua hàng' || x.tt === 'Chuyển đại lý').length;
+  const sao2 = (KH.ds || []).filter(x => x.sao >= 2).length, soNgam = Object.keys(KH.ngam || {}).length;
+  const coLoc = Object.keys(KHL.loc).some(k => KHL.loc[k]);
+  $('manKh').innerHTML =
+    '<div class="khLoc"><input id="khQ" type="search" value="' + e(KHL.q) + '" placeholder="Tìm tên, số điện thoại, tỉnh, nguồn, ghi chú…" autocomplete="off">' +
+    '<button class="khNut chinh" data-khthem="Khách mới">＋ Thêm khách</button></div>' +
+    '<div class="khSo"><span>Tổng <b>' + tong + '</b> khách</span><span>Đã mua / thành đại lý <b>' + chot + '</b>' + (tong ? ' (' + Math.round(chot / tong * 100) + '%)' : '') + '</span>' +
+    '<span>Quan tâm cao (★★ trở lên) <b>' + sao2 + '</b></span>' + (soNgam ? '<span style="color:var(--do)">Bị ngâm từ ' + KH.ngamNgay + ' ngày <b style="color:var(--do)">' + soNgam + '</b></span>' : '') +
+    (coLoc || KHL.q ? '<button class="chip on" data-khloc="bo|">✕ Bỏ lọc</button>' : '') + '</div>' +
+    khChip('Theo luồng', 'tt', KM_COT.map(c => c[0]), true) + khChip('Theo nguồn', 'nguon', KH.dm.nguon) +
+    khChip('Theo phân loại', 'loai', KH.dm.loai) + khChip('Theo tỉnh', 'tinh', null, false, 8) +
+    '<div class="khCot">' + KM_COT.map(c => {
+      const the = ds.filter(x => x.tt === c[0]), sl = (KH.ds || []).filter(x => x.tt === c[0]).length;
+      return '<div class="khC" data-khcot="' + e(c[0]) + '"><div class="khDau"><span>' + c[2] + ' ' + e(c[0]) + '</span><span class="so">' + sl + '</span>' +
+        '<button data-khthem="' + e(c[0]) + '" title="Thêm khách vào ' + e(c[0]) + '">+</button></div>' +
+        '<div class="khThanh"><i style="width:' + (tong ? Math.round(sl / tong * 100) : 0) + '%;background:' + c[1] + '"></i></div>' +
+        (the.map(x => khThe(x, c[1])).join('') || '<div class="khRong">' + (KHL.q || coLoc ? 'Không có khách phù hợp' : 'Chưa có khách') + '</div>') + '</div>';
+    }).join('') + '</div>' +
+    '<p class="goiY" style="color:var(--muted);font-size:12.5px;margin:10px 2px 0">Bấm vào thẻ để sửa hoặc chuyển luồng · kéo thẻ sang cột khác cũng đổi được · ★ là mức quan tâm · 💬 mở hội thoại của khách trong hộp thư. Khách sang <b>Đã mua hàng</b> hoặc <b>Chuyển đại lý</b> sẽ tự có tên trong Sổ bán hàng.</p>';
+  $('khQ').oninput = ev => { KHL.q = ev.target.value; clearTimeout(veKhBang.h); veKhBang.h = setTimeout(() => { const o = document.activeElement === $('khQ'); veKhBang(); if (o && $('khQ')) { $('khQ').focus(); $('khQ').setSelectionRange(99, 99); } }, 250); };
+  document.querySelectorAll('[data-khloc]').forEach(b => b.onclick = () => {
+    const p = b.dataset.khloc.split('|'), k = p[0], v = p.slice(1).join('|');
+    if (k === 'bo') { KHL.loc = {}; KHL.q = ''; } else KHL.loc[k] = KHL.loc[k] === v ? '' : v;
+    veKhBang();
+  });
+  document.querySelectorAll('[data-khthem]').forEach(b => b.onclick = ev => { ev.stopPropagation(); moKhach(null, b.dataset.khthem); });
+  document.querySelectorAll('[data-khthe]').forEach(el => {
+    el.ondragstart = ev => { ev.dataTransfer.setData('text/plain', el.dataset.khthe); ev.dataTransfer.effectAllowed = 'move'; };
+    el.onclick = ev => { if (ev.target.closest('a,button')) return; const x = khTim(el.dataset.khthe); if (x) moKhach(x); };
+  });
+  document.querySelectorAll('[data-khcot]').forEach(cot => {
+    cot.ondragover = ev => { ev.preventDefault(); cot.classList.add('keo'); };
+    cot.ondragleave = () => cot.classList.remove('keo');
+    cot.ondrop = ev => { ev.preventDefault(); cot.classList.remove('keo'); khChuyen(ev.dataTransfer.getData('text/plain'), cot.dataset.khcot); };
+  });
+  document.querySelectorAll('[data-khsao]').forEach(b => b.onclick = ev => {
+    ev.stopPropagation();
+    const x = khTim(b.dataset.ma); if (!x) return;
+    const n = +b.dataset.khsao;
+    khLuu(Object.assign({}, x, { sao: x.sao === n ? 0 : n }), 'Đã chấm mức quan tâm.');
+  });
+  document.querySelectorAll('[data-khmoht]').forEach(b => b.onclick = ev => { ev.stopPropagation(); moHtTheoSdt(b.dataset.khmoht); });
+}
+function khThe(x, mau) {
+  const sdt = String(x.sdt || '').replace(/\D/g, ''), ngam = (KH.ngam || {})[x.ma];
+  let sao = ''; for (let i = 1; i <= 3; i++) sao += '<button class="khSao' + (i <= (x.sao || 0) ? ' on' : '') + '" data-khsao="' + i + '" data-ma="' + e(x.ma) + '" title="Mức quan tâm ' + i + '/3">★</button>';
+  return '<div class="khThe" draggable="true" data-khthe="' + e(x.ma) + '" style="border-left-color:' + mau + '"><b>' + e(x.ten) + '</b>' +
+    '<div class="p">' + khSoDep(sdt) + (x.tinh ? ' · ' + e(x.tinh) : '') + '</div>' +
+    '<div>' + (x.loai ? '<span class="khTag">' + e(x.loai) + '</span>' : '') + (x.nguon ? '<span class="khTag ng">' + e(x.nguon) + '</span>' : '') +
+    (x.maKH ? '<span class="khTag dl">Sổ bán hàng · ' + e(x.maKH) + '</span>' : '') +
+    (ngam ? '<span class="khTag cb" title="Chưa cập nhật từ lâu">⚠ ngâm ' + ngam + ' ngày</span>' : '') + '</div>' +
+    (x.ghiChu ? '<div class="p" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + e(x.ghiChu) + '">📝 ' + e(x.ghiChu) + '</div>' : '') +
+    '<div class="khChan">' + sao + (sdt ? '<a href="tel:' + sdt + '" title="Gọi">📞</a><a href="https://zalo.me/' + sdt + '" target="_blank" rel="noopener" title="Nhắn Zalo">💬</a>' +
+      '<button class="mo" data-khmoht="' + sdt + '" title="Mở hội thoại của khách trong hộp thư">📨</button>' : '') +
+    '<span class="ai" title="' + e(x.nguoi || '') + ' nhập">' + khNgay(x.ngay) + ' · ' + e(x.nguoi || '') + '</span></div></div>';
+}
+function khTim(ma) { return (KH.ds || []).find(x => x.ma === ma); }
+function khChuyen(ma, tt) {
+  const x = khTim(ma); if (!x || x.tt === tt) return;
+  if ((tt === 'Đã mua hàng' || tt === 'Chuyển đại lý') && !x.maKH && !confirm('Chuyển ' + x.ten + ' sang "' + tt + '"? App sẽ tạo khách này trong Sổ bán hàng để kế toán lên đơn.')) return;
+  khLuu(Object.assign({}, x, { tt: tt }), x.ten + ' → ' + tt + '.');
+}
+function khLuu(k, loiBao, xong) {
+  return goi('fbKhachLuu', [TK, k]).then(r => { KH = r; CRM = null; veMan(); if (loiBao) bao(loiBao); if (xong) xong(); })
+    .catch(err => { loiChung(err); if (xong) xong(true); });
+}
+/** Mở hội thoại của khách này trong hộp thư (tìm theo số điện thoại). */
+function moHtTheoSdt(sdt) {
+  doiMan('ht');
+  LOC.tim = sdt; LOC.loai = ''; LOC.loc = ''; LOC.the = '';
+  $('tim').value = sdt;
+  document.querySelectorAll('#tabLoai button').forEach(b => b.classList.toggle('on', !b.dataset.loai));
+  napDs().then(() => { if (!DS.length) bao('Khách này chưa có hội thoại nào trong hộp thư.'); else if (DS.length === 1) moHt(DS[0].khoa); });
+}
+function moKhach(x, ttMoi) {
+  const dm = KH.dm, moi = !x;
+  x = x || { ma: '', ten: '', sdt: '', tinh: '', loai: '', nguon: '', tt: ttMoi || 'Khách mới', ghiChu: '', sao: 0 };
+  const dsOpt = (id, mang) => '<datalist id="' + id + '">' + mang.map(v => '<option value="' + e(v) + '">').join('') + '</datalist>';
+  moHop('<h2>' + (moi ? '＋ Thêm khách mới' : '👤 ' + e(x.ten)) + '</h2>' +
+    (moi ? '' : '<div style="display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 2px">' + KM_COT.map(c =>
+      '<button class="nut nho' + (c[0] === x.tt ? '' : ' phu') + '" data-khdoi="' + e(c[0]) + '"' + (c[0] === x.tt ? ' style="background:' + c[1] + '"' : '') + '>' + c[2] + ' ' + e(c[0]) + '</button>').join('') + '</div>') +
+    '<h3>Họ tên</h3><input type="text" id="khTen" value="' + e(x.ten) + '" placeholder="VD: Nguyễn Thị Lan – Quầy thuốc Lan Anh">' +
+    '<h3>Số điện thoại</h3><input type="text" id="khSdt" inputmode="tel" value="' + e(x.sdt) + '" placeholder="10 số">' +
+    '<h3>Tỉnh / thành</h3><input type="text" id="khTinh" list="khDsTinh" value="' + e(x.tinh) + '" placeholder="Gõ để chọn tỉnh">' + dsOpt('khDsTinh', dm.tinh) +
+    '<h3>Phân loại khách</h3><input type="text" id="khLoai" list="khDsLoai" value="' + e(x.loai) + '" placeholder="Chọn hoặc gõ loại khác">' + dsOpt('khDsLoai', dm.loai) +
+    '<h3>Nguồn khách</h3><input type="text" id="khNguon" list="khDsNguon" value="' + e(x.nguon) + '" placeholder="Chọn hoặc gõ nguồn khác">' + dsOpt('khDsNguon', dm.nguon) +
+    (moi ? '<h3>Luồng</h3><select id="khTT" style="width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">' + dm.tt.map(t => '<option' + (t === x.tt ? ' selected' : '') + '>' + e(t) + '</option>').join('') + '</select>' : '') +
+    '<h3>Mức quan tâm</h3><div id="khSaoChon" data-sao="' + (x.sao || 0) + '">' + [1, 2, 3].map(i => '<button type="button" class="khSao' + (i <= (x.sao || 0) ? ' on' : '') + '" data-khsaochon="' + i + '" style="font-size:25px">★</button>').join('') + '</div>' +
+    '<h3>Ghi chú</h3><textarea id="khGhi" rows="3" placeholder="VD: quan tâm yến hũ 7g, hẹn gọi lại thứ 2; từ chối vì giá…">' + e(x.ghiChu) + '</textarea>' +
+    (x.maKH ? '<p class="goiY">Khách này đã có trong Sổ bán hàng (' + e(x.maKH) + ').</p>' : '') +
+    (moi ? '' : '<p class="goiY">Vào CRM ' + e(x.ngay || '') + ' · ' + e(x.nguoi || '') + ' nhập' + (x.nguoiSua ? ' · ' + e(x.nguoiSua) + ' sửa ' + e(String(x.lucSua || '').slice(0, 16)) : '') + '</p>') +
+    '<div style="display:flex;gap:8px;margin-top:14px"><button class="nut phu" id="khDong" style="flex:1">Đóng</button>' +
+    (!moi && String(x.sdt || '').replace(/\D/g, '').length >= 9 ? '<button class="nut phu" id="khMoHt" style="flex:1">📨 Mở hội thoại</button>' : '') +
+    '<button class="nut" id="khLuuNut" style="flex:1">Lưu</button></div>');
+  $('khDong').onclick = dongHop;
+  if ($('khMoHt')) $('khMoHt').onclick = () => { dongHop(); moHtTheoSdt(String(x.sdt).replace(/\D/g, '')); };
+  document.querySelectorAll('[data-khsaochon]').forEach(b => b.onclick = () => {
+    let n = +b.dataset.khsaochon; const cu = +$('khSaoChon').dataset.sao; n = n === cu ? 0 : n;
+    $('khSaoChon').dataset.sao = n;
+    document.querySelectorAll('[data-khsaochon]').forEach(y => y.classList.toggle('on', +y.dataset.khsaochon <= n));
+  });
+  const doc = tt => ({ ma: x.ma || '', ten: $('khTen').value, sdt: $('khSdt').value, tinh: $('khTinh').value, loai: $('khLoai').value,
+    nguon: $('khNguon').value, tt: tt, ghiChu: $('khGhi').value, sao: +$('khSaoChon').dataset.sao });
+  const luu = (k, nut) => {
+    if ((k.tt === 'Đã mua hàng' || k.tt === 'Chuyển đại lý') && !x.maKH && !confirm('Chuyển ' + k.ten + ' sang "' + k.tt + '"? App sẽ tạo khách này trong Sổ bán hàng để kế toán lên đơn.')) return;
+    if (nut) nut.disabled = true;
+    khLuu(k, moi ? 'Đã thêm khách mới.' : k.tt !== x.tt ? k.ten + ' → ' + k.tt + '.' : 'Đã lưu.', loi => { if (loi) { if (nut) nut.disabled = false; } else dongHop(); });
+  };
+  document.querySelectorAll('[data-khdoi]').forEach(b => b.onclick = () => { if (b.dataset.khdoi !== x.tt) luu(doc(b.dataset.khdoi), b); });
+  $('khLuuNut').onclick = function () { luu(doc(moi ? $('khTT').value : x.tt), this); };
+}
+function veKhBc() {
+  const tu = KH_KY === 'thang' ? KH.homNay.slice(0, 8) + '01' : KH_KY === '3thang' ? congNgay(KH.homNay, -90) : '';
+  const km = (KH.ds || []).filter(x => !tu || x.ngay >= tu), dt = KH.dt || {};
+  const pt = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+  const o4 = (ten, v) => '<div><small>' + ten + '</small><b>' + v + '</b></div>';
+  const dem = {}; km.forEach(x => { dem[x.tt] = (dem[x.tt] || 0) + 1; });
+  const chot = (dem['Đã mua hàng'] || 0) + (dem['Chuyển đại lý'] || 0), tuChoi = dem['Từ chối'] || 0;
+  function bang(k, tieuDe) {
+    const m = {};
+    km.forEach(x => {
+      const v = x[k] || '(chưa ghi)', g = m[v] = m[v] || { ten: v, tong: 0, cham: 0, tu: 0, chot: 0, dt: 0 };
+      g.tong++;
+      if (x.tt === 'Từ chối') g.tu++;
+      else if (x.tt === 'Đã mua hàng' || x.tt === 'Chuyển đại lý') { g.chot++; g.dt += dt[x.maKH] || 0; }
+      else g.cham++;
+    });
+    const ds = Object.keys(m).map(v => m[v]).sort((a, b) => b.chot - a.chot || b.tong - a.tong);
+    return '<h3 style="margin-top:14px">' + tieuDe + '</h3>' + (ds.length ?
+      '<table class="khBang"><tr><th></th><th class="s">Khách</th><th class="s">Đang chăm</th><th class="s">Từ chối</th><th class="s">Đã chốt</th><th class="s">Tỷ lệ chốt</th><th class="s">Doanh thu đã mua</th></tr>' +
+      ds.map(g => '<tr><td>' + e(g.ten) + '</td><td class="s">' + g.tong + '</td><td class="s">' + g.cham + '</td><td class="s">' + g.tu + '</td><td class="s"><b>' + g.chot + '</b></td><td class="s"><b>' + pt(g.chot, g.tong) + '</b></td><td class="s">' + (g.dt ? tien(g.dt) + 'đ' : '—') + '</td></tr>').join('') +
+      '</table>' : '<p class="goiY">Chưa có khách mới trong kỳ.</p>');
+  }
+  const ngam = Object.keys(KH.ngam || {}).map(ma => { const x = khTim(ma); return x ? Object.assign({ songay: KH.ngam[ma] }, x) : null; })
+    .filter(Boolean).sort((a, b) => b.songay - a.songay);
+  $('manKh').innerHTML =
+    '<div class="khBc"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><h3 style="margin:0">📈 Tỷ lệ chuyển đổi khách mới</h3>' +
+    '<div style="display:flex;gap:5px">' + [['thang', 'Tháng này'], ['3thang', '90 ngày'], ['tat', 'Tất cả']].map(k =>
+      '<button class="chip' + (KH_KY === k[0] ? ' on' : '') + '" data-khky="' + k[0] + '">' + k[1] + '</button>').join('') + '</div></div>' +
+    '<div class="khO" style="margin-top:8px">' + o4('Khách mới vào CRM', km.length) + o4('Đã chốt (mua / đại lý)', chot) + o4('Tỷ lệ chốt', pt(chot, km.length)) + o4('Chốt / đã có kết quả', pt(chot, chot + tuChoi)) + '</div>' +
+    '<div class="khPheu">' + KM_COT.map(c => '<div style="border-top-color:' + c[1] + '"><small>' + c[2] + ' ' + e(c[0]) + '</small><b>' + (dem[c[0]] || 0) + '</b></div>').join('') + '</div>' +
+    bang('nguon', 'Theo nguồn khách') + bang('nguoi', 'Theo người nhập khách') + bang('loai', 'Theo phân loại') +
+    '<p class="goiY" style="margin-bottom:0">Tính theo ngày khách được nhập vào CRM. "Chốt / đã có kết quả" = chốt ÷ (chốt + từ chối), không tính khách còn đang chăm. Doanh thu = tổng đơn hợp lệ trong Sổ bán hàng của khách đã chốt.</p></div>' +
+    '<div class="khBc"><h3>⚠ Khách bị "ngâm" (Khách mới / Đang tư vấn mà ' + KH.ngamNgay + ' ngày trở lên chưa ai cập nhật)</h3>' +
+    (ngam.length ? '<table class="khBang"><tr><th>Khách</th><th>Luồng</th><th>Nguồn</th><th>Người chăm</th><th class="s">Không cập nhật</th></tr>' +
+      ngam.map(x => '<tr><td><button class="chip" data-khmo="' + e(x.ma) + '">' + e(x.ten) + '</button></td><td>' + e(x.tt) + '</td><td>' + e(x.nguon || '') + '</td><td>' + e(x.nguoi || '') + '</td><td class="s"><b style="color:var(--do)">' + x.songay + ' ngày</b></td></tr>').join('') +
+      '</table>' : '<p class="goiY">Không có khách nào bị bỏ quên. 👍</p>') + '</div>';
+  document.querySelectorAll('[data-khky]').forEach(b => b.onclick = () => { KH_KY = b.dataset.khky; veKhBc(); });
+  document.querySelectorAll('[data-khmo]').forEach(b => b.onclick = () => { const x = khTim(b.dataset.khmo); if (x) moKhach(x); });
+}
+document.querySelectorAll('#chonMan button').forEach(b => b.onclick = () => doiMan(b.dataset.man));
+
 function hoiMoc() {
   if (document.hidden || !V) return;
   goi('fbMoc', []).then(v => { if (MOC !== null && v !== MOC) { napDs(); napTinMoi(); } MOC = v; }).catch(() => {});
@@ -743,6 +1002,7 @@ function veDau() {
   $('chonTrang').classList.toggle('an', !V.trang.length);
   $('btnCd').classList.toggle('an', !V.me.admin);
   $('btnTk').classList.toggle('an', !(V.me.admin || V.me.quanLy));
+  $('chonMan').classList.toggle('an', !V.me.crm);   // không có quyền CRM thì chỉ thấy hộp thư
 }
 if (!TK) chan('Chưa đăng nhập', 'Chị mở app LA, đăng nhập, rồi mở lại Hội thoại fanpage.');
 else taiLai().then(() => {
