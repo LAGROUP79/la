@@ -495,8 +495,9 @@ function veTt() {
   if (!MO || !MO.ht) { b.innerHTML = MO ? '<div class="trong">Đang tải…</div>' : '<div class="trong">Thông tin khách hiện ở đây khi chị chọn một hội thoại.</div>'; return; }
   const h = MO.ht, qly = V.me.admin || V.me.quanLy;
   b.innerHTML = '<div class="ttKhoi ttDau">' + anhHtml(h, 64) + '<b>' + e(h.ten || 'Chưa có tên') + '</b><br><small style="color:var(--muted)">' + (h.loai === 'bl' ? '🗨 Bình luận' : h.loai === 'web' ? '🛒 Đơn từ website' : '💬 Tin nhắn') + ' · ' + e(tenTrang(h.trang)) + '</small>' +
-    '<div style="margin-top:6px;font-size:13px">' + (h.loai === 'bl' && h.bai ? '<a href="https://www.facebook.com/' + e(h.bai) + '" target="_blank" rel="noopener">Mở bài viết ↗</a>' :
-      '<a href="https://business.facebook.com/latest/inbox/all?asset_id=' + e(h.trang) + '" target="_blank" rel="noopener">Mở hộp thư Meta ↗</a>') + '</div></div>' +
+    (h.loai === 'web' ? '' :   // đơn từ website không có gì bên Facebook để mở
+      '<div style="margin-top:6px;font-size:13px">' + (h.loai === 'bl' && h.bai ? '<a href="https://www.facebook.com/' + e(h.bai) + '" target="_blank" rel="noopener">Mở bài viết ↗</a>' :
+        '<a href="https://business.facebook.com/latest/inbox/all?asset_id=' + e(h.trang) + '" target="_blank" rel="noopener">Mở hộp thư Meta ↗</a>') + '</div>') + '</div>' +
     '<div class="ttKhoi"><h3>Số điện thoại</h3><div class="hangNho"><input id="ttSdt" inputmode="tel" value="' + e(h.sdt) + '" placeholder="Chưa có"><button id="luuSdt">Lưu</button></div></div>' +
     '<div class="ttKhoi"><h3>Người phụ trách</h3>' + (qly ? '<select id="ttNv"><option value="">— Chưa giao —</option>' + V.nv.map(n => '<option value="' + e(n.id) + '"' + (h.nv === n.id ? ' selected' : '') + '>' + e(n.ten) + '</option>').join('') + '</select>' :
       '<div style="margin-bottom:4px">' + (h.nv ? '👤 ' + e(tenNv(h.nv)) : 'Chưa ai nhận') + '</div>') +
@@ -539,7 +540,7 @@ function veCrm() {
     b.innerHTML = '<h3>CRM khách mới</h3><div style="font-size:13px;color:var(--muted)">Đang xem…</div>';
     const khoa = MO.khoa;
     goi('fbCrmSo', [TK, khoa, so]).then(r => {
-      const k = fbKq(r) || {};
+      const k = r || {};   // fbCrmSo trả thẳng, không đi qua hộp thư Facebook nên không có r.fb
       if (!MO || MO.khoa !== khoa) return;
       if (!k.duoc) { CRM = { sdt: so, duoc: false }; }
       else CRM = { sdt: so, duoc: true, dm: k.dm || {}, km: k.km || null };
@@ -570,7 +571,7 @@ function veCrm() {
       ghiChu: km ? km.ghiChu : (h.ghi_chu || '') };
     $('crLuu').disabled = true;
     goi('fbCrmLuu', [TK, khoa, gui]).then(r => {
-      const k = fbKq(r) || {};
+      const k = r || {};   // fbCrmLuu cũng trả thẳng
       if (k.km) { CRM = { sdt: CRM.sdt, duoc: true, dm: CRM.dm, km: k.km }; veCrm(); }
       bao('Đã lưu vào CRM khách mới.');
     }).catch(err => { bao(err.message || 'Không lưu được.', true); const n = $('crLuu'); if (n) n.disabled = false; });
