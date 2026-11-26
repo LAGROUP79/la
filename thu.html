@@ -2582,7 +2582,8 @@ function moHoSoCrm(x, kl, khoaLk) {
     function dong(nhan, gt) { return gt === '' || gt == null ? '' : '<div class="hang" style="justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid #E1ECE4"><span class="muted">' + e(nhan) + '</span><b style="text-align:right">' + gt + '</b></div>'; }
     function muc(t) { return '<h4 style="margin:14px 0 4px;color:var(--xanh)">' + e(t) + '</h4>'; }
     var h = '<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(ten) + '</h3>' +
-      '<div style="margin-bottom:6px">' + crmSdt(sdt) + '</div>';
+      '<div style="margin-bottom:6px">' + crmSdt((r.kh && r.kh.sdt) || sdt) + '</div>' +
+      (H.me.admin && r.sua ? '<button class="nut nho" id="hsSua" style="width:auto;margin-bottom:6px">✎ Sửa thông tin khách</button>' : '');
     var lsGc = (r.gcDs || []).map(function (g) {
       return '<div style="padding:5px 0;border-bottom:1px solid #E1ECE4;font-size:13px"><b>' + e(g.tt || 'Ghi chú') + '</b>' + (g.sao ? ' <span style="color:#eda100">' + '★★★★★'.slice(0, g.sao) + '</span>' : '') + (g.nd ? ' · ' + e(g.nd) : '') +
         '<br><small class="muted">' + e(String(g.luc).slice(0, 16)) + ' · ' + e(g.nguoi) + (g.hen ? ' · ⏰ hẹn ' + e(g.hen.split('-').reverse().join('/')) : '') + '</small></div>';
@@ -2621,6 +2622,10 @@ function moHoSoCrm(x, kl, khoaLk) {
     if ($('hsXoa')) $('hsXoa').onclick = function () { crmXoa(x, kl); };
     if ($('hsGc')) $('hsGc').onclick = function () { moGhiChuCrm(x, kl); };
     if ($('hsVe')) $('hsVe').onclick = function () { crmVe(khoaLk); };
+    if ($('hsSua')) $('hsSua').onclick = function () {
+      sbSuaKhach(r.sua, '', function (kq, gui) { crmNhan(kq); bao('Đã lưu thông tin ' + gui.ten + ' vào Sổ bán hàng.'); },
+        { ham: 'crmSuaKhach', nhacTen: 'CRM nối khách với sổ cũ và ghi chú chăm sóc theo tên. Chỉ đổi tên khi tên đang sai.' });
+    };
   });
 }
 function crmXoa(x, kl) {
@@ -5406,11 +5411,12 @@ function sbSuaBang(ma, thang, r, banGui) {
     goi('ktLuuSaoKe', [TK, ma, gui, SB_THANG], function (x) { SB = x.so; bao('Đã lưu ' + (gui.don.length + gui.thu.length) + ' chỗ sửa.'); sbSaoKe(ma, thang); });
   };
 }
-function sbSuaKhach(k, tenMoi, xong) {
+function sbSuaKhach(k, tenMoi, xong, tuy) {
   k = k || { ma: '', ten: tenMoi || '', nhom: '', sdt: '', khuVuc: '', hanMucRieng: null, ghiChu: '', dung: true };
+  tuy = tuy || {};
   var loai = k.loai === 'Khách lẻ' ? 'Khách lẻ' : 'Đại lý';
   moHop('<h3 style="margin-top:0">' + (k.ma ? 'Sửa khách ' + e(k.ten) : 'Khách mới') + '</h3>' +
-    '<label for="kTen">Tên khách</label><input id="kTen" value="' + e(k.ten) + '">' +
+    '<label for="kTen">Tên khách</label><input id="kTen" value="' + e(k.ten) + '">' + (tuy.nhacTen ? '<small class="muted">' + e(tuy.nhacTen) + '</small>' : '') +
     '<label for="kLoai">Loại khách</label><select id="kLoai">' + ['Đại lý', 'Khách lẻ'].map(function (x) { return opt(x, loai); }).join('') + '</select>' +
     '<div id="kDL"' + (loai === 'Khách lẻ' ? ' style="display:none"' : '') + '>' +
     '<label for="kNhom">Nhóm giá</label><select id="kNhom">' + ['', 'Nhóm 1', 'Nhóm 2', 'Nhóm 3'].map(function (x) { return opt(x, k.nhom || ''); }).join('') + '</select>' +
@@ -5439,7 +5445,7 @@ function sbSuaKhach(k, tenMoi, xong) {
       giaGui: $('kLoai').value === 'Khách lẻ' || !$('kGiaGui').value.trim() ? '' : docTien($('kGiaGui').value),
       dung: $('kDung') ? $('kDung').checked : true, noChot: $('kNo') && $('kNo').value.trim() ? $('kNo').value.replace(/[^\d\-]/g, '') : null };
     if (!gui.ten.trim()) { bao('Nhập tên khách.', true); return; }
-    if (xong) { goi('chotThemKhach', [TK, gui], function (x) { dongHop(); xong(x, gui); }); return; }
+    if (xong) { goi(tuy.ham || 'chotThemKhach', [TK, gui], function (x) { dongHop(); xong(x, gui); }); return; }
     goi('ktLuuKhach', [TK, gui, SB_THANG], function (x) {
       SB = x.so; dongHop();
       if (!k.ma && SB_TAB === 'nhap' && SB_DON) SB_DON.maKH = x.ma;
