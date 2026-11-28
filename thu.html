@@ -1523,7 +1523,8 @@ function guiDon() {
     H = r.home; SUA = null; veNav();
     if (dangSua) chuyenTab('ds'); else veLenDon();
     moHoaDon(r.don, r.phieu, (dangSua ? 'Đã lưu đơn ' : 'Đã gửi phiếu ') + r.ma, dangSua ? 'Đóng' : 'Lên đơn tiếp',
-      r.daDuyet ? '⚠ Đơn này kế toán đã duyệt sang Sổ bán hàng' + (r.daDuyet.so ? ' (mã ' + r.daDuyet.so + ')' : '') + ', đang ở bước ' + r.daDuyet.buoc + '. App đã báo kế toán và kho cập nhật theo đơn vừa sửa.' : '');
+      !r.daDuyet ? '' : r.daDuyet.dongBo ? '✏️ Đơn này kế toán đã duyệt' + (r.daDuyet.so ? ' (mã ' + r.daDuyet.so + ')' : '') + ', đang ở bước ' + r.daDuyet.buoc + '. Sổ bán hàng và thẻ Chốt đơn đã tự cập nhật theo đơn vừa sửa, kế toán và kho đã được báo.' :
+        '⚠ Đơn này kế toán đã duyệt' + (r.daDuyet.so ? ' (mã ' + r.daDuyet.so + ')' : '') + ' nhưng chưa tự cập nhật sang Chốt đơn được' + (r.daDuyet.loi ? ' (' + r.daDuyet.loi + ')' : '') + '. App đã báo kế toán xử lý.');
   });
 }
 var CTY = { ten: 'CÔNG TY TNHH YẾN SÀO LANEST', mst: '4201991164', dc: 'Kios 2 N3A, KĐT Căn Cứ Cam Ranh, P. Bắc Cam Ranh, Khánh Hòa', tel: '025.8627.8627', web: 'www.lanest.com.vn', stk: '997979369', nh: 'MB Bank' };
@@ -1532,7 +1533,8 @@ function hoaDonHtml(o) {
   var dong = function (a, b, dam) { return '<tr><td style="padding:3px 0;color:' + (dam ? xanh : '#555') + (dam ? ';font-weight:700;font-size:17px' : '') + '">' + a + '</td><td style="padding:3px 0;text-align:right;' + (dam ? 'font-weight:700;font-size:19px;color:' + xanh : 'font-weight:600') + '">' + b + '</td></tr>'; };
   var tt = function (k, v) { return v ? '<div style="margin:2px 0"><span style="color:#777;display:inline-block;min-width:92px">' + k + '</span><b style="font-weight:600">' + e(v) + '</b></div>' : ''; };
   var sp = (o.items || []).map(function (it, i) {
-    return '<tr style="border-bottom:1px solid #E1ECE4"><td style="padding:7px 4px;text-align:center;color:#777">' + (i + 1) + '</td><td style="padding:7px 4px">' + e(it.ten) + '</td>' +
+    return '<tr style="border-bottom:1px solid #E1ECE4"><td style="padding:7px 4px;text-align:center;color:#777">' + (i + 1) + '</td><td style="padding:7px 4px">' + e(it.ten) +
+      (it.ct ? '<div style="margin-top:2px;font-size:12.5px;color:#8a5f00;font-weight:600">↳ ' + e(it.ct) + '</div>' : '') + '</td>' +
       '<td style="padding:7px 4px;text-align:center;white-space:nowrap">' + soSL(it.sl) + (it.dv ? ' <span style="color:#888;font-size:12px">' + e(it.dv) + '</span>' : '') + '</td>' +
       '<td style="padding:7px 4px;text-align:right;white-space:nowrap">' + (it.gia ? tien(it.gia) : 'Tặng') + '</td><td style="padding:7px 4px;text-align:right;white-space:nowrap;font-weight:600">' + tien(it.tien) + '</td></tr>';
   }).join('');
@@ -2973,7 +2975,8 @@ function veChotDs() {
         return '<div class="ch-the" data-chthe="' + e(x.khoa) + '"' + (keo ? ' draggable="true"' : '') + ' style="border-left-color:' + c[0] + '">' +
           '<div><span class="ma">' + (x.huyGoc || x.doiGoc || x.doiKD ? '<span title="' + (x.huyGoc ? 'Đơn gốc đã huỷ' : x.doiKD ? (x.doiKD.huy ? 'Phòng KD đã huỷ đơn gốc' : 'Phòng KD vừa sửa đơn, chờ kế toán cập nhật') : 'Đơn gốc vừa sửa') + '" style="color:' + (x.huyGoc || (x.doiKD && x.doiKD.huy) ? '#b42318' : '#8a5f00') + '">⚠ </span>' : '') +
             (x.ma ? e(x.ma) : x.chiGuiHo ? '<span style="color:#1F5F9E">📦 Gửi hàng hộ</span>' : '<span style="color:#b42318">Chưa có mã đơn</span>') + '</span>' +
-            (x.ngay > r.homNay ? ' <span style="color:#8a5f00;font-size:12px;font-weight:700">📅 Giao ngày ' + e(x.ngay.slice(8, 10) + '/' + x.ngay.slice(5, 7)) + '</span>' : '') + '</div>' +
+            (x.ngay > r.homNay ? ' <span style="color:#8a5f00;font-size:12px;font-weight:700">📅 Giao ngày ' + e(x.ngay.slice(8, 10) + '/' + x.ngay.slice(5, 7)) + '</span>' : '') +
+            (x.sua ? ' <span title="Đơn vừa sửa: ' + e(x.sua[x.sua.length - 1].ai + ' · ' + x.sua[x.sua.length - 1].viec) + '" style="color:#8a5f00;font-size:12px;font-weight:700">✏️ Đã sửa</span>' : '') + '</div>' +
           '<div><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' ' + e(x.sdt4) : '') + '</div>' +
           (x.xuat1p ? '<div><span class="ch-tag" style="background:#E3F1E8;color:#006B3F;font-weight:700">📦 Đã gửi 1 phần' + (x.xuat1p.length > 1 ? ' · ' + x.xuat1p.length + ' lần' : '') + '</span></div>' : '') + '</div>';
       }).join('') || '<div class="ch-rong">' + (q ? 'Không có đơn phù hợp' : 'Chưa có đơn') + '</div>') + '</div>';
@@ -3049,6 +3052,11 @@ function chotHoiShip(x, ok) {
   setTimeout(function () { $('shTien').focus(); }, 50);
 }
 var CHOT_DM = null;
+function chotSuaHtml(x) {
+  if (!x.sua) return '';
+  return '<div class="ch-canh doi" style="margin:6px 0">✏️ Đơn có chỉnh sửa' + (x.tt !== 'Chờ duyệt' ? ' từ lúc vào bước ' + e(x.tt) : '') + ' — soạn theo thẻ hiện tại:' +
+    x.sua.map(function (s) { return '<div style="font-weight:500;margin-top:3px">• ' + e(s.luc.slice(11) + ' ' + s.luc.slice(8, 10) + '/' + s.luc.slice(5, 7) + ' · ' + s.ai + ' · ' + s.viec) + '</div>'; }).join('') + '</div>';
+}
 function chotKDHtml(x, r) {
   var k = x.doiKD; if (!k) return '';
   if (k.huy) return '<p class="ch-canh">⚠ Phòng KD (' + e(k.nguoi) + ') đã HUỶ đơn gốc ' + e(k.ma) + (r.duyet && k.lyDo ? ': ' + e(k.lyDo) : '') + '. Dừng soạn' + (r.ghiDuyet ? ', kiểm rồi bấm Huỷ đơn nếu đúng.' : ', chờ kế toán xử lý.') + '</p>';
@@ -3071,7 +3079,7 @@ function moChotThe(x) {
   var r = CHOT.r, i = r.tt.indexOf(x.tt), cho = i === 0, laKD = x.khoa.indexOf('KD:') === 0;
   if (cho && laKD && r.ghiDuyet && !CHOT_DM) { goi('chotDmNhap', [TK], function (dm) { CHOT_DM = dm; moChotThe(x); }); return; }
   moHop('<h3 style="margin:0;color:var(--xanh)">' + (x.ma ? 'Đơn ' + e(x.ma) : x.chiGuiHo ? '📦 Gửi hàng hộ' : 'Đơn chưa có mã') + ' <span class="ch-tag' + (x.nguon !== 'Phòng KD' ? ' kt' : '') + '" style="vertical-align:middle">' + e(x.nguon) + '</span></h3>' +
-    (x.huyGoc ? '<p class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán.</p>' : x.doiGoc ? '<p class="ch-canh doi">⚠ Đơn gốc đã sửa sau khi duyệt. Hàng / khách trên thẻ đang là bản cũ.</p>' : '') + chotKDHtml(x, r) +
+    (x.huyGoc ? '<p class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán.</p>' : x.doiGoc ? '<p class="ch-canh doi">⚠ Đơn gốc đã sửa sau khi duyệt. Hàng / khách trên thẻ đang là bản cũ.</p>' : '') + chotKDHtml(x, r) + chotSuaHtml(x) +
     '<p style="margin:8px 0 4px"><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' · ***' + e(x.sdt4) : '') + '</p><div style="line-height:1.55">' + chotSp(x) + '</div>' + chotXuat1pHtml(x, r) +
     (r.duyet ? chotTienHtml(x) : '') +
     (r.duyet && x.hd ? '<p style="margin:6px 0;color:#006B3F"><b>🧾 Xuất HĐ:</b> ' + e(x.hd) + ' <i class="muted">(kho không thấy)</i></p>' : '') +
@@ -3473,7 +3481,7 @@ function cnLuu() {
   if (hdVat) gui.hdVat = hdVat;
   goiTrung('chotNhapDon', function (bo) { gui.boQuaTrung = bo; return [TK, gui]; }, function (r) {
     var v = r.vuaNhap || {}; CN = null; CHOT = { r: r, q: '' }; if (TAB === 'cv') napCongViec(); else veChot(); window.scrollTo(0, 0);
-    bao(sua ? 'Đã lưu sửa ' + (v.soDon ? 'đơn ' + v.soDon : v.guiHo ? 'gửi hàng hộ' : 'đơn') + '.' : v.guiHo && !v.soDon ? 'Đã lưu gửi hàng hộ (không lấy số thứ tự) vào Sổ bán hàng và cột Chờ duyệt.' : 'Đã lưu đơn ' + (v.soDon || '') + ' vào Sổ bán hàng và cột Chờ duyệt.');
+    bao(sua ? 'Đã lưu sửa ' + (v.soDon ? 'đơn ' + v.soDon : v.guiHo ? 'gửi hàng hộ' : 'đơn') + '.' + (v.kd ? ' Đơn Phòng KD ' + v.kd + ' đã đổi theo.' : '') : v.guiHo && !v.soDon ? 'Đã lưu gửi hàng hộ (không lấy số thứ tự) vào Sổ bán hàng và cột Chờ duyệt.' : 'Đã lưu đơn ' + (v.soDon || '') + ' vào Sổ bán hàng và cột Chờ duyệt.');
     if (v.vat) setTimeout(function () { bao('🧾 ' + v.vat, /^⚠/.test(v.vat)); }, 1500);
     if (v.canhBao) setTimeout(function () { bao('⚠ ' + v.canhBao, true); }, 2800);
   });
