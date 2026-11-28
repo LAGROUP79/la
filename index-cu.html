@@ -1521,7 +1521,8 @@ function guiDon() {
   goi('guiDon', [TK, d], function (r) {
     H = r.home; SUA = null; veNav();
     if (dangSua) chuyenTab('ds'); else veLenDon();
-    moHoaDon(r.don, r.phieu, (dangSua ? 'Đã lưu đơn ' : 'Đã gửi phiếu ') + r.ma, dangSua ? 'Đóng' : 'Lên đơn tiếp');
+    moHoaDon(r.don, r.phieu, (dangSua ? 'Đã lưu đơn ' : 'Đã gửi phiếu ') + r.ma, dangSua ? 'Đóng' : 'Lên đơn tiếp',
+      r.daDuyet ? '⚠ Đơn này kế toán đã duyệt sang Sổ bán hàng' + (r.daDuyet.so ? ' (mã ' + r.daDuyet.so + ')' : '') + ', đang ở bước ' + r.daDuyet.buoc + '. App đã báo kế toán và kho cập nhật theo đơn vừa sửa.' : '');
   });
 }
 var CTY = { ten: 'CÔNG TY TNHH YẾN SÀO LANEST', mst: '4201991164', dc: 'Kios 2 N3A, KĐT Căn Cứ Cam Ranh, P. Bắc Cam Ranh, Khánh Hòa', tel: '025.8627.8627', web: 'www.lanest.com.vn', stk: '997979369', nh: 'MB Bank' };
@@ -1593,8 +1594,8 @@ function xacNhanTTHtml(o, nhan, ht, luc) {
 }
 function lucVN(d) { d = d || new Date(); var h = function (n) { return (n < 10 ? '0' : '') + n; }; return h(d.getHours()) + ':' + h(d.getMinutes()) + ' ngày ' + h(d.getDate()) + '/' + h(d.getMonth() + 1) + '/' + d.getFullYear(); }
 function lucTuXn(s) { var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})/.exec(s || ''); return m ? m[4] + ' ngày ' + m[3] + '/' + m[2] + '/' + m[1] : ''; }
-function moHoaDon(o, phieu, tieuDe, nutDong) {
-  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(tieuDe || ('Hóa đơn ' + o.ma)) + '</h3><p class="muted" style="margin:0 0 8px">Bấm <b>🖼 Gửi hình hóa đơn</b> để dán thẳng vào Zalo cho khách · <b>COPY phiếu</b> để gửi nhóm soạn hàng.</p>' +
+function moHoaDon(o, phieu, tieuDe, nutDong, nhac) {
+  moHop('<h3 style="margin:0 0 4px;color:var(--xanh)">' + e(tieuDe || ('Hóa đơn ' + o.ma)) + '</h3>' + (nhac ? '<p style="margin:0 0 8px;padding:6px 10px;border-radius:8px;background:#fff3d9;color:#8a5f00;font-weight:600;font-size:13.5px">' + e(nhac) + '</p>' : '') + '<p class="muted" style="margin:0 0 8px">Bấm <b>🖼 Gửi hình hóa đơn</b> để dán thẳng vào Zalo cho khách · <b>COPY phiếu</b> để gửi nhóm soạn hàng.</p>' +
     '<div style="overflow:auto;max-height:58vh;border-radius:8px;background:#EEF4EF;padding:6px"><div id="hdXem" style="transform-origin:0 0"></div></div>' +
     '<div class="hang" style="margin-top:10px"><button class="nut vang" id="hdHinh">🖼 Gửi hình hóa đơn</button><button class="nut" id="hdCopy">COPY phiếu</button><button class="nut phu" id="hdDong">' + e(nutDong || 'Đóng') + '</button></div>');
   var xem = $('hdXem'), w = xem.parentNode.clientWidth - 12;
@@ -2969,7 +2970,7 @@ function veChotDs() {
       (the.map(function (x) {
         var cho = i === 0, sau = r.tt[i + 1], keo = r.ghi && (cho ? r.ghiDuyet : true);
         return '<div class="ch-the" data-chthe="' + e(x.khoa) + '"' + (keo ? ' draggable="true"' : '') + ' style="border-left-color:' + c[0] + '">' +
-          '<div><span class="ma">' + (x.huyGoc || x.doiGoc ? '<span title="' + (x.huyGoc ? 'Đơn gốc đã huỷ' : 'Đơn gốc vừa sửa') + '" style="color:' + (x.huyGoc ? '#b42318' : '#8a5f00') + '">⚠ </span>' : '') +
+          '<div><span class="ma">' + (x.huyGoc || x.doiGoc || x.doiKD ? '<span title="' + (x.huyGoc ? 'Đơn gốc đã huỷ' : x.doiKD ? (x.doiKD.huy ? 'Phòng KD đã huỷ đơn gốc' : 'Phòng KD vừa sửa đơn, chờ kế toán cập nhật') : 'Đơn gốc vừa sửa') + '" style="color:' + (x.huyGoc || (x.doiKD && x.doiKD.huy) ? '#b42318' : '#8a5f00') + '">⚠ </span>' : '') +
             (x.ma ? e(x.ma) : x.chiGuiHo ? '<span style="color:#1F5F9E">📦 Gửi hàng hộ</span>' : '<span style="color:#b42318">Chưa có mã đơn</span>') + '</span>' +
             (x.ngay > r.homNay ? ' <span style="color:#8a5f00;font-size:12px;font-weight:700">📅 Giao ngày ' + e(x.ngay.slice(8, 10) + '/' + x.ngay.slice(5, 7)) + '</span>' : '') + '</div>' +
           '<div><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' ' + e(x.sdt4) : '') + '</div>' +
@@ -3047,6 +3048,12 @@ function chotHoiShip(x, ok) {
   setTimeout(function () { $('shTien').focus(); }, 50);
 }
 var CHOT_DM = null;
+function chotKDHtml(x, r) {
+  var k = x.doiKD; if (!k) return '';
+  if (k.huy) return '<p class="ch-canh">⚠ Phòng KD (' + e(k.nguoi) + ') đã HUỶ đơn gốc ' + e(k.ma) + (r.duyet && k.lyDo ? ': ' + e(k.lyDo) : '') + '. Dừng soạn' + (r.ghiDuyet ? ', kiểm rồi bấm Huỷ đơn nếu đúng.' : ', chờ kế toán xử lý.') + '</p>';
+  return '<div class="ch-canh doi" style="margin:6px 0">⚠ Phòng KD (' + e(k.nguoi) + ') đã sửa đơn ' + e(k.ma) + ' sau khi kế toán duyệt' +
+    (r.duyet && k.dong ? ':' + k.dong.map(function (l) { return '<div style="font-weight:500;margin-top:3px">• ' + e(l) + '</div>'; }).join('') : '. Chờ kế toán cập nhật thẻ rồi mới soạn.') + '</div>';
+}
 function chotTienHtml(x) {
   var m = x.tien, k = x.kdTT;
   if (!m && k) return '<div style="margin:8px 0;padding:10px 12px;border-radius:10px;background:#FFF8E6;border:1px solid #E8D48B;font-size:16px;font-weight:800;color:' + (k.cod ? '#B42318' : '#006B3F') + '">' +
@@ -3063,7 +3070,7 @@ function moChotThe(x) {
   var r = CHOT.r, i = r.tt.indexOf(x.tt), cho = i === 0, laKD = x.khoa.indexOf('KD:') === 0;
   if (cho && laKD && r.ghiDuyet && !CHOT_DM) { goi('chotDmNhap', [TK], function (dm) { CHOT_DM = dm; moChotThe(x); }); return; }
   moHop('<h3 style="margin:0;color:var(--xanh)">' + (x.ma ? 'Đơn ' + e(x.ma) : x.chiGuiHo ? '📦 Gửi hàng hộ' : 'Đơn chưa có mã') + ' <span class="ch-tag' + (x.nguon !== 'Phòng KD' ? ' kt' : '') + '" style="vertical-align:middle">' + e(x.nguon) + '</span></h3>' +
-    (x.huyGoc ? '<p class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán.</p>' : x.doiGoc ? '<p class="ch-canh doi">⚠ Đơn gốc đã sửa sau khi duyệt. Hàng / khách trên thẻ đang là bản cũ.</p>' : '') +
+    (x.huyGoc ? '<p class="ch-canh">⚠ Đơn gốc đã HUỶ — dừng soạn, báo kế toán.</p>' : x.doiGoc ? '<p class="ch-canh doi">⚠ Đơn gốc đã sửa sau khi duyệt. Hàng / khách trên thẻ đang là bản cũ.</p>' : '') + chotKDHtml(x, r) +
     '<p style="margin:8px 0 4px"><b>' + e(x.khach) + '</b>' + (x.sdt4 ? ' · ***' + e(x.sdt4) : '') + '</p><div style="line-height:1.55">' + chotSp(x) + '</div>' + chotXuat1pHtml(x, r) +
     (r.duyet ? chotTienHtml(x) : '') +
     (r.duyet && x.hd ? '<p style="margin:6px 0;color:#006B3F"><b>🧾 Xuất HĐ:</b> ' + e(x.hd) + ' <i class="muted">(kho không thấy)</i></p>' : '') +
@@ -3082,6 +3089,8 @@ function moChotThe(x) {
     (r.ghiDuyet && x.khoa.indexOf('KT:') === 0 ? '<button class="nut rong" id="chVat" style="margin-top:10px;background:#0F7A6B;color:#fff">🧾 XUẤT HĐ VAT</button>' : '') +
     (r.ghiDuyet && laKD && cho ? '<button class="nut" id="chSuaKD" style="margin-top:10px">✏️ Sửa đơn phòng KD</button>' : '') +
     (x.doiGoc && r.ghiDuyet ? '<button class="nut vang" id="chLay" style="margin-top:10px">↻ Cập nhật theo đơn gốc</button>' : '') +
+    (x.doiKD && r.ghiDuyet && !x.doiKD.huy ? '<button class="nut vang" id="chKD" style="margin-top:10px">↻ Cập nhật theo đơn KD</button>' : '') +
+    (x.doiKD && r.ghiDuyet ? '<button class="nut phu" id="chKDXL" style="margin-top:10px">✓ Đã xử lý, ẩn cảnh báo</button>' : '') +
     (cho && r.ghiDuyet && laKD ? '<button class="nut phu rong" id="chBo" style="margin-top:10px">Bỏ thẻ này (trùng với đơn đã nhập sổ)</button>' : '') +
     (r.ghiDuyet && !x.xuat1p ? '<button class="nut do rong" id="chHuy" style="margin-top:10px">🗑 Huỷ đơn</button>' : '') +
     (r.ghiDuyet && x.xuat1p ? '<div style="margin-top:10px;font-size:13px;color:#8a5f00">Đơn đã gửi 1 phần: muốn huỷ thì bấm "Bỏ lần gửi gần nhất" cho tới hết các lần gửi trước.</div>' : '') +
@@ -3095,6 +3104,14 @@ function moChotThe(x) {
     chotChuyen(x.khoa, b.dataset.chden, cho ? m : null); }; });
   if ($('chLuuMa')) $('chLuuMa').onclick = function () { var m = $('chMa').value.trim(); if (!m) { bao('Mã đơn không được để trống.', true); return; } goi('chotChuyen', [TK, x.khoa, x.tt, m], function (r2) { chotNhan(r2); dongHop(); bao('Đã lưu mã ' + m + '.'); }); };
   if ($('chLay')) $('chLay').onclick = function () { goi('chotChuyen', [TK, x.khoa, x.tt, null, true], function (r2) { chotNhan(r2); dongHop(); bao('Đã cập nhật theo đơn gốc.'); }); };
+  if ($('chKD')) $('chKD').onclick = function () {
+    if (!confirm('Cập nhật đơn ' + (x.ma || '') + ' theo đơn Phòng KD ' + x.doiKD.ma + '?\n\nHàng, giá, chiết khấu, ship, ghi chú, người nhận, trả trước / COD trong Sổ bán hàng và thẻ kho sẽ đổi theo đơn KD. Khách sổ, mã đơn, VAT giữ nguyên.')) return;
+    goi('chotCapNhatKD', [TK, x.khoa], function (r2) { chotNhan(r2); dongHop(); bao('Đã cập nhật theo đơn Phòng KD.'); var y = chotTim(x.khoa); if (y) moChotThe(y); });
+  };
+  if ($('chKDXL')) $('chKDXL').onclick = function () {
+    if (!confirm('Giữ nguyên đơn sổ như hiện tại và ẩn cảnh báo Phòng KD ' + (x.doiKD.huy ? 'huỷ' : 'sửa') + ' đơn?')) return;
+    goi('chotBoCanhBaoKD', [TK, x.khoa], function (r2) { chotNhan(r2); dongHop(); bao('Đã ẩn cảnh báo.'); });
+  };
   if ($('chBo')) $('chBo').onclick = function () { chotBo(x); };
   if ($('chSua')) $('chSua').onclick = function () { moSuaChot(x); };
   if ($('chX1p')) $('chX1p').onclick = function () { moXuat1Phan(x); };
